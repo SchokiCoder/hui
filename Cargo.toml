@@ -1,0 +1,11 @@
+[package]
+name = "house_de"
+version = "0.0.0"
+authors = ["SchokiCoder <afschoknecht@gmail.com>"]
+repository = "https://github.com/SchokiCoder/house_de"
+edition = "2018"
+license = "GPLv3"
+publish = false
+
+[dependencies]
+term_size = "0.3.*"

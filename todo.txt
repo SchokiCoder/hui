@@ -1,0 +1,32 @@
+{
+	-super + l						.
+	 "loginctl lock-session ID"
+	-super + NUMBER					.
+	 workspaces
+	-v								. -> 0.3.0
+}
+
+{
+	-welcome message			.
+	 (cfg, display when login)
+	-var read in cfg file		.
+	 "$std_user" for example
+	-motd						.
+	 (cfg, display when logged)
+	-std_user					.
+	 (cfg, user that is
+	  configured to be used
+	  for login command)
+	-v							. -> 0.2.0
+}
+
+{
+	-cfg file format for		.
+	 options and suboptions
+	-options display			.
+	-input						.
+	-login						.
+	 "exec login"
+	-make: install as service	.
+	-v							. -> 0.1.0
+}

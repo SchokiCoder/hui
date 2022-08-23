@@ -1,0 +1,10 @@
+motd = Welcome to duty guard, have a safe day
+
+buttons
+	Work
+		Record = smng r 1
+		Stop = smng s "strip guard duty"
+		Status = smng status
+	
+	EMERGENCY = echo "Dr House messaged, stay calm and hold your position!"
+
