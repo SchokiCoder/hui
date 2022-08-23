@@ -1,6 +1,6 @@
 motd = Welcome to duty guard, have a safe day
 
-buttons
+main
 	Work
 		Record = smng r 1
 		Stop = smng s "strip guard duty"

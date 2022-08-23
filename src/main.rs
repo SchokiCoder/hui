@@ -16,22 +16,46 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-use std::{Vec, String};
+use std::vec::Vec;
+use std::string::String;
+use std::fs::File;
+use std::io::Read;
 
-struct Button {
+struct Command {
 	label: String,
 	command: String,
 }
 
-struct Config {
+struct Menu {
+	label: String,
 	buttons: Vec<Button>,
 }
 
-impl Config {
-	pub fn new(username: &str) -> Result<&str, Config> {
+enum Button {
+	Command(Command),
+	Menu(Menu),
+}
+
+struct UserConfig {
+	main_menu: Menu,
+}
+
+impl UserConfig {
+	pub fn new(username: &str) -> Result<UserConfig, String> {
+		let mut result = UserConfig {
+			main_menu: Menu {
+				label: String::from("Main"),
+				buttons: Vec::<Button>::new(),
+			},
+		};
+	
 		// open etc file
-		let mut etcpath = String::from("/etc/house_de/")
-		etcpath.append(username)
+		/*let mut etcpath = String::from("/etc/");
+		etcpath.push_str(env!("CARGO_PKG_NAME"));
+		etcpath.push_str(".d/");
+		etcpath.push_str(username);*/
+		let etcpath = String::from(username); // temp override
+		
 		let f = File::open(etcpath.as_str());
 		
 		if !f.is_ok() {
@@ -43,29 +67,56 @@ impl Config {
 		// read file
 		let mut text = String::new();
 		if !f.read_to_string(&mut text).is_ok() {
-			return Err(format!("User config \"{}\" could not be read"), etcpath)
+			return Err(format!("User config \"{}\" could not be read", etcpath))
 		}
 		
 		// read lines
 		let mut i: usize = 0;
-		let lines = text.split('\n');
+		let lines: Vec<&str> = text.split('\n').collect();
 		
 		while i < lines.len() {
 			// read words
-			let words in line.trim().split(' ');
+			let words: Vec<&str> = lines[i].trim().split(' ').collect();
 			
 			match words[0] {
 				"buttons" => {
-					// read next lines, until indentation ends
-					impl me!
+					i += 1;
+					
+					while i < lines.len() {
+						// count indentation
+						let mut indent: usize = 0;
+						
+						for c in lines[i].chars() {
+							if c == '\t' {
+								indent += 1;
+							}
+							else {
+								break;
+							}
+						}
+						
+						// if indent ended, stop
+						if indent <= 0 {
+							break;
+						}
+						
+						// read words
+						
+						
+						 i += 1;
+					}
 				},
 				
 				_ => (),
 			}
+			
+			i += 1;
 		}
+
+		return Ok(result);
 	}
 }
 
 fn main() {
-	
+	let _usercfg = UserConfig::new("example_etc/house_de.d/generic_guard");
 }
