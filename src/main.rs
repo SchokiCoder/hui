@@ -16,10 +16,12 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+use std::collections::HashMap;
 use std::vec::Vec;
 use std::string::String;
 use std::fs::File;
 use std::io::Read;
+use serde_derive::Deserialize;
 
 struct Command {
 	label: String,
@@ -42,6 +44,25 @@ struct UserConfig {
 
 impl UserConfig {
 	pub fn new(username: &str) -> Result<UserConfig, String> {
+		#[derive(Deserialize)]
+		struct ButtonRaw {
+			label: String,
+			menu: Vec<ButtonRaw>,
+			command: String,
+		}
+		
+		#[derive(Deserialize)]
+		struct MenuRaw {
+			label: String,
+			buttons: Vec<ButtonRaw>,
+		}
+		
+		#[derive(Deserialize)]
+		struct UserConfigRaw {
+			motd: String,
+			main_menu: MenuRaw,
+		}
+		
 		let mut result = UserConfig {
 			main_menu: Menu {
 				label: String::from("Main"),
@@ -70,6 +91,12 @@ impl UserConfig {
 			return Err(format!("User config \"{}\" could not be read", etcpath))
 		}
 		
+		// parse toml
+		let rawcfg: UserConfigRaw = toml::from_str(text.as_str()).unwrap();
+		
+		// convert to usable config
+		
+/*
 		// read lines
 		let mut i: usize = 0;
 		let lines: Vec<&str> = text.split('\n').collect();
@@ -112,11 +139,12 @@ impl UserConfig {
 			
 			i += 1;
 		}
+*/
 
 		return Ok(result);
 	}
 }
 
 fn main() {
-	let _usercfg = UserConfig::new("example_etc/house_de.d/generic_guard");
+	let _usercfg = UserConfig::new("example_etc/house_de.d/generic_guard.toml");
 }
