@@ -1,0 +1,34 @@
+{
+	"motd": "Welcome to duty guard, have a safe day",
+	"main_menu": {
+		"label": "main",
+		"buttons": [
+			{
+				"label": "Work",
+				"buttons": [
+					{
+						"label": "Record",
+						"buttons": [],
+						"cmd": "smng r 1"
+					},
+					{
+						"label": "Stop",
+						"buttons": [],
+						"cmd": "smng s 'strip guard duty'"
+					},
+					{
+						"label": "Status",
+						"buttons": [],
+						"cmd": "smng status"
+					}
+				],
+				"cmd": ""
+			},
+			{
+				"label": "EMERGENCY",
+				"buttons": [],
+				"cmd": "echo 'Dr House messaged, stay calm and hold your position!'"
+			}
+		]
+	}
+}

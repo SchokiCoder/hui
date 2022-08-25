@@ -21,7 +21,7 @@
 }
 
 {
-	-cfg file format for		.
+	-cfg file format for		v_11-51_25-08-2022
 	 options and suboptions
 	-options display			.
 	-input						.
