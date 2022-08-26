@@ -8,5 +8,5 @@ license = "GPLv3"
 publish = false
 
 [dependencies]
-term_size = "0.3.*"
+termion = "1.5.*"
 json = "0.12.*"

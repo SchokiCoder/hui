@@ -22,41 +22,10 @@ use std::fs::File;
 use std::io::Read;
 use json::JsonValue;
 
-pub struct Menu {
-	label: String,
-	buttons: Vec<Button>,
-}
-
-impl Menu {
-	pub fn from_json(mut json: JsonValue) -> Result<Menu, &'static str> {
-		let mut result = Menu {
-			label: json["label"].to_string(),
-			buttons: Vec::<Button>::new(),
-		};
-		
-		loop {
-			let button = json["buttons"].array_remove(0);
-			if button == JsonValue::Null {
-				break;
-			}
-			
-			let btn_result = Button::from_json(button);
-			
-			if !btn_result.is_ok() {
-				return Err("Button in menu corrupt");
-			}
-			
-			result.buttons.push(btn_result.unwrap());
-		}
-		
-		return Ok(result);
-	}
-}
-
 pub struct Button {
-	label: String,
-	buttons: Vec<Button>,
-	cmd: String,
+	pub label: String,
+	pub buttons: Vec<Button>,
+	pub cmd: String,
 }
 
 impl Button {
@@ -87,19 +56,24 @@ impl Button {
 }
 
 pub struct UserConfig {
-	motd: String,
-	main_menu: Menu,
+	pub motd: String,
+	pub main_menu: Button,
 }
 
 impl UserConfig {
-	pub fn from_json(filepath: &str) -> Result<UserConfig, &'static str> {	
-		let mut result = UserConfig {
+	pub fn new() -> UserConfig {
+		return UserConfig {
 			motd: String::new(),
-			main_menu: Menu {
+			main_menu: Button {
 				label: String::new(),
 				buttons: Vec::<Button>::new(),
+				cmd: String::new(),
 			},
 		};
+	}
+
+	pub fn from_json(filepath: &str) -> Result<UserConfig, &'static str> {	
+		let mut result = UserConfig::new();
 	
 		// open etc file
 		let etcpath = String::from(filepath);
@@ -124,7 +98,7 @@ impl UserConfig {
 		// convert to usable config		
 		result.motd = json["motd"].to_string();
 		
-		let mnu_result = Menu::from_json(json["main_menu"].take());
+		let mnu_result = Button::from_json(json["main_menu"].take());
 		
 		if !mnu_result.is_ok() {
 			return Err("Main menu is corrupt");

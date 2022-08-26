@@ -7,24 +7,28 @@
 }
 
 {
-	-welcome message			.
+	-welcome message				.
 	 (cfg, display when login)
-	-var read in cfg file		.
+	-display menu path				.
+	 eg. "main > Edit files > ."
+	-var read in cfg file			.
 	 "$std_user" for example
-	-motd						.
+	-motd							.
 	 (cfg, display when logged)
-	-std_user					.
+	-std_user						.
 	 (cfg, user that is
 	  configured to be used
 	  for login command)
-	-v							. -> 0.2.0
+	-v								. -> 0.2.0
 }
 
 {
 	-cfg file format for		v_11-51_25-08-2022
 	 options and suboptions
-	-options display			.
-	-input						.
+	-recovery cfg				v_10-13_26-08-2022
+	-menu display				v_12-00
+	-input						v_12-24
+	-menu navigation			.
 	-login						.
 	 "exec login"
 	-make: install as service	.
