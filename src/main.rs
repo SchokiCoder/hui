@@ -18,6 +18,7 @@
 
 mod config;
 use config::{UserConfig, Button};
+use std::io::Write;
 use termion::color;
 use termion::event::Key;
 use termion::raw::IntoRawMode;
@@ -32,6 +33,9 @@ fn main() {
 	let username = "generic_guard".to_string();
 	let usercfg_path = /* format!("/etc/{}.d/{}.json", env!("CARGO_PKG_NAME"), username).to_string(); override */
 		format!("example_etc/house_de.d/{}.json", username);
+		
+	// user dir
+	let userdir = format!("/home/{}/", username);
 	
 	// read user config
 	let usrcfg_result = UserConfig::from_json(usercfg_path.as_str());
@@ -99,12 +103,12 @@ fn main() {
 	else {
 		usercfg = usrcfg_result.unwrap();
 	}
-	
+
 	// mainloop
-	let mut cursor: usize = 0;
+	let mut hover: usize = 0;
 	let mut menu_path = Vec::<usize>::new();
 
-	let mut stdout = std::io::stdout().into_raw_mode();
+	let stdout = std::io::stdout().into_raw_mode();
 	
 	if !stdout.is_ok() {
 		panic!("Stdout raw mode failed");
@@ -129,6 +133,9 @@ fn main() {
 			cur_menu = &usercfg.main_menu;
 		}
 		
+		// clear
+		print!("{}", termion::clear::All);
+		
 		// display menu
 		for i in 0..cur_menu.buttons.len() {
 			// if button is submenu, add brackets
@@ -142,21 +149,32 @@ fn main() {
 				br[1] = "]";
 			}
 			
-			// if cursor on cur button, print with colors		
-			if cursor == i {
-				println!("{}{}{}{}{}{}{}",
-				color::Bg(color::White),
-				color::Fg(color::Black),
-				br[0], cur_menu.buttons[i].label, br[1],
-			    color::Bg(color::Reset),
-			    color::Fg(color::Reset),
-			    );
+			// if cursor on cur button, change colors
+			let mut fg = color::Fg(color::Rgb(255, 255, 255));
+			let mut bg = color::Bg(color::Rgb(0, 0, 0));
+			
+			if hover == i {
+				fg = color::Fg(color::Rgb(0, 0, 0));
+				bg = color::Bg(color::Rgb(255, 255, 255));
 			}
-			else {
-				println!("{}{}{}",
+			
+			// print
+			let presult = write!(stdout, "{}{}{}{}{}{}{}{}",
+				termion::cursor::Goto(1, (i + 1) as u16),
+				fg,
+				bg,
 				br[0], cur_menu.buttons[i].label, br[1],
+				color::Fg(color::Reset),
+				color::Bg(color::Reset),
 			    );
+			
+			if !presult.is_ok() {
+				// TODO log this later
 			}
+		}
+		
+		if !stdout.flush().is_ok() {
+			// TODO log this later
 		}
 
 		// input
@@ -168,15 +186,62 @@ fn main() {
 			}
 		
 			match key.unwrap() {
-				Key::Esc => {
+				Key::Ctrl('q') => {
 					break 'mainloop;
+				},
+				
+				Key::Up => {
+					// if possible, go up
+					if hover > 0 {
+						hover -= 1;
+						break;
+					}
+				},
+				
+				Key::Down => {
+					// if possible, go down
+					if hover < cur_menu.buttons.len() - 1 {
+						hover += 1;
+						break;
+					}
+				},
+				
+				Key::Right => {
+					// if hovered btn has menu, change menu
+					if cur_menu.buttons[hover].buttons.len() > 0 {
+						menu_path.push(hover);
+						hover = 0;
+						break;
+					}
+				},
+				
+				Key::Left => {
+					// if currently in submenu, go back
+					if menu_path.len() > 0 {
+						menu_path.pop();
+						hover = 0;
+						break;
+					}
+				},
+				
+				Key::Char('\n') => {
+					// if hovered btn has cmd, execute
+					if cur_menu.buttons[hover].cmd.len() > 0 {
+						let execresult = std::process::Command::new(&cur_menu.buttons[hover].cmd)
+							.current_dir(&userdir)
+							.stdout(std::process::Stdio::null())
+							.spawn();
+						
+						if !execresult.is_ok() {
+							// TODO log this
+						}
+						
+						break;
+					}
 				},
 				
 				_ => (),
 			}
 		}
-
-		// clear
-		print!("{}", termion::clear::All);
 	}
 }

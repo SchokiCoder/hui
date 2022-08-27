@@ -1,7 +1,7 @@
 {
 	"motd": "Welcome to duty guard, have a safe day",
 	"main_menu": {
-		"label": "main",
+		"label": "Main",
 		"buttons": [
 			{
 				"label": "Work",
@@ -9,17 +9,17 @@
 					{
 						"label": "Record",
 						"buttons": [],
-						"cmd": "smng r 1"
+						"cmd": "echo 'recordin'"
 					},
 					{
 						"label": "Stop",
 						"buttons": [],
-						"cmd": "smng s 'strip guard duty'"
+						"cmd": "echo 'ended strip guard duty'"
 					},
 					{
 						"label": "Status",
 						"buttons": [],
-						"cmd": "smng status"
+						"cmd": "echo 'get to work damnit'"
 					}
 				],
 				"cmd": ""

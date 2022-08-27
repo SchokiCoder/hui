@@ -1,4 +1,13 @@
 {
+	-advance cmd in userconfig		.
+	 to handle commands, that
+	 start a process with
+	 mainloop vs simple output
+	 commands
+	 eg "ls /" vs "nano myfile"
+}
+
+{
 	-super + l						.
 	 "loginctl lock-session ID"
 	-super + NUMBER					.
@@ -28,9 +37,14 @@
 	-recovery cfg				v_10-13_26-08-2022
 	-menu display				v_12-00
 	-input						v_12-24
-	-menu navigation			.
+	-proper print				v_10-23_27-08-2022
+	-menu navigation			v_10-36
+	-launch commands			.
 	-login						.
 	 "exec login"
+	-log file					.
+	-view logfile via recovery	.
+	 mode
 	-make: install as service	.
 	-v							. -> 0.1.0
 }
