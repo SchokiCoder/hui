@@ -1,18 +1,21 @@
 {
+	-super + l						.
+	 "loginctl lock-session ID"
+	-super + NUMBER					.
+	 workspaces
+	-v								. -> 0.?.0
+}
+
+{
 	-advance cmd in userconfig		.
 	 to handle commands, that
 	 start a process with
 	 mainloop vs simple output
 	 commands
 	 eg "ls /" vs "nano myfile"
-}
-
-{
-	-super + l						.
-	 "loginctl lock-session ID"
-	-super + NUMBER					.
-	 workspaces
-	-v								. -> 0.3.0
+	-ctl + h, to open help menu		.
+	-view logfile via recovery		.
+	 mode
 }
 
 {
@@ -39,12 +42,12 @@
 	-input						v_12-24
 	-proper print				v_10-23_27-08-2022
 	-menu navigation			v_10-36
-	-launch commands			.
+	-launch commands			v_10-58_28-08-2022
+	-hide term cursor			v_11-19
+	-log file					v_11-55
 	-login						.
 	 "exec login"
-	-log file					.
-	-view logfile via recovery	.
-	 mode
 	-make: install as service	.
+	-remove etc path override	.
 	-v							. -> 0.1.0
 }

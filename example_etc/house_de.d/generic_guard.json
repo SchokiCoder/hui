@@ -9,25 +9,40 @@
 					{
 						"label": "Record",
 						"buttons": [],
-						"cmd": "echo 'recordin'"
+						"cmd": {
+							"exe": "echo",
+							"args": ["recordin"]
+						}
 					},
 					{
 						"label": "Stop",
 						"buttons": [],
-						"cmd": "echo 'ended strip guard duty'"
+						"cmd": {
+							"exe": "echo",
+							"args": ["ended strip guard duty"]
+						}
 					},
 					{
 						"label": "Status",
 						"buttons": [],
-						"cmd": "echo 'get to work damnit'"
+						"cmd": {
+							"exe": "echo",
+							"args": ["get to work damnit"]
+						}
 					}
 				],
-				"cmd": ""
+				"cmd": {
+					"exe": "",
+					"args": []
+				}
 			},
 			{
 				"label": "EMERGENCY",
 				"buttons": [],
-				"cmd": "echo 'Dr House messaged, stay calm and hold your position!'"
+				"cmd": {
+					"exe": "echo",
+					"args": ["Dr House messaged, stay calm and hold your position!"]
+				}
 			}
 		]
 	}

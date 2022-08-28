@@ -22,18 +22,71 @@ use std::fs::File;
 use std::io::Read;
 use json::JsonValue;
 
+pub struct Command {
+	pub exe: String,
+	pub args: Vec<String>,
+}
+
+impl Command {
+	pub fn new() -> Command {
+		return Command {
+			exe: String::new(),
+			args: Vec::<String>::new(),
+		};
+	}
+	
+	pub fn from(exe: &str, args: &str) -> Command {
+		let mut result = Command {
+			exe: exe.to_string(),
+			args: Vec::<String>::new(),
+		};
+		
+		for arg in args.split(' ') {
+			result.args.push(arg.to_string());
+		}
+		
+		return result;
+	}
+	
+	pub fn from_json(mut json: JsonValue) -> Command {
+		let mut result = Command {
+			exe: json["exe"].to_string(),
+			args: Vec::<String>::new(),
+		};
+		
+		loop {
+			let arg = json["args"].array_remove(0);
+			if arg == JsonValue::Null {
+				break;
+			}
+			
+			result.args.push(arg.to_string());
+		}
+		
+		return result;
+	}
+}
+
 pub struct Button {
 	pub label: String,
+	pub cmd: Command,
 	pub buttons: Vec<Button>,
-	pub cmd: String,
 }
 
 impl Button {
+	pub fn from(label: &str, cmd: Command, buttons: Vec<Button>) -> Button {
+		return Button {
+			label: label.to_string(),
+			cmd: cmd,
+			buttons: buttons,
+		};
+	}
+
 	pub fn from_json(mut json: JsonValue) -> Result<Button, &'static str> {
 		let mut result = Button {
 			label: json["label"].to_string(),
 			buttons: Vec::<Button>::new(),
-			cmd: json["cmd"].to_string(),
+			cmd: Command::from_json(json["cmd"].take()),
 		};
 		
 		loop {
@@ -67,7 +120,7 @@ impl UserConfig {
 			main_menu: Button {
 				label: String::new(),
 				buttons: Vec::<Button>::new(),
-				cmd: String::new(),
+				cmd: Command::new(),
 			},
 		};
 	}
