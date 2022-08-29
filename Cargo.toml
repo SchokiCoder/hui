@@ -8,5 +8,7 @@ license = "GPLv3"
 publish = false
 
 [dependencies]
+rpassword = "7.0.*"
+pam = "0.7.*"
 termion = "1.5.*"
 json = "0.12.*"

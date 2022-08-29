@@ -16,6 +16,9 @@
 	-ctl + h, to open help menu		.
 	-view logfile via recovery		.
 	 mode
+	-README.md						.
+	-manpage						.
+	-v								. 0.3.0
 }
 
 {
@@ -45,8 +48,9 @@
 	-launch commands			v_10-58_28-08-2022
 	-hide term cursor			v_11-19
 	-log file					v_11-55
-	-login						.
-	 "exec login"
+	-login						v_12-27_29-08-2022
+	-add timestamp to log		.
+	-upon login call syslog		.
 	-make: install as service	.
 	-remove etc path override	.
 	-v							. -> 0.1.0

@@ -44,10 +44,63 @@ fn main() {
 	// read app config
 	let cfg_path: String = format!("/etc/{}.json", env!("CARGO_PKG_NAME"));
 	
-	// login
-	// TODO login
+	// login loop
+	let mut username = String::new();
 	
-	let username = "generic_guard".to_string();
+	'login: loop {		
+		print!("Login:    ");
+		if !std::io::stdout().flush().is_ok() {}
+		
+		if !std::io::stdin().read_line(&mut username).is_ok() {
+			const MSG: &str = "Username could not be read";
+			log(&mut logfile, MSG);
+			panic!("{}", MSG);
+		}
+		
+		username = username.trim().to_string();
+		
+		let logpw = rpassword::prompt_password("Password: ");
+		
+		if !logpw.is_ok() {
+			const MSG: &str = "Password could not be read";
+			log(&mut logfile, MSG);
+			panic!("{}", MSG);
+		}
+		
+		let mut logpw = logpw.unwrap();
+		
+		// pam auth
+		let auth = pam::Authenticator::with_password(env!("CARGO_PKG_NAME"));
+		
+		if !auth.is_ok() {
+			const MSG: &str = "Authentication failed";
+			log(&mut logfile, MSG);
+			panic!("{}", MSG);
+		}
+		
+		let mut auth = auth.unwrap();
+
+		auth.get_handler().set_credentials(username.as_str(), logpw.as_str());
+				
+		// if login is correct
+		if auth.authenticate().is_ok() {			
+			// overwrite pw string, clear
+			for i in 0..logpw.len() {
+				logpw.replace_range(i..i + 1, "-");
+			}
+			logpw.clear();
+			
+			// try open session, break out
+			if !auth.open_session().is_ok() {
+				const MSG: &str = "Session could not be opened";
+				log(&mut logfile, MSG);
+				panic!("{}", MSG);
+			}
+			
+			break 'login;
+		}
+	}
+
 	let usercfg_path = /* format!("/etc/{}.d/{}.json", env!("CARGO_PKG_NAME"), username).to_string(); override */
 		format!("example_etc/house_de.d/{}.json", username);
 	
@@ -58,7 +111,7 @@ fn main() {
 	// if usercfg invalid use recovery cfg, else use read
 	if !usrcfg_result.is_ok() {
 		usercfg = UserConfig {
-			motd: "Userconfig invalid, using recovery mode".to_string(),
+			motd: format!("{}, using recovery mode", usrcfg_result.err().unwrap()),
 			main_menu: Button::from(
 				"recovery",
 				Command::new(),
