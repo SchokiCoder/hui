@@ -1,33 +1,33 @@
 {
-	"motd": "Welcome to duty guard, have a safe day",
+	"motd": "Welcome to work, have a sane day",
 	"main_menu": {
 		"label": "Main",
 		"buttons": [
 			{
-				"label": "Work",
+				"label": "Echo",
 				"buttons": [
 					{
-						"label": "Record",
+						"label": "Major fracture",
 						"buttons": [],
 						"cmd": {
 							"exe": "echo",
-							"args": ["recordin"]
+							"args": ["major fracture detected"]
 						}
 					},
 					{
-						"label": "Stop",
+						"label": "Minor lacerations",
 						"buttons": [],
 						"cmd": {
 							"exe": "echo",
-							"args": ["ended strip guard duty"]
+							"args": ["minor lacerations detected"]
 						}
 					},
 					{
-						"label": "Status",
+						"label": "Morphine",
 						"buttons": [],
 						"cmd": {
 							"exe": "echo",
-							"args": ["get to work damnit"]
+							"args": ["morphine administered"]
 						}
 					}
 				],
@@ -37,11 +37,11 @@
 				}
 			},
 			{
-				"label": "EMERGENCY",
+				"label": "Status",
 				"buttons": [],
 				"cmd": {
-					"exe": "echo",
-					"args": ["Dr House messaged, stay calm and hold your position!"]
+					"exe": "smng",
+					"args": ["status"]
 				}
 			}
 		]

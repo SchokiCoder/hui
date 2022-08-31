@@ -24,36 +24,49 @@ use termion::event::Key;
 use termion::raw::IntoRawMode;
 use termion::input::TermRead;
 
-fn log(logfile: &mut std::fs::File, msg: &str) {
-	if writeln!(logfile, "{}", msg).is_ok() == false {
-		panic!("Could not write to logfile");
+struct Logger {
+	file: std::fs::File,
+}
+
+impl Logger {
+	pub fn new() -> Logger {
+		// open log file
+		let logpath = format!("{}/{}", env!("HOME"), "house_de.log");
+		
+		let fresult = std::fs::File::options().append(true).open(logpath);
+		
+		if !fresult.is_ok() {
+			panic!("Log file could not be opened");
+		}
+		
+		return Logger {
+			file: fresult.unwrap(),
+		};
+	}
+	
+	pub fn log(&mut self, msg: &str) {
+		let ts = chrono::Local
+			::now()
+			.format("%Y-%m-%d_%H-%M")
+			.to_string();
+			
+		if writeln!(self.file, "[{}] {}", ts, msg).is_ok() == false {
+			panic!("Could not write to logfile");
+		}
 	}
 }
 
-fn main() {
-	// open log file
-	let logpath = format!("{}/{}", env!("HOME"), "house_de_log");
-	let logfile = std::fs::File::options().append(true).open(logpath);
-	
-	if !logfile.is_ok() {
-		panic!("Log file could not be opened");
-	}
-	
-	let mut logfile = logfile.unwrap();
-	
-	// read app config
-	let cfg_path: String = format!("/etc/{}.json", env!("CARGO_PKG_NAME"));
-	
-	// login loop
+#[cfg(not(debug_assertions))]
+fn login(lgr: &mut Logger) -> String {
 	let mut username = String::new();
 	
-	'login: loop {		
+	loop {
 		print!("Login:    ");
 		if !std::io::stdout().flush().is_ok() {}
 		
 		if !std::io::stdin().read_line(&mut username).is_ok() {
 			const MSG: &str = "Username could not be read";
-			log(&mut logfile, MSG);
+			lgr.log(MSG);
 			panic!("{}", MSG);
 		}
 		
@@ -63,7 +76,7 @@ fn main() {
 		
 		if !logpw.is_ok() {
 			const MSG: &str = "Password could not be read";
-			log(&mut logfile, MSG);
+			lgr.log(MSG);
 			panic!("{}", MSG);
 		}
 		
@@ -74,7 +87,7 @@ fn main() {
 		
 		if !auth.is_ok() {
 			const MSG: &str = "Authentication failed";
-			log(&mut logfile, MSG);
+			lgr.log(MSG);
 			panic!("{}", MSG);
 		}
 		
@@ -93,16 +106,39 @@ fn main() {
 			// try open session, break out
 			if !auth.open_session().is_ok() {
 				const MSG: &str = "Session could not be opened";
-				log(&mut logfile, MSG);
+				lgr.log(MSG);
 				panic!("{}", MSG);
 			}
 			
-			break 'login;
+			break;
 		}
 	}
+	
+	return username;
+}
 
-	let usercfg_path = /* format!("/etc/{}.d/{}.json", env!("CARGO_PKG_NAME"), username).to_string(); override */
-		format!("example_etc/house_de.d/{}.json", username);
+fn main() {
+	// open logfile
+	let mut lgr = Logger::new();
+	
+	// read app config
+	let cfg_path: String = format!("/etc/{}.json", env!("CARGO_PKG_NAME"));
+	
+		// use debug name (debug only)
+	#[cfg(debug_assertions)]
+	let username = "debug".to_string();
+	
+	// login and get name (release only)
+	#[cfg(not(debug_assertions))]
+	let username = login(&mut lgr);
+
+	// get usrcfg path (debug only)
+	#[cfg(debug_assertions)]
+	let usercfg_path = format!("example_etc/house_de.d/{}.json", username);
+	
+	// get usrcfg path (release only)
+	#[cfg(not(debug_assertions))]
+	let usercfg_path = format!("/etc/{}.d/{}.json", env!("CARGO_PKG_NAME"), username);
 	
 	// read user config
 	let usrcfg_result = UserConfig::from_json(usercfg_path.as_str());
@@ -110,8 +146,11 @@ fn main() {
 	
 	// if usercfg invalid use recovery cfg, else use read
 	if !usrcfg_result.is_ok() {
+		let usrcfg_err = usrcfg_result.err().unwrap();
+		lgr.log(usrcfg_err);
+		
 		usercfg = UserConfig {
-			motd: format!("{}, using recovery mode", usrcfg_result.err().unwrap()),
+			motd: format!("{}, using recovery mode", usrcfg_err),
 			main_menu: Button::from(
 				"recovery",
 				Command::new(),
@@ -189,7 +228,7 @@ fn main() {
 	if !term_size.is_ok() {
 		const MSG: &str = "Terminal size could not be determined";
 		
-		log(&mut logfile, MSG);
+		lgr.log(MSG);
 		panic!("{}", MSG);
 	}
 	
@@ -206,7 +245,7 @@ fn main() {
 	let presult = write!(stdout, "{}", termion::cursor::Hide);
 	
 	if !presult.is_ok() {
-		log(&mut logfile, "Could not hide cursor");
+		lgr.log("Could not hide cursor");
 	}
 	
 	// mainloop
@@ -263,7 +302,7 @@ fn main() {
 			    );
 			
 			if !presult.is_ok() {
-				log(&mut logfile, "Could not print button");
+				lgr.log("Could not print button");
 			}
 		}
 		
@@ -278,12 +317,12 @@ fn main() {
 				);
 			
 			if !presult.is_ok() {
-				log(&mut logfile, "Could not print message");
+				lgr.log("Could not print message");
 			}
 		}
 		
 		if !stdout.flush().is_ok() {
-			log(&mut logfile, "Could not flush stdout");
+			lgr.log("Could not flush stdout");
 		}
 
 		// input
@@ -347,7 +386,7 @@ fn main() {
 							.output();
 
 						if !execresult.is_ok() {
-							log(&mut logfile, "Could not execute command");
+							lgr.log("Could not execute command");
 							
 							// msg = exec error
 							msg = "ERR: Couldn't execute command.".to_string();
@@ -386,6 +425,6 @@ fn main() {
 	let presult = write!(stdout, "{}", termion::cursor::Show);
 	
 	if !presult.is_ok() {
-		log(&mut logfile, "Could not unhide the cursor");
+		lgr.log("Could not unhide the cursor");
 	}
 }

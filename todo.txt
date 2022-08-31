@@ -22,6 +22,7 @@
 }
 
 {
+	-create log file when not there	.
 	-welcome message				.
 	 (cfg, display when login)
 	-display menu path				.
@@ -49,9 +50,16 @@
 	-hide term cursor			v_11-19
 	-log file					v_11-55
 	-login						v_12-27_29-08-2022
-	-add timestamp to log		.
-	-upon login call syslog		.
+	-add timestamp to log		v_09-43_31-08-2022
+	-upon login call syslog		x
+	 (turns out pam already
+	  does that)
+	-log polish					v_10-54
+	-add debug mode				v_11-32
+	 (when compiled in debug,
+	  no login required)
+	-remove etc path override	v_11-40
 	-make: install as service	.
-	-remove etc path override	.
+	 (script in init.d)
 	-v							. -> 0.1.0
 }
