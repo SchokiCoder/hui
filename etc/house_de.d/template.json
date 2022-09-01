@@ -1,0 +1,16 @@
+{
+	"motd": "Welcome user",
+	"main_menu": {
+		"label": "Main",
+		"buttons": [
+			{
+				"label": "Empty Button",
+				"buttons": [],
+				"cmd": {
+					"exe": "",
+					"args": []
+				}
+			}
+		]
+	}
+}

@@ -59,7 +59,8 @@
 	 (when compiled in debug,
 	  no login required)
 	-remove etc path override	v_11-40
-	-make: install as service	.
-	 (script in init.d)
-	-v							. -> 0.1.0
+	-make						v_10-58_01-09-2022
+	-make: install as autorun	v_12-26
+	 (set user-shell to app)
+	-v							v_12-26 -> 0.1.0
 }
