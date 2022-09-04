@@ -30,10 +30,18 @@ struct Logger {
 
 impl Logger {
 	pub fn new() -> Logger {
-		// open log file
 		let logpath = format!("{}/{}", env!("HOME"), "house_de.log");
+		let fresult: std::io::Result<std::fs::File>;
 		
-		let fresult = std::fs::File::options().append(true).open(logpath);
+		// if log file doesn't exist
+		if std::fs::metadata(logpath.as_str()).is_ok() == false {
+			// create
+			fresult = std::fs::File::create(logpath);
+		}
+		else {
+			// open log file
+			fresult = std::fs::File::options().append(true).open(logpath);
+		}
 		
 		if !fresult.is_ok() {
 			panic!("Log file could not be opened");
@@ -56,6 +64,7 @@ impl Logger {
 	}
 }
 
+/*
 #[cfg(not(debug_assertions))]
 fn login(lgr: &mut Logger) -> String {
 	let mut username = String::new();
@@ -116,25 +125,35 @@ fn login(lgr: &mut Logger) -> String {
 	
 	return username;
 }
+*/
 
 fn main() {
+	let sysmenu = Button::from("Sysmenu", Command::new(), vec![]);
+
 	// open logfile
 	let mut lgr = Logger::new();
 	
 	// read app config
 	let cfg_path: String = format!("/etc/{}.json", env!("CARGO_PKG_NAME"));
 	
-		// use debug name (debug only)
+	// use debug name (debug only)
 	#[cfg(debug_assertions)]
 	let username = "debug".to_string();
 	
+/*
 	// login and get name (release only)
 	#[cfg(not(debug_assertions))]
 	let username = login(&mut lgr);
 
+	this block is replaced, see below
+*/
+	// get user name (release only)
+	#[cfg(not(debug_assertions))]
+	let username = env!("USER");
+
 	// get usrcfg path (debug only)
 	#[cfg(debug_assertions)]
-	let usercfg_path = format!("example_etc/house_de.d/{}.json", username);
+	let usercfg_path = format!("etc/house_de.d/{}.json", username);
 	
 	// get usrcfg path (release only)
 	#[cfg(not(debug_assertions))]
@@ -220,6 +239,7 @@ fn main() {
 	}
 
 	// get term size, get stdout, hide cursor
+	let mut sysmenu = false;
 	let mut hover: usize = 0;
 	let mut menu_path = Vec::<usize>::new();
 	let mut msg = String::new();
@@ -232,12 +252,15 @@ fn main() {
 		panic!("{}", MSG);
 	}
 	
-	let (_term_w, term_h) = term_size.unwrap();
+	let (term_w, term_h) = term_size.unwrap();
 
 	let stdout = std::io::stdout().into_raw_mode();
 	
 	if !stdout.is_ok() {
-		panic!("Stdout raw mode failed");
+		const MSG: &str = "Stdout raw mode failed";
+		
+		lgr.log(MSG);
+		panic!("{}", MSG);
 	}
 	
 	let mut stdout = stdout.unwrap();
@@ -250,13 +273,16 @@ fn main() {
 	
 	// mainloop
 	'mainloop: loop {
-		// find current menu
+		let mut menupath_str = String::new();
 		let cur_menu: &Button;
 		
+		// find current menu and build menupath string
 		if menu_path.len() > 0 {
 			let mut submenu = &usercfg.main_menu;
 			
 			for i in 0..menu_path.len() {
+				menupath_str.push_str(&submenu.label);
+				menupath_str.push_str(" > ");
 				submenu = &submenu.buttons[menu_path[i]];
 			}
 			
@@ -266,8 +292,37 @@ fn main() {
 			cur_menu = &usercfg.main_menu;
 		}
 		
+		menupath_str.push_str(&cur_menu.label);
+		menupath_str.push_str(" > ");
+		
+		// if menupath string is too long, cut from begin til fit
+		let diff = menupath_str.len() as isize - term_w as isize;
+		
+		if diff > 0 {
+			menupath_str = menupath_str.split_off(diff as usize + 3);
+			menupath_str.insert_str(0, "...");
+		}
+		
 		// clear
 		print!("{}", termion::clear::All);
+		
+		// display motd
+		let presult = write!(stdout, "{}{}",
+			termion::cursor::Goto(1, 1),
+			usercfg.motd);
+		
+		if !presult.is_ok() {
+			lgr.log("Could not print motd");
+		}
+		
+		// display menu path				
+		let presult = write!(stdout, "{}{}",
+			termion::cursor::Goto(1, 2),
+			menupath_str);
+		
+		if !presult.is_ok() {
+			lgr.log("Could not print menu path");
+		}
 		
 		// display menu
 		for i in 0..cur_menu.buttons.len() {
@@ -293,7 +348,7 @@ fn main() {
 			
 			// print
 			let presult = write!(stdout, "{}{}{}{}{}{}{}{}",
-				termion::cursor::Goto(1, (i + 1) as u16),
+				termion::cursor::Goto(1, (i + 4) as u16),
 				fg,
 				bg,
 				br[0], cur_menu.buttons[i].label, br[1],
@@ -336,6 +391,11 @@ fn main() {
 			match key.unwrap() {
 				Key::Ctrl('q') => {
 					break 'mainloop;
+				},
+				
+				Key::Ctrl('s') => {
+					sysmenu = !sysmenu;
+					break;
 				},
 				
 				Key::Up => {

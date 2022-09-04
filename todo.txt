@@ -22,21 +22,30 @@
 }
 
 {
-	-create log file when not there	.
-	-welcome message				.
-	 (cfg, display when login)
-	-display menu path				.
-	 eg. "main > Edit files > ."
-	-var read in cfg file			.
-	 "$std_user" for example
-	-motd							.
+	-create log file when not there	v_10-00_04-09-2022
+	-motd							v_10-11
 	 (cfg, display when logged)
-	-std_user						.
+	-display menu path				v_10-44
+	 eg. "main > Edit files > ."
+	-current login is redundant		v_10-56
+	 (start, get user
+	  credentials and move on
+	  without another login)
+	-welcome message				x
+	 (cfg, display when login)
+	-std_user						x
 	 (cfg, user that is
 	  configured to be used
 	  for login command)
+	-ctrl + s for systemmenu		.
+		-menu							.
+		-about							.
+		-use recovery mode				.
+		
 	-v								. -> 0.2.0
 }
+
+--- Done ---
 
 {
 	-cfg file format for		v_11-51_25-08-2022
