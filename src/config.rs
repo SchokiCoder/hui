@@ -22,21 +22,21 @@ use std::fs::File;
 use std::io::Read;
 use json::JsonValue;
 
-pub struct Command {
+pub struct ShellCmd {
 	pub exe: String,
 	pub args: Vec<String>,
 }
 
-impl Command {
-	pub fn new() -> Command {
-		return Command {
+impl ShellCmd {
+	pub fn new() -> ShellCmd {
+		return ShellCmd {
 			exe: String::new(),
 			args: Vec::<String>::new(),
 		};
 	}
 	
-	pub fn from(exe: &str, args: &str) -> Command {
-		let mut result = Command {
+	pub fn from(exe: &str, args: &str) -> ShellCmd {
+		let mut result = ShellCmd {
 			exe: exe.to_string(),
 			args: Vec::<String>::new(),
 		};
@@ -48,8 +48,8 @@ impl Command {
 		return result;
 	}
 	
-	pub fn from_json(mut json: JsonValue) -> Command {
-		let mut result = Command {
+	pub fn from_json(mut json: JsonValue) -> ShellCmd {
+		let mut result = ShellCmd {
 			exe: json["exe"].to_string(),
 			args: Vec::<String>::new(),
 		};
@@ -69,15 +69,17 @@ impl Command {
 
 pub struct Button {
 	pub label: String,
-	pub cmd: Command,
+	pub shell: ShellCmd,
+	pub lua: String,
 	pub buttons: Vec<Button>,
 }
 
 impl Button {
-	pub fn from(label: &str, cmd: Command, buttons: Vec<Button>) -> Button {
+	pub fn from(label: &str, shell: ShellCmd, lua: &str, buttons: Vec<Button>) -> Button {
 		return Button {
 			label: label.to_string(),
-			cmd: cmd,
+			shell: shell,
+			lua: lua.to_string(),
 			buttons: buttons,
 		};
 	}
@@ -86,7 +88,8 @@ impl Button {
 		let mut result = Button {
 			label: json["label"].to_string(),
 			buttons: Vec::<Button>::new(),
-			cmd: Command::from_json(json["cmd"].take()),
+			shell: ShellCmd::from_json(json["shell"].take()),
+			lua: json["lua"].to_string(),
 		};
 		
 		loop {
@@ -120,7 +123,8 @@ impl UserConfig {
 			main_menu: Button {
 				label: String::new(),
 				buttons: Vec::<Button>::new(),
-				cmd: Command::new(),
+				shell: ShellCmd::new(),
+				lua: String::new(),
 			},
 		};
 	}

@@ -17,7 +17,7 @@
 */
 
 mod config;
-use config::{UserConfig, Button, Command};
+use config::{UserConfig, Button, ShellCmd};
 use std::io::Write;
 use termion::color;
 use termion::event::Key;
@@ -128,8 +128,6 @@ fn login(lgr: &mut Logger) -> String {
 */
 
 fn main() {
-	let sysmenu = Button::from("Sysmenu", Command::new(), vec![]);
-
 	// open logfile
 	let mut lgr = Logger::new();
 	
@@ -159,87 +157,141 @@ fn main() {
 	#[cfg(not(debug_assertions))]
 	let usercfg_path = format!("/etc/{}.d/{}.json", env!("CARGO_PKG_NAME"), username);
 	
+		let sysmenu = Button::from(
+		"Sysmenu",
+		ShellCmd::new(),
+		"",
+		vec![
+			Button::from(
+				"About HouseDE",
+				ShellCmd::from(
+					"printf",
+					format!("{}{}{}.\n{}\n{}\n\n{}\n{}",
+						
+						env!("CARGO_PKG_NAME"), " is licensed under the ", env!("CARGO_PKG_LICENSE"),
+						"You should have received a copy of the license along with this program.",
+						"If not see <https://www.gnu.org/licenses/>",
+						
+						"The source code of this program is available at:",
+						env!("CARGO_PKG_REPOSITORY")).as_str()),
+				"",
+				vec![]),
+
+			Button::from(
+				"Toggle Recovery Mode",
+				ShellCmd::from("", ""),
+				"if use_recoverymenu then use_recoverymenu = false else use_recoverymenu = true end",
+				vec![]),
+
+			Button::from(
+				"Suspend",
+				ShellCmd::from("", ""),
+				"",
+				vec![]),
+
+			Button::from(
+				"Shutdown",
+				ShellCmd::from("", ""),
+				"",
+				vec![]),
+
+			Button::from(
+				"Reboot",
+				ShellCmd::from("", ""),
+				"",
+				vec![]),
+		]
+	);
+	
+	let recoverymenu = Button::from(
+		"Recovery",
+		ShellCmd::new(),
+		"",
+		vec![
+			Button::from(
+				"Edit userconfig",
+				ShellCmd::new(),
+				"",
+				vec![
+					Button::from(
+						"(sudo) Edit user config via Vim",
+						ShellCmd::from("sudo", format!("vim {}", usercfg_path).as_str()),
+						"",
+						Vec::<Button>::new(),
+					),
+					
+					Button::from(
+						"(sudo) Edit user config via Nano",
+						ShellCmd::from("sudo", format!("nano {}", usercfg_path).as_str()),
+						"",
+						Vec::<Button>::new(),
+					),
+					
+					Button::from(
+						"(sudo) Edit user config via Vi",
+						ShellCmd::from("sudo", format!("vi {}", usercfg_path).as_str()),
+						"",
+						Vec::<Button>::new(),
+					),
+				],
+			),
+			
+			Button::from(
+				"Edit config",
+				ShellCmd::new(),
+				"",
+				vec![
+					Button::from(
+						"(sudo) Edit user config via Vim",
+						ShellCmd::from("sudo", format!("vim {}", cfg_path).as_str()),
+						"",
+						Vec::<Button>::new(),
+					),
+					
+					Button::from(
+						"(sudo) Edit user config via Nano",
+						ShellCmd::from("sudo", format!("nano {}", cfg_path).as_str()),
+						"",
+						Vec::<Button>::new(),
+					),
+					
+					Button::from(
+						"(sudo) Edit user config via Vi",
+						ShellCmd::from("sudo", format!("vi {}", cfg_path).as_str()),
+						"",
+						Vec::<Button>::new(),
+					),
+				],
+			),
+		],
+	);
+	
 	// read user config
 	let usrcfg_result = UserConfig::from_json(usercfg_path.as_str());
 	let usercfg: UserConfig;
 	
 	// if usercfg invalid use recovery cfg, else use read
+	let force_recovery: bool;
+	
 	if !usrcfg_result.is_ok() {
+		force_recovery = true;
+		
 		let usrcfg_err = usrcfg_result.err().unwrap();
 		lgr.log(usrcfg_err);
 		
 		usercfg = UserConfig {
 			motd: format!("{}, using recovery mode", usrcfg_err),
-			main_menu: Button::from(
-				"recovery",
-				Command::new(),
-				vec![
-					Button::from(
-						"Edit userconfig",
-						Command::new(),
-						vec![
-							Button::from(
-								"(sudo) Edit user config via Vim",
-								Command::from("sudo", format!("vim {}", usercfg_path).as_str()),
-								Vec::<Button>::new(),
-							),
-							
-							Button::from(
-								"(sudo) Edit user config via Nano",
-								Command::from("sudo", format!("nano {}", usercfg_path).as_str()),
-								Vec::<Button>::new(),
-							),
-							
-							Button::from(
-								"(sudo) Edit user config via Vi",
-								Command::from("sudo", format!("vi {}", usercfg_path).as_str()),
-								Vec::<Button>::new(),
-							),
-						],
-					),
-					
-					Button::from(
-						"Edit config",
-						Command::new(),
-						vec![
-							Button::from(
-								"(sudo) Edit user config via Vim",
-								Command::from("sudo", format!("vim {}", cfg_path).as_str()),
-								Vec::<Button>::new(),
-							),
-							
-							Button::from(
-								"(sudo) Edit user config via Nano",
-								Command::from("sudo", format!("nano {}", cfg_path).as_str()),
-								Vec::<Button>::new(),
-							),
-							
-							Button::from(
-								"(sudo) Edit user config via Vi",
-								Command::from("sudo", format!("vi {}", cfg_path).as_str()),
-								Vec::<Button>::new(),
-							),
-						],
-					),
-					
-					/*Button::from(
-						"View log",
-						Command::from(
-							"",
-							"",
-						),
-						Vec::<Button>::new(),
-					),*/
-				],
-			),
+			main_menu: Button::from("", ShellCmd::new(), "", vec![]),
 		};
 	}
 	else {
+		force_recovery = false;
 		usercfg = usrcfg_result.unwrap();
 	}
 
 	// get term size, get stdout, hide cursor
-	let mut sysmenu = false;
+	let mut use_recoverymenu = false;
+	let mut use_sysmenu = false;
 	let mut hover: usize = 0;
 	let mut menu_path = Vec::<usize>::new();
 	let mut msg = String::new();
@@ -271,36 +323,82 @@ fn main() {
 		lgr.log("Could not hide cursor");
 	}
 	
+	// get lua goin, set globals
+	let lua = rlua::Lua::new();
+	
+	let ctxresult = lua.context(|lua_ctx| {
+		let globals = lua_ctx.globals();
+		
+		return globals.set("use_recoverymenu", use_recoverymenu);
+	});
+	
+	if !ctxresult.is_ok() {
+		const MSG: &str = "Lua globals could not be set";
+		
+		lgr.log(MSG);
+		panic!("{}", MSG);
+	}
+	
 	// mainloop
 	'mainloop: loop {
 		let mut menupath_str = String::new();
 		let cur_menu: &Button;
 		
-		// find current menu and build menupath string
-		if menu_path.len() > 0 {
-			let mut submenu = &usercfg.main_menu;
+		// update variables exposed to lua globals
+		let getresult = lua.context(|lua_ctx| {
+			let globals = lua_ctx.globals();
 			
-			for i in 0..menu_path.len() {
-				menupath_str.push_str(&submenu.label);
-				menupath_str.push_str(" > ");
-				submenu = &submenu.buttons[menu_path[i]];
-			}
-			
-			cur_menu = submenu;
+			return globals.get::<_, bool>("use_recoverymenu");
+		});
+		
+		if !getresult.is_ok() {
+			lgr.log("Lua global \"use_recoverymenu\" could not be read");
 		}
 		else {
-			cur_menu = &usercfg.main_menu;
+			use_recoverymenu = getresult.unwrap();
 		}
 		
-		menupath_str.push_str(&cur_menu.label);
-		menupath_str.push_str(" > ");
-		
-		// if menupath string is too long, cut from begin til fit
-		let diff = menupath_str.len() as isize - term_w as isize;
-		
-		if diff > 0 {
-			menupath_str = menupath_str.split_off(diff as usize + 3);
-			menupath_str.insert_str(0, "...");
+		// if sysmenu flag
+		if use_sysmenu {
+			// prepare sysmenu
+			menupath_str = "HouseDE Menu".to_string();
+			cur_menu = &sysmenu;
+		}
+		else {
+			// if recovery menu flag
+			if use_recoverymenu || force_recovery {
+				// prepare recov menu
+				menupath_str = "Recovery".to_string();
+				cur_menu = &recoverymenu;
+			}
+			else {
+				// find current menu and build menupath string
+				if menu_path.len() > 0 {
+					let mut submenu = &usercfg.main_menu;
+					
+					for i in 0..menu_path.len() {
+						menupath_str.push_str(&submenu.label);
+						menupath_str.push_str(" > ");
+						submenu = &submenu.buttons[menu_path[i]];
+					}
+					
+					cur_menu = submenu;
+				}
+				else {
+					cur_menu = &usercfg.main_menu;
+				}
+				
+				menupath_str.push_str(&cur_menu.label);
+				menupath_str.push_str(" > ");
+				
+				// if menupath string is too long, cut from begin til fit
+				let diff = menupath_str.len() as isize - term_w as isize;
+				
+				if diff > 0 {
+					menupath_str = menupath_str.split_off(diff as usize + 3);
+					menupath_str.insert_str(0, "...");
+				}
+			}
 		}
 		
 		// clear
@@ -315,7 +413,7 @@ fn main() {
 			lgr.log("Could not print motd");
 		}
 		
-		// display menu path				
+		// display menu path
 		let presult = write!(stdout, "{}{}",
 			termion::cursor::Goto(1, 2),
 			menupath_str);
@@ -394,7 +492,8 @@ fn main() {
 				},
 				
 				Key::Ctrl('s') => {
-					sysmenu = !sysmenu;
+					use_sysmenu = !use_sysmenu;
+					hover = 0;
 					break;
 				},
 				
@@ -437,11 +536,24 @@ fn main() {
 				},
 				
 				Key::Char('\n') => {
-					// if hovered btn has cmd, execute output mode
-					if cur_menu.buttons[hover].cmd.exe.len() > 0 {
+					// if hovered btn has lua, execute
+					if cur_menu.buttons[hover].lua.len() > 0 {
+						let execresult = lua.context(|lua_ctx| {
+							return lua_ctx.load(&cur_menu.buttons[hover].lua).exec();
+						});
+						
+						if !execresult.is_ok() {
+							lgr.log(format!(
+								"Lua \"\n{}\n\"\nfailed to execute",
+								cur_menu.buttons[hover].lua,).as_str());
+						}
+					}
+					
+					// if hovered btn has shell, execute output mode
+					if cur_menu.buttons[hover].shell.exe.len() > 0 {
 						let execresult = std::process::Command
-							::new(&cur_menu.buttons[hover].cmd.exe)
-							.args(&cur_menu.buttons[hover].cmd.args)
+							::new(&cur_menu.buttons[hover].shell.exe)
+							.args(&cur_menu.buttons[hover].shell.args)
 							.current_dir(env!("HOME"))
 							.output();
 

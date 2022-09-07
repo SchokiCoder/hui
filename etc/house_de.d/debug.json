@@ -9,7 +9,7 @@
 					{
 						"label": "Major fracture",
 						"buttons": [],
-						"cmd": {
+						"shell": {
 							"exe": "echo",
 							"args": ["major fracture detected"]
 						}
@@ -17,7 +17,7 @@
 					{
 						"label": "Minor lacerations",
 						"buttons": [],
-						"cmd": {
+						"shell": {
 							"exe": "echo",
 							"args": ["minor lacerations detected"]
 						}
@@ -25,13 +25,13 @@
 					{
 						"label": "Morphine",
 						"buttons": [],
-						"cmd": {
+						"shell": {
 							"exe": "echo",
 							"args": ["morphine administered"]
 						}
 					}
 				],
-				"cmd": {
+				"shell": {
 					"exe": "",
 					"args": []
 				}
@@ -39,7 +39,7 @@
 			{
 				"label": "Status",
 				"buttons": [],
-				"cmd": {
+				"shell": {
 					"exe": "smng",
 					"args": ["status"]
 				}

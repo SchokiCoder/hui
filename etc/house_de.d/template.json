@@ -6,7 +6,7 @@
 			{
 				"label": "Empty Button",
 				"buttons": [],
-				"cmd": {
+				"shell": {
 					"exe": "",
 					"args": []
 				}
