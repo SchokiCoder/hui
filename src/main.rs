@@ -127,6 +127,67 @@ fn login(lgr: &mut Logger) -> String {
 }
 */
 
+struct LuaGlobal<'a, T> {
+	lua: &'a rlua::Lua,
+	name: &'static str,
+	value: T,
+}
+
+replace madness with lua::context.set_named_registry_value
+or use sys_lua lib
+
+//impl<'a, T: 'static + std::marker::Sized + std::marker::Copy + std::marker::Send + rlua::ToLua<'a>> LuaGlobal<'a, T> {
+impl<'a, T: 'a + std::marker::Send + rlua::ToLua<'a>> LuaGlobal<'a, T> {
+	pub fn new(lua: &'a rlua::Lua, name: &'static str, value: T) -> Result<LuaGlobal<'a, T>, &'a str> {
+		let result = LuaGlobal {
+			lua: lua,
+			name: name,
+			value: value,
+		};
+		
+		let sresult = result.set(value);
+		
+		if !sresult.is_ok() {
+			return Err(sresult.err().unwrap());
+		}
+		
+		return Ok(result);
+	}
+	
+	pub fn set(&self, value: T) -> Result<(), &str> {
+		self.value = value;
+		
+		let ctxresult = self.lua.context(|lua_ctx| {
+			let globals = lua_ctx.globals();
+			
+			return globals.set(self.name, self.value);
+		});
+		
+		if !ctxresult.is_ok() {
+			return Err(format!("Lua global \"{}\" could not be set", self.name).as_str());
+		}
+		
+		return Ok(());
+	}
+	
+	/*pub fn get(&mut self, lua: &rlua::Lua) -> Result<(), &str> {
+		let getresult = lua.context(|lua_ctx| {
+			let globals = lua_ctx.globals();
+			
+			return globals.get::<_, T>(self.name);
+		});
+		
+		if !getresult.is_ok() {
+			return Err(format!("Lua global \"{}\" could not be read", self.name).as_str());
+		}
+		else {
+			self.value = getresult.unwrap();
+		}
+		
+		return Ok(());
+	}*/
+}
+
 fn main() {
 	// open logfile
 	let mut lgr = Logger::new();
@@ -157,7 +218,7 @@ fn main() {
 	#[cfg(not(debug_assertions))]
 	let usercfg_path = format!("/etc/{}.d/{}.json", env!("CARGO_PKG_NAME"), username);
 	
-		let sysmenu = Button::from(
+	let sysmenu = Button::from(
 		"Sysmenu",
 		ShellCmd::new(),
 		"",
@@ -290,7 +351,6 @@ fn main() {
 	}
 
 	// get term size, get stdout, hide cursor
-	let mut use_recoverymenu = false;
 	let mut use_sysmenu = false;
 	let mut hover: usize = 0;
 	let mut menu_path = Vec::<usize>::new();
@@ -326,6 +386,15 @@ fn main() {
 	// get lua goin, set globals
 	let lua = rlua::Lua::new();
 	
+	let mut app_active = LuaGlobal::new(&lua, "app_active", true);
+	let mut use_recoverymenu = LuaGlobal::new(&lua, "use_recoverymenu", false);
+	
+	
+	
+	
+	
+	
+	
 	let ctxresult = lua.context(|lua_ctx| {
 		let globals = lua_ctx.globals();
 		
@@ -338,6 +407,30 @@ fn main() {
 		lgr.log(MSG);
 		panic!("{}", MSG);
 	}
+	
+	let ctxresult = lua.context(|lua_ctx| {
+		let globals = lua_ctx.globals();
+		
+		return globals.set("app_active", app_active);
+	});
+	
+	if !ctxresult.is_ok() {
+		const MSG: &str = "Lua globals could not be set";
+		
+		lgr.log(MSG);
+		panic!("{}", MSG);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	// mainloop
 	'mainloop: loop {

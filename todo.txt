@@ -14,6 +14,9 @@
 	 commands
 	 eg "ls /" vs "nano myfile"
 	-ctl + h, to open help menu		.
+	-handle long list of buttons	.
+	 (so long that it would get
+	  out of screen)
 	-view logfile via recovery		.
 	 mode
 	-README.md						.
@@ -50,11 +53,13 @@
 	
 	-sysmenu						.
 		-quit housede					.
-		 (remove shortcut then?)
+		-logout							.
 		-suspend						.
 		-shutdown						.
 		-reboot							.
+
 	-handle multiline output		.
+	-about sysmenu cmd uses lua		.
 	-allow empty values in cfg		.
 	-v								. -> 0.2.0
 }
