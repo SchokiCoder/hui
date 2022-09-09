@@ -44,16 +44,11 @@
 			-lua							v_11-54
 			-recov switch					v_12-39
 	
-	-rewrite from mainloop			.
-	 approach to state approach
-	 (mainloop as small as possible)
-	
-	-is this still there:			.
-	 recovery menu:
+	-recovery menu:					v_12-09_09-09-2022
 	 opening submenus,
 	 moves hover to 0
 	
-	-sysmenu
+	-sysmenu						.
 		-quit housede					.
 		 (remove shortcut then?)
 		-suspend						.

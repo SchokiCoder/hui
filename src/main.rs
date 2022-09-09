@@ -358,47 +358,38 @@ fn main() {
 			use_recoverymenu = getresult.unwrap();
 		}
 		
-		// if sysmenu flag
+		// find current menu and build menupath string
+		let mut submenu: &Button;
+		
+		// if sysmenu mode, set as first
 		if use_sysmenu {
-			// prepare sysmenu
-			menupath_str = "HouseDE Menu".to_string();
-			cur_menu = &sysmenu;
+			submenu = &sysmenu;
 		}
-		else {
-			// if recovery menu flag
-			if use_recoverymenu || force_recovery {
-				// prepare recov menu
-				menupath_str = "Recovery".to_string();
-				cur_menu = &recoverymenu;
-			}
-			else {
-				// find current menu and build menupath string
-				if menu_path.len() > 0 {
-					let mut submenu = &usercfg.main_menu;
-					
-					for i in 0..menu_path.len() {
-						menupath_str.push_str(&submenu.label);
-						menupath_str.push_str(" > ");
-						submenu = &submenu.buttons[menu_path[i]];
-					}
-					
-					cur_menu = submenu;
-				}
-				else {
-					cur_menu = &usercfg.main_menu;
-				}
-				
-				menupath_str.push_str(&cur_menu.label);
-				menupath_str.push_str(" > ");
-				
-				// if menupath string is too long, cut from begin til fit
-				let diff = menupath_str.len() as isize - term_w as isize;
-				
-				if diff > 0 {
-					menupath_str = menupath_str.split_off(diff as usize + 3);
-					menupath_str.insert_str(0, "...");
-				}
-			}
+		// else if recov mode, set as first
+		else if use_recoverymenu || force_recovery {
+			submenu = &recoverymenu;
+		}
+		// else set main as first
+		else {				
+			submenu = &usercfg.main_menu;
+		}
+		
+		for i in 0..menu_path.len() {
+			menupath_str.push_str(&submenu.label);
+			menupath_str.push_str(" > ");
+			submenu = &submenu.buttons[menu_path[i]];
+		}
+		
+		cur_menu = submenu;
+		menupath_str.push_str(&cur_menu.label);
+		menupath_str.push_str(" > ");
+		
+		// if menupath string is too long, cut from begin til fit
+		let diff = menupath_str.len() as isize - term_w as isize;
+		
+		if diff > 0 {
+			menupath_str = menupath_str.split_off(diff as usize + 3);
+			menupath_str.insert_str(0, "...");
 		}
 		
 		// clear
