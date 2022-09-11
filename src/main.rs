@@ -127,67 +127,6 @@ fn login(lgr: &mut Logger) -> String {
 }
 */
 
-struct LuaGlobal<'a, T> {
-	lua: &'a rlua::Lua,
-	name: &'static str,
-	value: T,
-}
-
-replace madness with lua::context.set_named_registry_value
-or use sys_lua lib
-
-//impl<'a, T: 'static + std::marker::Sized + std::marker::Copy + std::marker::Send + rlua::ToLua<'a>> LuaGlobal<'a, T> {
-impl<'a, T: 'a + std::marker::Send + rlua::ToLua<'a>> LuaGlobal<'a, T> {
-	pub fn new(lua: &'a rlua::Lua, name: &'static str, value: T) -> Result<LuaGlobal<'a, T>, &'a str> {
-		let result = LuaGlobal {
-			lua: lua,
-			name: name,
-			value: value,
-		};
-		
-		let sresult = result.set(value);
-		
-		if !sresult.is_ok() {
-			return Err(sresult.err().unwrap());
-		}
-		
-		return Ok(result);
-	}
-	
-	pub fn set(&self, value: T) -> Result<(), &str> {
-		self.value = value;
-		
-		let ctxresult = self.lua.context(|lua_ctx| {
-			let globals = lua_ctx.globals();
-			
-			return globals.set(self.name, self.value);
-		});
-		
-		if !ctxresult.is_ok() {
-			return Err(format!("Lua global \"{}\" could not be set", self.name).as_str());
-		}
-		
-		return Ok(());
-	}
-	
-	/*pub fn get(&mut self, lua: &rlua::Lua) -> Result<(), &str> {
-		let getresult = lua.context(|lua_ctx| {
-			let globals = lua_ctx.globals();
-			
-			return globals.get::<_, T>(self.name);
-		});
-		
-		if !getresult.is_ok() {
-			return Err(format!("Lua global \"{}\" could not be read", self.name).as_str());
-		}
-		else {
-			self.value = getresult.unwrap();
-		}
-		
-		return Ok(());
-	}*/
-}
-
 fn main() {
 	// open logfile
 	let mut lgr = Logger::new();
@@ -242,6 +181,12 @@ fn main() {
 				"Toggle Recovery Mode",
 				ShellCmd::from("", ""),
 				"if use_recoverymenu then use_recoverymenu = false else use_recoverymenu = true end",
+				vec![]),
+				
+			Button::from(
+				"Quit HouseDE",
+				ShellCmd::from("", ""),
+				"app_active = false",
 				vec![]),
 
 			Button::from(
@@ -384,53 +329,31 @@ fn main() {
 	}
 	
 	// get lua goin, set globals
+	let mut lua_globals = std::collections::HashMap::new();
+	lua_globals.insert("use_recoverymenu", false);
+	lua_globals.insert("app_active", true);
 	let lua = rlua::Lua::new();
 	
-	let mut app_active = LuaGlobal::new(&lua, "app_active", true);
-	let mut use_recoverymenu = LuaGlobal::new(&lua, "use_recoverymenu", false);
-	
-	
-	
-	
-	
-	
-	
 	let ctxresult = lua.context(|lua_ctx| {
 		let globals = lua_ctx.globals();
 		
-		return globals.set("use_recoverymenu", use_recoverymenu);
+		for (key, value) in lua_globals.iter() {
+			if !globals.set(*key, *value).is_ok() {
+				return Err(key);
+			}
+		}
+		
+		return Ok(());
 	});
 	
 	if !ctxresult.is_ok() {
-		const MSG: &str = "Lua globals could not be set";
+		let msg = format!(
+			"Lua global \"{}\" could not be set",
+			ctxresult.err().unwrap());
 		
-		lgr.log(MSG);
-		panic!("{}", MSG);
+		lgr.log(msg.as_str());
+		panic!("{}", msg);
 	}
-	
-	let ctxresult = lua.context(|lua_ctx| {
-		let globals = lua_ctx.globals();
-		
-		return globals.set("app_active", app_active);
-	});
-	
-	if !ctxresult.is_ok() {
-		const MSG: &str = "Lua globals could not be set";
-		
-		lgr.log(MSG);
-		panic!("{}", MSG);
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	// mainloop
 	'mainloop: loop {
@@ -438,31 +361,40 @@ fn main() {
 		let cur_menu: &Button;
 		
 		// update variables exposed to lua globals
-		let getresult = lua.context(|lua_ctx| {
+		lua.context(|lua_ctx| {
 			let globals = lua_ctx.globals();
 			
-			return globals.get::<_, bool>("use_recoverymenu");
+			for (key, value) in lua_globals.iter_mut() {
+				*value = globals.get::<_, bool>(*key).is_ok();
+			}
 		});
 		
-		if !getresult.is_ok() {
-			lgr.log("Lua global \"use_recoverymenu\" could not be read");
+		// lua globals to vars
+		let app_active: bool = lua_globals["app_active"];
+		let use_recoverymenu: bool;
+		
+		if force_recovery == true {
+			use_recoverymenu = true;
 		}
 		else {
-			use_recoverymenu = getresult.unwrap();
+			use_recoverymenu = lua_globals["use_recoverymenu"];
+		}
+		
+		// if not app_active, quit
+		if app_active == false {
+			break 'mainloop;
 		}
 		
 		// find current menu and build menupath string
 		let mut submenu: &Button;
 		
-		// if sysmenu mode, set as first
+		// set as first menu: sysmenu, recovery menu or main menu
 		if use_sysmenu {
 			submenu = &sysmenu;
 		}
-		// else if recov mode, set as first
-		else if use_recoverymenu || force_recovery {
+		else if use_recoverymenu {
 			submenu = &recoverymenu;
 		}
-		// else set main as first
 		else {				
 			submenu = &usercfg.main_menu;
 		}
@@ -488,10 +420,19 @@ fn main() {
 		// clear
 		print!("{}", termion::clear::All);
 		
-		// display motd
+		// if force revocery, display recovery motd, else normal motd
+		let cur_motd: &str;
+		
+		if force_recovery {
+			cur_motd = "Forced recovery mode, fix your config!";
+		}
+		else {
+			cur_motd = &usercfg.motd;
+		}
+		
 		let presult = write!(stdout, "{}{}",
 			termion::cursor::Goto(1, 1),
-			usercfg.motd);
+			cur_motd);
 		
 		if !presult.is_ok() {
 			lgr.log("Could not print motd");
