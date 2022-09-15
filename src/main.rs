@@ -188,11 +188,17 @@ fn main() {
 				ShellCmd::from("", ""),
 				"app_active = false",
 				vec![]),
+				
+			/*Button::from(
+				"Logout",
+				ShellCmd::from("", ""),
+				"logout = true",
+				vec![]),
 
 			Button::from(
 				"Suspend",
 				ShellCmd::from("", ""),
-				"",
+				"suspend = true",
 				vec![]),
 
 			Button::from(
@@ -205,7 +211,7 @@ fn main() {
 				"Reboot",
 				ShellCmd::from("", ""),
 				"",
-				vec![]),
+				vec![]),*/
 		]
 	);
 	
@@ -332,6 +338,8 @@ fn main() {
 	let mut lua_globals = std::collections::HashMap::new();
 	lua_globals.insert("use_recoverymenu", false);
 	lua_globals.insert("app_active", true);
+	/*lua_globals.insert("logout", false);
+	lua_globals.insert("suspend", false);*/
 	let lua = rlua::Lua::new();
 	
 	let ctxresult = lua.context(|lua_ctx| {
@@ -356,33 +364,18 @@ fn main() {
 	}
 	
 	// mainloop
+	let mut app_active: bool;
+	let mut use_recoverymenu: bool = false;
+	/*let mut logout: bool;
+	let mut suspend: bool;*/
+			
 	'mainloop: loop {
 		let mut menupath_str = String::new();
 		let cur_menu: &Button;
 		
-		// update variables exposed to lua globals
-		lua.context(|lua_ctx| {
-			let globals = lua_ctx.globals();
-			
-			for (key, value) in lua_globals.iter_mut() {
-				*value = globals.get::<_, bool>(*key).is_ok();
-			}
-		});
-		
-		// lua globals to vars
-		let app_active: bool = lua_globals["app_active"];
-		let use_recoverymenu: bool;
-		
+		// force recovery
 		if force_recovery == true {
-			use_recoverymenu = true;
-		}
-		else {
-			use_recoverymenu = lua_globals["use_recoverymenu"];
-		}
-		
-		// if not app_active, quit
-		if app_active == false {
-			break 'mainloop;
+				use_recoverymenu = true;
 		}
 		
 		// find current menu and build menupath string
@@ -408,6 +401,35 @@ fn main() {
 		cur_menu = submenu;
 		menupath_str.push_str(&cur_menu.label);
 		menupath_str.push_str(" > ");
+		
+		// trim msg
+		msg = msg.trim().to_string();
+		
+		// if msg
+		let msg_lines: Vec<&str> = msg.lines().collect();
+		let suppress_menu: bool;
+		
+		if msg_lines.len() > 1 {
+			// msg is not single line, suppress menu, append to menupath
+			suppress_menu = true;
+			menupath_str.push_str("Output:");
+		}
+		// if msg is single line, print directly		
+		else if msg_lines.len() == 1 {
+			suppress_menu = false;
+			
+			let presult = write!(stdout, "{}{}",
+				termion::cursor::Goto(1, term_h),
+				msg,
+				);
+			
+			if !presult.is_ok() {
+				lgr.log("Could not print message");
+			}
+		}
+		else {
+			suppress_menu = false;
+		}
 		
 		// if menupath string is too long, cut from begin til fit
 		let diff = menupath_str.len() as isize - term_w as isize;
@@ -447,55 +469,59 @@ fn main() {
 			lgr.log("Could not print menu path");
 		}
 		
-		// display menu
-		for i in 0..cur_menu.buttons.len() {
-			// if button is submenu, add brackets
-			let mut br: [&str; 2] = [
-				"",
-				""
-			];
-			
-			if cur_menu.buttons[i].buttons.len() > 0 {
-				br[0] = "[";
-				br[1] = "]";
-			}
-			
-			// if cursor on cur button, change colors
-			let mut fg = color::Fg(color::Rgb(255, 255, 255));
-			let mut bg = color::Bg(color::Rgb(0, 0, 0));
-			
-			if hover == i {
-				fg = color::Fg(color::Rgb(0, 0, 0));
-				bg = color::Bg(color::Rgb(255, 255, 255));
-			}
-			
-			// print
-			let presult = write!(stdout, "{}{}{}{}{}{}{}{}",
-				termion::cursor::Goto(1, (i + 4) as u16),
-				fg,
-				bg,
-				br[0], cur_menu.buttons[i].label, br[1],
-				color::Fg(color::Reset),
-				color::Bg(color::Reset),
-			    );
-			
-			if !presult.is_ok() {
-				lgr.log("Could not print button");
+		// if menu suppressed, display msg, else menu
+		if suppress_menu {
+			for i in 0..msg_lines.len() {
+				// print
+				let presult = write!(stdout, "{}{}{}{}{}{}",
+					termion::cursor::Goto(1, (i + 4) as u16),
+					color::Fg(color::Rgb(255, 255, 255)),
+					color::Bg(color::Rgb(0, 0, 0)),
+					msg_lines[i],
+					color::Fg(color::Reset),
+					color::Bg(color::Reset),
+					);
+				
+				if !presult.is_ok() {
+					lgr.log("Could not print button");
+				}
 			}
 		}
-		
-		// trim msg
-		msg = msg.trim().to_string();
-		
-		// if msg, display msg
-		if msg.len() > 0 {
-			let presult = write!(stdout, "{}{}",
-				termion::cursor::Goto(1, term_h),
-				msg,
-				);
-			
-			if !presult.is_ok() {
-				lgr.log("Could not print message");
+		else {
+			for i in 0..cur_menu.buttons.len() {
+				// if button is submenu, add brackets
+				let mut br: [&str; 2] = [
+					"",
+					""
+				];
+				
+				if cur_menu.buttons[i].buttons.len() > 0 {
+					br[0] = "[";
+					br[1] = "]";
+				}
+				
+				// if cursor on cur button, change colors
+				let mut fg = color::Fg(color::Rgb(255, 255, 255));
+				let mut bg = color::Bg(color::Rgb(0, 0, 0));
+				
+				if hover == i {
+					fg = color::Fg(color::Rgb(0, 0, 0));
+					bg = color::Bg(color::Rgb(255, 255, 255));
+				}
+				
+				// print
+				let presult = write!(stdout, "{}{}{}{}{}{}{}{}",
+					termion::cursor::Goto(1, (i + 4) as u16),
+					fg,
+					bg,
+					br[0], cur_menu.buttons[i].label, br[1],
+					color::Fg(color::Reset),
+					color::Bg(color::Reset),
+					);
+				
+				if !presult.is_ok() {
+					lgr.log("Could not print button");
+				}
 			}
 		}
 		
@@ -503,117 +529,180 @@ fn main() {
 			lgr.log("Could not flush stdout");
 		}
 
-		// input
-		let stdin = std::io::stdin();
-		
-		for key in stdin.keys() {
-			if !key.is_ok() {
-				continue;
-			}
-		
-			match key.unwrap() {
-				Key::Ctrl('q') => {
-					break 'mainloop;
-				},
+		'input: loop {
+			// update variables exposed to lua globals
+			let ctxresult = lua.context(|lua_ctx| {
+				let globals = lua_ctx.globals();
 				
-				Key::Ctrl('s') => {
-					use_sysmenu = !use_sysmenu;
-					hover = 0;
-					break;
-				},
-				
-				Key::Up => {
-					// if possible, go up and clear msg
-					if hover > 0 {
-						hover -= 1;
-						msg.clear();
-						break;
-					}
-				},
-				
-				Key::Down => {
-					// if possible, go down and clear msg
-					if hover < cur_menu.buttons.len() - 1 {
-						hover += 1;
-						msg.clear();
-						break;
-					}
-				},
-				
-				Key::Right => {
-					// if hovered btn has menu, change menu and clear msg
-					if cur_menu.buttons[hover].buttons.len() > 0 {
-						menu_path.push(hover);
-						hover = 0;
-						msg.clear();
-						break;
-					}
-				},
-				
-				Key::Left => {
-					// if currently in submenu, go back and clear msg
-					if menu_path.len() > 0 {
-						menu_path.pop();
-						hover = 0;
-						msg.clear();
-						break;
-					}
-				},
-				
-				Key::Char('\n') => {
-					// if hovered btn has lua, execute
-					if cur_menu.buttons[hover].lua.len() > 0 {
-						let execresult = lua.context(|lua_ctx| {
-							return lua_ctx.load(&cur_menu.buttons[hover].lua).exec();
-						});
-						
-						if !execresult.is_ok() {
-							lgr.log(format!(
-								"Lua \"\n{}\n\"\nfailed to execute",
-								cur_menu.buttons[hover].lua,).as_str());
-						}
-					}
+				for (key, value) in lua_globals.iter_mut() {
+					let gresult = globals.get::<_, bool>(*key);
 					
-					// if hovered btn has shell, execute output mode
-					if cur_menu.buttons[hover].shell.exe.len() > 0 {
-						let execresult = std::process::Command
-							::new(&cur_menu.buttons[hover].shell.exe)
-							.args(&cur_menu.buttons[hover].shell.args)
-							.current_dir(env!("HOME"))
-							.output();
-
-						if !execresult.is_ok() {
-							lgr.log("Could not execute command");
-							
-							// msg = exec error
-							msg = "ERR: Couldn't execute command.".to_string();
-						}
-						else {
-							// get output
-							let out = execresult.unwrap();
-							
-							// if exit status isn't ok, use stderr as msg, else stdout
+					if gresult.is_ok() {
+						*value = gresult.unwrap();
+					}
+					else {
+						return Err(key);
+					}
+				}
+				
+				return Ok(());
+			});
+			
+			if !ctxresult.is_ok() {
+				let msg = format!(
+					"Lua global \"{}\" could not be get",
+					ctxresult.err().unwrap());
+				
+				lgr.log(msg.as_str());
+				panic!("{}", msg);
+			}
+			
+			// update each lua global's variable
+			app_active = lua_globals["app_active"];
+			use_recoverymenu = lua_globals["use_recoverymenu"];
+			/*logout = lua_globals["logout"];
+			suspend = lua_globals["suspend"];*/
+			
+			// if not app_active, quit
+			if app_active == false {
+				break 'mainloop;
+			}
+			/*
+			// if logout, shell exit, quit
+			if logout {
+				if !std::process::Command::new("exit").spawn().is_ok() {
+					lgr.log("Logout could not exit");
+				}
+				break 'mainloop;
+			}
+			
+			// if suspend, shell suspend
+			if suspend {
+				if !std::process::Command::new("systemctl suspend").spawn().is_ok() {
+					lgr.log("Suspend did not work");
+				}
+			}
+			*/
+			// input
+			let stdin = std::io::stdin();
+			
+			for key in stdin.keys() {
+				// handle keys
+				if !key.is_ok() {
+					continue;
+				}
+			
+				match key.unwrap() {
+					Key::Ctrl('q') => {
+						break 'mainloop;
+					},
+					
+					Key::Ctrl('s') => {
+						use_sysmenu = !use_sysmenu;
+						hover = 0;
+						break 'input;
+					},
+					
+					Key::Up => {
+						// if possible, go up and clear msg
+						if hover > 0 {
+							hover -= 1;
 							msg.clear();
+							break 'input;
+						}
+					},
+					
+					Key::Down => {
+						// if possible, go down and clear msg
+						if hover < cur_menu.buttons.len() - 1 {
+							hover += 1;
+							msg.clear();
+							break 'input;
+						}
+					},
+					
+					Key::Right => {
+						// if hovered btn has menu, change menu and clear msg
+						if cur_menu.buttons[hover].buttons.len() > 0 {
+							menu_path.push(hover);
+							hover = 0;
+							msg.clear();
+							break 'input;
+						}
+					},
+					
+					Key::Left => {
+						// if currently in submenu, go back and clear msg
+						if menu_path.len() > 0 {
+							menu_path.pop();
+							hover = 0;
+							msg.clear();
+							break 'input;
+						}
+					},
+					
+					Key::Char('\n') => {
+						let mut break_input: bool = false;
+						// if hovered btn has lua, execute
+						if cur_menu.buttons[hover].lua.len() > 0 {
+							let execresult = lua.context(|lua_ctx| {
+								return lua_ctx.load(&cur_menu.buttons[hover].lua).exec();
+							});
 							
-							if !out.status.success() {
-								msg.push_str("ERR: ");
+							if !execresult.is_ok() {
+								lgr.log(format!(
+									"Lua \"\n{}\n\"\nfailed to execute",
+									cur_menu.buttons[hover].lua,).as_str());
+							}
+							
+							break_input = true;
+						}
+						
+						// if hovered btn has shell, execute output mode
+						if cur_menu.buttons[hover].shell.exe.len() > 0 {
+							let execresult = std::process::Command
+								::new(&cur_menu.buttons[hover].shell.exe)
+								.args(&cur_menu.buttons[hover].shell.args)
+								.current_dir(env!("HOME"))
+								.output();
+
+							if !execresult.is_ok() {
+								lgr.log("Could not execute command");
 								
-								for c in out.stderr {
-									msg.push(c as char);
-								}
+								// msg = exec error
+								msg = "ERR: Couldn't execute command.".to_string();
 							}
 							else {
-								for c in out.stdout {
-									msg.push(c as char);
+								// get output
+								let out = execresult.unwrap();
+								
+								// if exit status isn't ok, use stderr as msg, else stdout
+								msg.clear();
+								
+								if !out.status.success() {
+									msg.push_str("ERR: ");
+									
+									for c in out.stderr {
+										msg.push(c as char);
+									}
+								}
+								else {
+									for c in out.stdout {
+										msg.push(c as char);
+									}
 								}
 							}
+							
+							break_input = true;
 						}
 						
-						break;
-					}
-				},
-				
-				_ => (),
+						if break_input == true {
+							break 'input;
+						}
+					},
+					
+					_ => (),
+				}
 			}
 		}
 	}

@@ -1,4 +1,12 @@
 {
+	-sysmenu						.
+		-logout							.
+		-suspend						.
+		-shutdown						.
+		-reboot							.
+}
+
+{
 	-super + l						.
 	 "loginctl lock-session ID"
 	-super + NUMBER					.
@@ -51,19 +59,21 @@
 	 opening submenus,
 	 moves hover to 0
 	
-	-sysmenu						.
+	-sysmenu						v_10-47_15-09-2022
 		-quit housede					v_11-06_11-09-2022
 		
-		-this /\ caused a lua rework,	.
+		-this /\ caused a lua rework,	v_09-34_15-09-2022
 	 	 lua vals do not get updated
+	 	 (they did but with an is_ok()
+	 	  result... clever girl)
 		
-		-logout							.
-		-suspend						.
-		-shutdown						.
-		-reboot							.
+		-improve quit					v_09-57
+		 (make it stop mainloop)
+		-attempted others				x_10-47
+		 delayed
 
 	-handle multiline output		.
-	-about sysmenu cmd uses lua		.
+	-about sysmenu cmd: use lua		.
 	-allow empty values in cfg		.
 	-v								. -> 0.2.0
 }
