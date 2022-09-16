@@ -15,6 +15,11 @@
 }
 
 {
+	-when usercfg not in etc,		.
+	 look in home
+	 (replaces debug cfg part)
+	-message lines, split when		.
+	 too long
 	-advance cmd in userconfig		.
 	 to handle commands, that
 	 start a process with
@@ -72,7 +77,13 @@
 		-attempted others				x_10-47
 		 delayed
 
-	-handle multiline output		.
+	-fix intoverflow on arrow down	v_11-58_16-09-2022
+	 (when menu is empty)
+	-handle multiline output		v_12-29
+		-print							v_12-05
+		-scroll							v_12-29
+	-when in submenu,				.
+	 sysmenu will be empty
 	-about sysmenu cmd: use lua		.
 	-allow empty values in cfg		.
 	-v								. -> 0.2.0

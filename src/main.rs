@@ -304,6 +304,7 @@ fn main() {
 	// get term size, get stdout, hide cursor
 	let mut use_sysmenu = false;
 	let mut hover: usize = 0;
+	let mut msghover: usize = 0;
 	let mut menu_path = Vec::<usize>::new();
 	let mut msg = String::new();
 	let term_size = termion::terminal_size();
@@ -404,33 +405,21 @@ fn main() {
 		
 		// trim msg
 		msg = msg.trim().to_string();
-		
+
 		// if msg
-		let msg_lines: Vec<&str> = msg.lines().collect();
+		let msgclone = msg.clone();
+		let msg_lines: Vec<&str> = msgclone.lines().collect();
 		let suppress_menu: bool;
-		
+
 		if msg_lines.len() > 1 {
 			// msg is not single line, suppress menu, append to menupath
 			suppress_menu = true;
 			menupath_str.push_str("Output:");
 		}
-		// if msg is single line, print directly		
-		else if msg_lines.len() == 1 {
-			suppress_menu = false;
-			
-			let presult = write!(stdout, "{}{}",
-				termion::cursor::Goto(1, term_h),
-				msg,
-				);
-			
-			if !presult.is_ok() {
-				lgr.log("Could not print message");
-			}
-		}
 		else {
 			suppress_menu = false;
 		}
-		
+
 		// if menupath string is too long, cut from begin til fit
 		let diff = menupath_str.len() as isize - term_w as isize;
 		
@@ -469,15 +458,19 @@ fn main() {
 			lgr.log("Could not print menu path");
 		}
 		
-		// if menu suppressed, display msg, else menu
-		if suppress_menu {
-			for i in 0..msg_lines.len() {
-				// print
+		// if menu suppressed
+		if suppress_menu == true {
+			for i in 0..(msg_lines.len() - msghover) {
+				// if terminal height reached, stop
+				if i + 4 >= (term_h - 2) as usize {
+				}
+				
+				// print multi line message
 				let presult = write!(stdout, "{}{}{}{}{}{}",
 					termion::cursor::Goto(1, (i + 4) as u16),
 					color::Fg(color::Rgb(255, 255, 255)),
 					color::Bg(color::Rgb(0, 0, 0)),
-					msg_lines[i],
+					msg_lines[msghover + i],
 					color::Fg(color::Reset),
 					color::Bg(color::Reset),
 					);
@@ -488,6 +481,7 @@ fn main() {
 			}
 		}
 		else {
+			// print menu
 			for i in 0..cur_menu.buttons.len() {
 				// if button is submenu, add brackets
 				let mut br: [&str; 2] = [
@@ -522,6 +516,16 @@ fn main() {
 				if !presult.is_ok() {
 					lgr.log("Could not print button");
 				}
+			}
+			
+			// print single line message
+			let presult = write!(stdout, "{}{}",
+				termion::cursor::Goto(1, term_h),
+				msg,
+				);
+			
+			if !presult.is_ok() {
+				lgr.log("Could not print message");
 			}
 		}
 		
@@ -604,40 +608,71 @@ fn main() {
 					},
 					
 					Key::Up => {
-						// if possible, go up and clear msg
-						if hover > 0 {
-							hover -= 1;
-							msg.clear();
-							break 'input;
+						// if menu suppressed
+						if suppress_menu == true {
+							// if possible, scroll up
+							if msghover > 0 {
+								msghover -= 1;
+								break 'input;
+							}
+						}
+						else {
+							// if possible, go up and clear msg
+							if hover > 0 {
+								hover -= 1;
+								msg.clear();
+								break 'input;
+							}
 						}
 					},
 					
 					Key::Down => {
-						// if possible, go down and clear msg
-						if hover < cur_menu.buttons.len() - 1 {
-							hover += 1;
-							msg.clear();
-							break 'input;
+						// if menu suppressed
+						if suppress_menu == true {
+							// if possible, scroll down
+							if msghover + 1 < msg_lines.len() {
+								msghover += 1;
+								break 'input;
+							}
+						}
+						else {
+							// if possible, go down and clear msg
+							if hover + 1 < cur_menu.buttons.len() {
+								hover += 1;
+								msg.clear();
+								break 'input;
+							}
 						}
 					},
 					
 					Key::Right => {
-						// if hovered btn has menu, change menu and clear msg
-						if cur_menu.buttons[hover].buttons.len() > 0 {
-							menu_path.push(hover);
-							hover = 0;
-							msg.clear();
-							break 'input;
+						// if menu suppressed, do nothin
+						if suppress_menu == true {}
+						else {
+							// if hovered btn has menu, change menu and clear msg
+							if cur_menu.buttons[hover].buttons.len() > 0 {
+								menu_path.push(hover);
+								hover = 0;
+								msg.clear();
+								break 'input;
+							}
 						}
 					},
 					
 					Key::Left => {
-						// if currently in submenu, go back and clear msg
-						if menu_path.len() > 0 {
-							menu_path.pop();
-							hover = 0;
+						// if menu suppressed, clear message
+						if suppress_menu == true {
 							msg.clear();
 							break 'input;
+						}
+						else {
+							// if currently in submenu, go back and clear msg
+							if menu_path.len() > 0 {
+								menu_path.pop();
+								hover = 0;
+								msg.clear();
+								break 'input;
+							}
 						}
 					},
 					
