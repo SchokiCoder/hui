@@ -82,6 +82,13 @@
 	-handle multiline output		v_12-29
 		-print							v_12-05
 		-scroll							v_12-29
+	
+	-rearrange mainloop draw		.
+	 into function
+	 (use input-loop as mainloop)
+	-move Button and commands into	.
+	 seperate module
+	
 	-when in submenu,				.
 	 sysmenu will be empty
 	-about sysmenu cmd: use lua		.
