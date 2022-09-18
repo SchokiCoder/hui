@@ -19,21 +19,29 @@
 use crate::logger::Logger;
 use crate::config::{UserConfig, Button, ShellCmd};
 use termion::color;
+use termion::raw::IntoRawMode;
+use termion::event::Key;
+use std::io::Write;
 
-enum HouseDeMode {
+#[derive(PartialEq)]
+pub enum HouseDeMode {
 	Normal,
 	Recovery,
 	Sysmenu,
 	Output,
 }
 
-struct HouseDe {
+pub struct HouseDe {
 	lgr: Logger,
-	stdout: termion::raw::RawTerminal,
-	term_w: usize,
-	term_h: usize,
+	stdout: termion::raw::RawTerminal<std::io::Stdout>,
+	lua: rlua::Lua,
+	lua_globals: std::collections::HashMap<&'static str, bool>,
+	term_w: u16,
+	term_h: u16,
 	
-	pub mode: HouseDeMode,
+	mode: HouseDeMode,
+	pub active: bool,
+	pub need_draw: bool,
 	hover: usize,
 	menu_nav: Vec<usize>,
 	
@@ -44,14 +52,14 @@ struct HouseDe {
 
 	header: String,
 	menu_path: String,
-	content: String,
+	content: Vec<String>,
 	footer: String,
 }
 
 impl HouseDe {
-	pub fn new(username: &str) -> HouseDe {
+	pub fn new(username: String) -> HouseDe {
 		// get logger
-		let lgr: Logger::new();
+		let mut lgr = Logger::new();
 
 		// get stdout
 		let stdout = std::io::stdout().into_raw_mode();
@@ -64,6 +72,35 @@ impl HouseDe {
 		}
 		
 		let stdout = stdout.unwrap();
+		
+		// get lua goin, set globals
+		let mut lua_globals = std::collections::HashMap::new();
+		lua_globals.insert("use_recoverymenu", false);
+		lua_globals.insert("app_active", true);
+		/*lua_globals.insert("logout", false);
+		lua_globals.insert("suspend", false);*/
+		let lua = rlua::Lua::new();
+		
+		let ctxresult = lua.context(|lua_ctx| {
+			let globals = lua_ctx.globals();
+			
+			for (key, value) in lua_globals.iter() {
+				if !globals.set(*key, *value).is_ok() {
+					return Err(key);
+				}
+			}
+			
+			return Ok(());
+		});
+		
+		if !ctxresult.is_ok() {
+			let msg = format!(
+				"Lua global \"{}\" could not be set",
+				ctxresult.err().unwrap());
+			
+			lgr.log(msg.as_str());
+			panic!("{}", msg);
+		}
 		
 		// get term size
 		let term_size = termion::terminal_size();
@@ -79,7 +116,7 @@ impl HouseDe {
 	
 		// get usrcfg path (debug only)
 		#[cfg(debug_assertions)]
-		let usercfg_path = format!("etc/house_de.d/{}.json", username);
+		let usercfg_path = format!("etc/self.d/{}.json", username);
 		
 		// get usrcfg path (release only)
 		#[cfg(not(debug_assertions))]
@@ -91,7 +128,7 @@ impl HouseDe {
 		let usercfg: UserConfig;
 		
 		if !usrcfg_result.is_ok() {
-			mode = HouseDeMode::recovery;
+			mode = HouseDeMode::Recovery;
 			
 			let usrcfg_err = usrcfg_result.err().unwrap();
 			lgr.log(usrcfg_err);
@@ -102,17 +139,22 @@ impl HouseDe {
 			};
 		}
 		else {
-			mode = HouseDeMode::normal;
+			mode = HouseDeMode::Normal;
 			usercfg = usrcfg_result.unwrap();
 		}
 		
 		// return
 		return HouseDe {
 			lgr: lgr,
+			stdout: stdout,
+			lua: lua,
+			lua_globals: lua_globals,
 			term_w: term_w,
 			term_h: term_h,
 			
 			mode: mode,
+			active: true,
+			need_draw: true,
 			hover: 0,
 			menu_nav: Vec::<usize>::new(),
 			
@@ -219,7 +261,7 @@ impl HouseDe {
 		};
 	}
 	
-	pub fn hide_cursor(&self) {
+	pub fn hide_cursor(&mut self) {
 		let presult = write!(self.stdout, "{}", termion::cursor::Hide);
 	
 		if !presult.is_ok() {
@@ -227,7 +269,7 @@ impl HouseDe {
 		}
 	}
 	
-	pub fn show_cursor(&self) {
+	pub fn show_cursor(&mut self) {
 		let presult = write!(self.stdout, "{}", termion::cursor::Show);
 		
 		if !presult.is_ok() {
@@ -235,45 +277,43 @@ impl HouseDe {
 		}
 	}
 	
-	pub fn log(&self, msg: &str) {
+	pub fn log(&mut self, msg: &str) {
 		self.lgr.log(msg);
 	}
 	
-	pub fn update_text(&mut self, message: &str) {
+	pub fn gen_menu_path(&mut self) {
 		self.menu_path.clear();
 	
-		// if output mode, set menu path string
-		if self.mode == HouseDeMode::Output {
-			self.menu_path.push_str("Output");
+		// find current menu and build menupath string
+		let mut sub_menu: &Button;
+		
+		match self.mode {
+			HouseDeMode::Normal => {
+				sub_menu = &self.user_menu;
+			},
+			
+			HouseDeMode::Recovery => {
+				sub_menu = &self.recovery_menu;
+			},
+			
+			HouseDeMode::Sysmenu => {
+				sub_menu = &self.sys_menu;
+			},
+			
+			HouseDeMode::Output => {
+				self.menu_path.push_str("Output");
+				return;
+			},
 		}
-		else
-		{
-			// find current menu and build menupath string
-			let mut sub_menu: &Button;
-			
-			match self.mode {
-				HouseDeMode::Normal => {
-					sub_menu = &self.usermenu;
-				},
-				
-				HouseDeMode::Recovery => {
-					sub_menu = &self.recoverymenu;
-				},
-				
-				HouseDeMode::Sysmenu => {
-					sub_menu = &self.sysmenu;
-				},
-			}
-			
-			for i in 0..self.menu_nav.len() {
-				self.menu_path.push_str(&sub_menu.label);
-				self.menu_path.push_str(" > ");
-				sub_menu = &sub_menu.buttons[self.menu_nav[i]];
-			}
-			
+		
+		for i in 0..self.menu_nav.len() {
 			self.menu_path.push_str(&sub_menu.label);
 			self.menu_path.push_str(" > ");
+			sub_menu = &sub_menu.buttons[self.menu_nav[i]];
 		}
+		
+		self.menu_path.push_str(&sub_menu.label);
+		self.menu_path.push_str(" > ");
 		
 		// if menupath string is too long, cut from begin til fit
 		let diff = self.menu_path.len() as isize - self.term_w as isize;
@@ -282,18 +322,9 @@ impl HouseDe {
 			self.menu_path = self.menu_path.split_off(diff as usize + 3);
 			self.menu_path.insert_str(0, "...");
 		}
-		
-		// prep msg
-		let msg = message.trim().to_string();
-		let msg_lines: Vec<&str> = msg.lines().collect();
-
-		// if multi line msg, set output mode
-		if msg_lines.len() > 1 {
-			self.mode = HouseDeMode::Output;
-		}
 	}
 
-	pub fn draw(&self) {
+	pub fn draw(&mut self) {
 		// clear
 		print!("{}", termion::clear::All);
 		
@@ -309,7 +340,7 @@ impl HouseDe {
 		// menu path
 		let presult = write!(self.stdout, "{}{}",
 			termion::cursor::Goto(1, 2),
-			self.menupath);
+			self.menu_path);
 		
 		if !presult.is_ok() {
 			self.lgr.log("Could not print menu path");
@@ -334,8 +365,8 @@ impl HouseDe {
 			}
 		}
 		else {
-			let mut fg = color::Fg(color::Rgb(255, 255, 255));
-			let mut bg = color::Bg(color::Rgb(0, 0, 0));
+			let mut fg: color::Fg<color::Rgb>;
+			let mut bg: color::Bg<color::Rgb>;
 				
 			for i in 0..self.content.len() {
 				// if hover on cur button, change colors
@@ -377,6 +408,253 @@ impl HouseDe {
 		// flush
 		if !self.stdout.flush().is_ok() {
 			self.lgr.log("Could not flush stdout");
+		}
+	}
+	
+	fn cur_menu(&self) -> &Button {	
+		let mut result: &Button;
+		
+		match self.mode {
+			HouseDeMode::Normal | HouseDeMode::Output => {
+				result = &self.user_menu;
+			},
+			
+			HouseDeMode::Sysmenu => {
+				result = &self.sys_menu;
+			},
+			
+			HouseDeMode::Recovery => {
+				result = &self.recovery_menu;
+			},
+		}
+		
+		for i in 0..self.menu_nav.len() {
+			result = &result.buttons[i];
+		}
+		
+		return result;
+	}
+	
+	pub fn update_lua(&mut self) {
+		// update variables exposed to lua globals
+		let ctxresult = self.lua.context(|lua_ctx| {
+			let globals = lua_ctx.globals();
+			
+			for (key, value) in self.lua_globals.iter_mut() {
+				let gresult = globals.get::<_, bool>(*key);
+				
+				if gresult.is_ok() {
+					*value = gresult.unwrap();
+				}
+				else {
+					return Err(key);
+				}
+			}
+			
+			return Ok(());
+		});
+		
+		if !ctxresult.is_ok() {
+			let msg = format!(
+				"Lua global \"{}\" could not be get",
+				ctxresult.err().unwrap());
+			
+			self.log(msg.as_str());
+			panic!("{}", msg);
+		}
+		
+		// if not lua app_active, quit
+		if self.lua_globals["app_active"] == false {
+			self.active = false;
+		}
+		
+		// if lua use_recoverymenu
+		if self.lua_globals["use_recoverymenu"] {
+			// set mode
+			self.mode = HouseDeMode::Recovery;
+			
+			// reset lua use_recoverymenu
+			self.lua_globals["use_recoverymenu"] = false;
+			
+			let ctxresult = self.lua.context(|lua_ctx| {
+				let globals = lua_ctx.globals();
+				
+				for (key, value) in self.lua_globals.iter_mut() {
+					let gresult = globals.get::<_, bool>(*key);
+					
+					if gresult.is_ok() {
+						*value = gresult.unwrap();
+					}
+					else {
+						return Err(key);
+					}
+				}
+				
+				return Ok(());
+			});
+			
+			if !ctxresult.is_ok() {
+				let msg = format!(
+					"Lua global \"{}\" could not be set",
+					ctxresult.err().unwrap());
+				
+				self.log(msg.as_str());
+				panic!("{}", msg);
+			}
+		}
+		
+		/*
+		// if lua logout, shell exit, quit
+		if logout {
+			if !std::process::Command::new("exit").spawn().is_ok() {
+				lgr.log("Logout could not exit");
+			}
+			break 'mainloop;
+		}
+		
+		// if lua suspend, shell suspend
+		if suspend {
+			if !std::process::Command::new("systemctl suspend").spawn().is_ok() {
+				lgr.log("Suspend did not work");
+			}
+		}
+		*/
+	}
+	
+	pub fn set_output(&mut self, output: &str) {
+		// prep msg
+		let msg = output.trim().to_string();
+		let msg_lines: Vec<&str> = msg.lines().collect();
+
+		// if multi line msg, set output mode
+		if msg_lines.len() > 1 {
+			self.mode = HouseDeMode::Output;
+			self.content.clear();
+			
+			for i in 0..msg_lines.len() {
+				self.content.push(msg_lines[i].to_string());
+			}
+		}
+		else {
+			self.footer = msg_lines[0].to_string();
+		}
+	}
+	
+	pub fn handle_key(&mut self, key: termion::event::Key) {
+		match key {
+			Key::Ctrl('q') => {
+				self.active = false;
+			},
+			
+			Key::Ctrl('s') => {
+				// toggle sysmenu, update
+				if self.mode == HouseDeMode::Sysmenu {
+					self.mode = HouseDeMode::Normal;
+				}
+				else {
+					self.mode = HouseDeMode::Sysmenu;
+				}
+				
+				self.hover = 0;
+				self.need_draw = true;
+			},		
+			
+			Key::Up => {
+				// if possible hover up, update
+				if self.hover > 0 {
+					self.hover -= 1;
+					self.need_draw = true;
+				}
+			},
+			
+			Key::Down => {
+				// if possible hover down, update
+				if self.hover + 1 < self.content.len() {
+					self.hover -= 1;
+					self.need_draw = true;
+				}
+			},
+			
+			Key::Right => {
+				// if output mode, do nothing
+				if self.mode == HouseDeMode::Output {}
+				else {
+					// if hovered button has buttons, add to menu nav, reset hover, update
+					if self.cur_menu().buttons[self.hover].buttons.len() > 0 {
+						self.menu_nav.push(self.hover);
+						self.hover = 0;
+						self.need_draw = true;
+					}
+				}
+			},
+			
+			Key::Left => {
+				// if output mode, go normal mode
+				if self.mode == HouseDeMode::Output {
+					self.mode = HouseDeMode::Normal;
+				}
+				else {
+					// if nav has anything, pop
+					self.menu_nav.pop();
+				}
+			},
+			
+			Key::Char('\n') => {
+				// if hovered btn has lua, execute
+				if self.cur_menu().buttons[self.hover].lua.len() > 0 {
+					let execresult = self.lua.context(|lua_ctx| {
+						return lua_ctx.load(&self.cur_menu().buttons[self.hover].lua).exec();
+					});
+					
+					if !execresult.is_ok() {
+						self.log(format!(
+							"Lua \"\n{}\n\"\nfailed to execute",
+							self.cur_menu().buttons[self.hover].lua,).as_str());
+					}
+					
+					self.need_draw = true;
+				}
+				
+				// if hovered btn has shell, execute output mode
+				else if self.cur_menu().buttons[self.hover].shell.exe.len() > 0 {
+					let execresult = std::process::Command
+						::new(&self.cur_menu().buttons[self.hover].shell.exe)
+						.args(&self.cur_menu().buttons[self.hover].shell.args)
+						.current_dir(env!("HOME"))
+						.output();
+
+					if !execresult.is_ok() {
+						const MSG: &str = "Could not execute command";
+						self.log(MSG);
+						self.set_output(MSG);
+					}
+					else {
+						// get output
+						let out = execresult.unwrap();
+						let outmsg = String::new();
+						
+						// if exit status isn't ok, use stderr as msg, else stdout							
+						if !out.status.success() {
+							outmsg.push_str("ERR: ");
+							
+							for c in out.stderr {
+								outmsg.push(c as char);
+							}
+						}
+						else {
+							for c in out.stdout {
+								outmsg.push(c as char);
+							}
+						}
+						
+						self.set_output(outmsg.as_str());
+					}
+					
+					self.need_draw = true;
+				}
+			},
+			
+			_ => (),
 		}
 	}
 }

@@ -16,7 +16,9 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-struct Logger {
+use std::io::Write;
+
+pub struct Logger {
 	file: std::fs::File,
 }
 
