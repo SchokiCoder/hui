@@ -84,7 +84,7 @@
 		-scroll							v_12-29
 	
 	-rearrange mainloop draw and	.
-	 data into struct
+	 data into functions
 	 (use input-loop as mainloop)
 	-move Button and commands into	.
 	 seperate module
