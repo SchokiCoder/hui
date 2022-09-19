@@ -72,10 +72,10 @@ pub fn gen_menu_path(
 	result.push_str(" > ");
 	
 	// if menupath string is too long, cut from begin til fit
-	let diff = result.len() - term_w as usize;
+	let diff: isize = result.len() as isize - term_w as isize;
 	
 	if diff > 0 {
-		result = result.split_off(diff + 3);
+		result = result.split_off(diff as usize + 3);
 		result.insert_str(0, "...");
 	}
 	
@@ -240,7 +240,7 @@ fn login(lgr: &mut Logger) -> String {
 	return username;
 }
 */
-	
+
 pub fn set_output(
 	mode: &mut HouseDeMode,
 	message: &str,
@@ -284,7 +284,7 @@ pub fn handle_key(
 		},
 		
 		Key::Ctrl('s') => {
-			// toggle sysmenu, update
+			// toggle sysmenu, flag draw
 			if *mode == HouseDeMode::Sysmenu {
 				*mode = HouseDeMode::Normal;
 			}
@@ -297,7 +297,7 @@ pub fn handle_key(
 		},		
 		
 		Key::Up => {
-			// if possible hover up, update
+			// if possible hover up, flag draw
 			if *hover > 0 {
 				*hover -= 1;
 				*need_draw = true;
@@ -305,9 +305,9 @@ pub fn handle_key(
 		},
 		
 		Key::Down => {
-			// if possible hover down, update
+			// if possible hover down, flag draw
 			if *hover + 1 < content.len() {
-				*hover -= 1;
+				*hover += 1;
 				*need_draw = true;
 			}
 		},
@@ -316,7 +316,7 @@ pub fn handle_key(
 			// if output mode, do nothing
 			if *mode == HouseDeMode::Output {}
 			else {
-				// if hovered button has buttons, add to menu nav, reset hover, update
+				// if hovered button has buttons, add to menu nav, reset hover, flag draw
 				if cur_menu.buttons[*hover].buttons.len() > 0 {
 					menu_nav.push(*hover);
 					*hover = 0;
@@ -331,8 +331,10 @@ pub fn handle_key(
 				*mode = HouseDeMode::Normal;
 			}
 			else {
-				// if nav has anything, pop
+				// if nav has anything, pop, reset hover, flag draw
 				menu_nav.pop();
+				*hover = 0;
+				*need_draw = true;
 			}
 		},
 		
@@ -353,7 +355,7 @@ pub fn handle_key(
 			}
 			
 			// if hovered btn has shell, execute output mode
-			else if cur_menu.buttons[*hover].shell.exe.len() > 0 {
+			if cur_menu.buttons[*hover].shell.exe.len() > 0 {
 				let execresult = std::process::Command
 					::new(&cur_menu.buttons[*hover].shell.exe)
 					.args(&cur_menu.buttons[*hover].shell.args)

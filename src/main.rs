@@ -20,7 +20,7 @@ mod config;
 mod menus;
 mod logger;
 mod deskenv;
-use config::{UserConfig, Button, ShellCmd};
+use config::{UserConfig, Button};
 use logger::Logger;
 use deskenv::HouseDeMode;
 use termion::input::TermRead;
@@ -44,9 +44,9 @@ fn main() {
 	let username = env!("USER");
 
 	// desk env data	
-	let mut mode: HouseDeMode;
+	let mut mode = HouseDeMode::Normal;
 	let mut active = true;
-	let mut need_draw = false;
+	let mut need_draw = true;
 	let mut hover: usize = 0;
 	let mut menu_nav = Vec::<usize>::new();
 	
@@ -106,7 +106,7 @@ fn main() {
 	
 	// get usrcfg path (debug only)
 	#[cfg(debug_assertions)]
-	let usrcfg_path = format!("etc/d/{}.json", username);
+	let usrcfg_path = format!("etc/{}.d/{}.json", env!("CARGO_PKG_NAME"), username);
 	
 	// get usrcfg path (release only)
 	#[cfg(not(debug_assertions))]
@@ -116,19 +116,16 @@ fn main() {
 	let usrcfg_result = UserConfig::from_json(usrcfg_path.as_str());
 	let usrcfg: UserConfig;
 	
-	if !usrcfg_result.is_ok() {
-		mode = HouseDeMode::Recovery;
-		
+	if !usrcfg_result.is_ok() {	
 		let usrcfg_err = usrcfg_result.err().unwrap();
 		lgr.log(usrcfg_err);
 		
 		usrcfg = UserConfig {
 			motd: format!("{}, using recovery mode", usrcfg_err),
-			main_menu: Button::from("", ShellCmd::new(), "", vec![]),
+			main_menu: menus::new_recovery_menu(usrcfg_path.as_str()),
 		};
 	}
 	else {
-		mode = HouseDeMode::Normal;
 		usrcfg = usrcfg_result.unwrap();
 	}
 	
@@ -137,7 +134,7 @@ fn main() {
 	let sys_menu = menus::new_sys_menu();
 	let recovery_menu = menus::new_recovery_menu(usrcfg_path.as_str());
 
-	let header = String::new();
+	let mut header: String;
 	let mut menu_path: String;
 	let mut content = Vec::<String>::new();
 	let mut footer = String::new();
@@ -183,8 +180,9 @@ fn main() {
 		
 		// if lua use_recoverymenu
 		if lua_globals["use_recoverymenu"] {
-			// set mode
+			// set mode, reset hover
 			mode = HouseDeMode::Recovery;
+			hover = 0;
 			
 			// reset lua use_recoverymenu
 			if let Some(x) = lua_globals.get_mut("use_recoverymenu") {
@@ -235,28 +233,6 @@ fn main() {
 		}
 		*/
 		
-		// draw if needed
-		if need_draw {
-			menu_path = deskenv::gen_menu_path(
-				mode,
-				&menu_nav,
-				term_w,
-				&user_menu,
-				&sys_menu,
-				&recovery_menu);
-			deskenv::draw(
-				&mut  lgr,
-				&mut stdout,
-				mode,
-				hover,
-				term_h,
-				&header,
-				&menu_path,
-				&content,
-				&footer);
-			need_draw = false;
-		}
-		
 		// get current menu
 		let mut cur_menu: &Button;
 		
@@ -276,6 +252,67 @@ fn main() {
 		
 		for i in 0..menu_nav.len() {
 			cur_menu = &cur_menu.buttons[i];
+		}
+		
+		// if draw needed
+		if need_draw {
+			// generate strings
+			match mode {
+				HouseDeMode::Normal => {
+					header = motd.clone();
+					
+					content.clear();
+					
+					for i in 0..cur_menu.buttons.len() {
+						content.push(cur_menu.buttons[i].label.clone());
+					}
+				},
+				
+				HouseDeMode::Sysmenu => {
+					header = "HouseDE Sysmenu".to_string();
+					
+					content.clear();
+					
+					for i in 0..sys_menu.buttons.len() {
+						content.push(sys_menu.buttons[i].label.clone());
+					}
+				},
+				
+				HouseDeMode::Recovery => {
+					header = "HouseDE Recovery".to_string();
+					
+					content.clear();
+					
+					for i in 0..recovery_menu.buttons.len() {
+						content.push(recovery_menu.buttons[i].label.clone());
+					}
+				},
+				
+				HouseDeMode::Output => {
+					header = "HouseDE Output".to_string();
+				},
+			}
+			
+			menu_path = deskenv::gen_menu_path(
+				mode,
+				&menu_nav,
+				term_w,
+				&user_menu,
+				&sys_menu,
+				&recovery_menu);
+			
+			// draw
+			deskenv::draw(
+				&mut  lgr,
+				&mut stdout,
+				mode,
+				hover,
+				term_h,
+				&header,
+				&menu_path,
+				&content,
+				&footer);
+			need_draw = false;
 		}
 		
 		// input

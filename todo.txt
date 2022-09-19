@@ -1,14 +1,19 @@
 {
+	-graphical workspaces				.
+	 (workspaces for processes that
+	  would open a graphical window)
+}
+
+{
 	-sysmenu						.
 		-logout							.
+		-SUPER + L for logout			.
 		-suspend						.
 		-shutdown						.
 		-reboot							.
 }
 
 {
-	-super + l						.
-	 "loginctl lock-session ID"
 	-super + NUMBER					.
 	 workspaces
 	-v								. -> 0.?.0
@@ -18,20 +23,28 @@
 	-when usercfg not in etc,		.
 	 look in home
 	 (replaces debug cfg part)
+	-lua failed to execute null		.
+	 scripts (lets not pollute the
+	 logfile)
 	-message lines, split when		.
 	 too long
+	 
 	-advance cmd in userconfig		.
 	 to handle commands, that
 	 start a process with
 	 mainloop vs simple output
 	 commands
 	 eg "ls /" vs "nano myfile"
+	 
+	-sysmenu: helpmsg				.
 	-ctl + h, to open help menu		.
+	
 	-handle long list of buttons	.
 	 (so long that it would get
 	  out of screen)
 	-view logfile via recovery		.
 	 mode
+	 
 	-README.md						.
 	-manpage						.
 	-v								. 0.3.0
@@ -83,9 +96,14 @@
 		-print							v_12-05
 		-scroll							v_12-29
 	
-	-rearrange mainloop draw and	.
+	-rearrange mainloop draw and	v_09-44_19-09-2022
 	 data into functions
 	 (use input-loop as mainloop)
+		->arrow left not work			v_09-46
+		->no messages					v_10-11
+		->quit is not instant			.
+		->output exit is not instant	.
+		
 	-move Button and commands into	.
 	 seperate module
 	
