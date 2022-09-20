@@ -16,11 +16,13 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+mod interface;
 mod config;
 mod menus;
 mod logger;
 mod deskenv;
-use config::{UserConfig, Button};
+use interface::Button;
+use config::UserConfig;
 use logger::Logger;
 use deskenv::HouseDeMode;
 use termion::input::TermRead;
@@ -64,18 +66,44 @@ fn main() {
 	let mut stdout = stdout.unwrap();
 	
 	// get lua
-	let mut lua_globals = std::collections::HashMap::new();
-	lua_globals.insert("use_recoverymenu", false);
-	lua_globals.insert("app_active", true);
-	/*lua_globals.insert("logout", false);
-	lua_globals.insert("suspend", false);*/
+	let mut lua_bools = std::collections::HashMap::<&str, bool>::new();
+	lua_bools.insert("use_recoverymenu", false);
+	lua_bools.insert("app_active", true);
+	/*lua_bools.insert("logout", false);
+	lua_bools.insert("suspend", false);*/
+	
+	let mut lua_strings = std::collections::HashMap::<&str, String>::new();
+	lua_strings.insert("output", String::new());
+	
 	let lua = rlua::Lua::new();
+	
+	// set lua globals
+	let ctxresult = lua.context(|lua_ctx| {
+		let globals = lua_ctx.globals();
+		
+		for (key, value) in lua_bools.iter() {
+			if !globals.set(*key, *value).is_ok() {
+				return Err(key);
+			}
+		}
+		
+		return Ok(());
+	});
+	
+	if !ctxresult.is_ok() {
+		let msg = format!(
+			"Lua global \"{}\" could not be set",
+			ctxresult.err().unwrap());
+		
+		lgr.log(msg.as_str());
+		panic!("{}", msg);
+	}
 	
 	let ctxresult = lua.context(|lua_ctx| {
 		let globals = lua_ctx.globals();
 		
-		for (key, value) in lua_globals.iter() {
-			if !globals.set(*key, *value).is_ok() {
+		for (key, value) in lua_strings.iter() {
+			if !globals.set(*key, value.as_str()).is_ok() {
 				return Err(key);
 			}
 		}
@@ -146,76 +174,6 @@ fn main() {
 	
 	// mainloop
 	while active {
-		// update variables exposed to lua globals
-		let ctxresult = lua.context(|lua_ctx| {
-			let globals = lua_ctx.globals();
-			
-			for (key, value) in lua_globals.iter_mut() {
-				let gresult = globals.get::<_, bool>(*key);
-				
-				if gresult.is_ok() {
-					*value = gresult.unwrap();
-				}
-				else {
-					return Err(key);
-				}
-			}
-			
-			return Ok(());
-		});
-		
-		if !ctxresult.is_ok() {
-			let msg = format!(
-				"Lua global \"{}\" could not be get",
-				ctxresult.err().unwrap());
-			
-			lgr.log(msg.as_str());
-			panic!("{}", msg);
-		}
-		
-		// if not lua app_active, quit
-		if lua_globals["app_active"] == false {
-			active = false;
-		}
-		
-		// if lua use_recoverymenu
-		if lua_globals["use_recoverymenu"] {
-			// set mode, reset hover
-			mode = HouseDeMode::Recovery;
-			hover = 0;
-			
-			// reset lua use_recoverymenu
-			if let Some(x) = lua_globals.get_mut("use_recoverymenu") {
-				*x = false;
-			}
-			
-			let ctxresult = lua.context(|lua_ctx| {
-				let globals = lua_ctx.globals();
-				
-				for (key, value) in lua_globals.iter_mut() {
-					let gresult = globals.get::<_, bool>(*key);
-					
-					if gresult.is_ok() {
-						*value = gresult.unwrap();
-					}
-					else {
-						return Err(key);
-					}
-				}
-				
-				return Ok(());
-			});
-			
-			if !ctxresult.is_ok() {
-				let msg = format!(
-					"Lua global \"{}\" could not be set",
-					ctxresult.err().unwrap());
-				
-				lgr.log(msg.as_str());
-				panic!("{}", msg);
-			}
-		}
-		
 		/*
 		// if lua logout, shell exit, quit
 		if logout {
@@ -315,10 +273,11 @@ fn main() {
 			need_draw = false;
 		}
 		
-		// input
+		// input loop
 		let stdin = std::io::stdin();
 		
 		for key in stdin.keys() {
+			// handle key
 			if !key.is_ok() {
 				continue;
 			}
@@ -335,6 +294,137 @@ fn main() {
 				&mut footer,
 				&cur_menu,
 				key.unwrap());
+			
+			// update variables exposed to lua globals
+			let ctxresult = lua.context(|lua_ctx| {
+				let globals = lua_ctx.globals();
+				
+				for (key, value) in lua_bools.iter_mut() {
+					let gresult = globals.get::<_, bool>(*key);
+					
+					if gresult.is_ok() {
+						*value = gresult.unwrap();
+					}
+					else {
+						return Err(key);
+					}
+				}
+				
+				return Ok(());
+			});
+			
+			if !ctxresult.is_ok() {
+				let msg = format!(
+					"Lua global \"{}\" could not be get",
+					ctxresult.err().unwrap());
+				
+				lgr.log(msg.as_str());
+				panic!("{}", msg);
+			}
+			
+			let ctxresult = lua.context(|lua_ctx| {
+				let globals = lua_ctx.globals();
+				
+				for (key, value) in lua_strings.iter_mut() {
+					let gresult = globals.get::<_, String>(*key);
+					
+					if gresult.is_ok() {
+						*value = gresult.unwrap();
+					}
+					else {
+						return Err(key);
+					}
+				}
+				
+				return Ok(());
+			});
+			
+			if !ctxresult.is_ok() {
+				let msg = format!(
+					"Lua global \"{}\" could not be get",
+					ctxresult.err().unwrap());
+				
+				lgr.log(msg.as_str());
+				panic!("{}", msg);
+			}
+			
+			// if not lua app_active, quit
+			if lua_bools["app_active"] == false {
+				active = false;
+				break;
+			}
+			
+			// if lua use_recoverymenu
+			if lua_bools["use_recoverymenu"] {
+				// set mode, reset hover
+				mode = HouseDeMode::Recovery;
+				hover = 0;
+				
+				// reset lua use_recoverymenu
+				if let Some(x) = lua_bools.get_mut("use_recoverymenu") {
+					*x = false;
+				}
+				
+				let ctxresult = lua.context(|lua_ctx| {
+					let globals = lua_ctx.globals();
+					
+					for (key, value) in lua_bools.iter() {
+						if !globals.set(*key, *value).is_ok() {
+							return Err(key);
+						}
+					}
+					
+					return Ok(());
+				});
+				
+				if !ctxresult.is_ok() {
+					let msg = format!(
+						"Lua global \"{}\" could not be set",
+						ctxresult.err().unwrap());
+					
+					lgr.log(msg.as_str());
+					panic!("{}", msg);
+				}
+				
+				// break input loop
+				break;
+			}
+			
+			// if lua_output is filled
+			if lua_strings["output"].len() > 0 {
+				// set output
+				deskenv::set_output(
+					&mut mode,
+					lua_strings["output"].as_str(),
+					&mut content,
+					&mut footer);
+			
+				// reset lua_output
+				if let Some(x) = lua_strings.get_mut("output") {
+					x.clear();
+				}
+				
+				let ctxresult = lua.context(|lua_ctx| {
+					let globals = lua_ctx.globals();
+					
+					for (key, value) in lua_strings.iter() {
+						if !globals.set(*key, value.as_str()).is_ok() {
+							return Err(key);
+						}
+					}
+					
+					return Ok(());
+				});
+				
+				if !ctxresult.is_ok() {
+					let msg = format!(
+						"Lua global \"{}\" could not be set",
+						ctxresult.err().unwrap());
+					
+					lgr.log(msg.as_str());
+					panic!("{}", msg);
+				}
+			}
 			
 			if need_draw {
 				break;

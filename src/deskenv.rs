@@ -17,7 +17,7 @@
 */
 
 use crate::logger::Logger;
-use crate::config::{Button};
+use crate::interface::{Button};
 use termion::color;
 use termion::event::Key;
 use std::io::Write;
@@ -281,6 +281,7 @@ pub fn handle_key(
 	match key {
 		Key::Ctrl('q') => {
 			*active = false;
+			*need_draw = true;
 		},
 		
 		Key::Ctrl('s') => {
@@ -329,6 +330,7 @@ pub fn handle_key(
 			// if output mode, go normal mode
 			if *mode == HouseDeMode::Output {
 				*mode = HouseDeMode::Normal;
+				*need_draw = true;
 			}
 			else {
 				// if nav has anything, pop, reset hover, flag draw

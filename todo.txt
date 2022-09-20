@@ -20,6 +20,7 @@
 }
 
 {
+	-allow empty values in cfg		.
 	-when usercfg not in etc,		.
 	 look in home
 	 (replaces debug cfg part)
@@ -101,16 +102,21 @@
 	 (use input-loop as mainloop)
 		->arrow left not work			v_09-46
 		->no messages					v_10-11
-		->quit is not instant			.
-		->output exit is not instant	.
+		->quit is not instant			v_10-43_20-09-2022
+		->output exit is not instant	v_10-44
 		
-	-move Button and commands into	.
+	-move Button and commands into	v_10-48
 	 seperate module
 	
-	-when in submenu,				.
+	-when in submenu,				x (not anymore)
 	 sysmenu will be empty
-	-about sysmenu cmd: use lua		.
-	-allow empty values in cfg		.
+	-about sysmenu cmd: use lua		v_11-33
+	
+	-sys_menu need's own menu_nav	.
+	-recovery_menu need's own 		.
+	 menu_nav
+	
+	-eliminate lua code duplication	.
 	-v								. -> 0.2.0
 }
 
