@@ -21,7 +21,6 @@ mod config;
 mod menus;
 mod logger;
 mod deskenv;
-use interface::Button;
 use config::UserConfig;
 use logger::Logger;
 use deskenv::HouseDeMode;
@@ -50,7 +49,6 @@ fn main() {
 	let mut active = true;
 	let mut need_draw = true;
 	let mut hover: usize = 0;
-	let mut menu_nav = Vec::<usize>::new();
 	
 	// get logger, stdout
 	let mut lgr = Logger::new();
@@ -158,12 +156,11 @@ fn main() {
 	}
 	
 	let motd = usrcfg.motd;
-	let user_menu = usrcfg.main_menu;
-	let sys_menu = menus::new_sys_menu();
-	let recovery_menu = menus::new_recovery_menu(usrcfg_path.as_str());
+	let mut user_menu = deskenv::Menu::new(usrcfg.main_menu);
+	let mut sys_menu = deskenv::Menu::new(menus::new_sys_menu());
+	let mut recovery_menu = deskenv::Menu::new(menus::new_recovery_menu(usrcfg_path.as_str()));
 
 	let mut header: String;
-	let mut menu_path: String;
 	let mut content = Vec::<String>::new();
 	let mut footer = String::new();
 	
@@ -173,91 +170,46 @@ fn main() {
 	}
 	
 	// mainloop
-	while active {
-		/*
-		// if lua logout, shell exit, quit
-		if logout {
-			if !std::process::Command::new("exit").spawn().is_ok() {
-				lgr.log("Logout could not exit");
-			}
-			break 'mainloop;
-		}
-		
-		// if lua suspend, shell suspend
-		if suspend {
-			if !std::process::Command::new("systemctl suspend").spawn().is_ok() {
-				lgr.log("Suspend did not work");
-			}
-		}
-		*/
-		
+	while active {	
 		// get current menu
-		let mut cur_menu: &Button;
+		let cur_menu: &mut deskenv::Menu;
 		
 		match mode {
 			HouseDeMode::Normal | HouseDeMode::Output => {
-				cur_menu = &user_menu;
+				cur_menu = &mut user_menu;
 			},
 			
 			HouseDeMode::Sysmenu => {
-				cur_menu = &sys_menu;
+				cur_menu = &mut sys_menu;
 			},
 			
 			HouseDeMode::Recovery => {
-				cur_menu = &recovery_menu;
+				cur_menu = &mut recovery_menu;
 			},
-		}
-		
-		for i in 0..menu_nav.len() {
-			cur_menu = &cur_menu.buttons[i];
 		}
 		
 		// if draw needed
 		if need_draw {
 			// generate strings
+			cur_menu.set_content(&mut content);
+			
 			match mode {
 				HouseDeMode::Normal => {
 					header = motd.clone();
-					
-					content.clear();
-					
-					for i in 0..cur_menu.buttons.len() {
-						content.push(cur_menu.buttons[i].label.clone());
-					}
 				},
 				
 				HouseDeMode::Sysmenu => {
 					header = "HouseDE Sysmenu".to_string();
-					
-					content.clear();
-					
-					for i in 0..sys_menu.buttons.len() {
-						content.push(sys_menu.buttons[i].label.clone());
-					}
 				},
 				
 				HouseDeMode::Recovery => {
 					header = "HouseDE Recovery".to_string();
-					
-					content.clear();
-					
-					for i in 0..recovery_menu.buttons.len() {
-						content.push(recovery_menu.buttons[i].label.clone());
-					}
 				},
 				
 				HouseDeMode::Output => {
 					header = "HouseDE Output".to_string();
 				},
 			}
-			
-			menu_path = deskenv::gen_menu_path(
-				mode,
-				&menu_nav,
-				term_w,
-				&user_menu,
-				&sys_menu,
-				&recovery_menu);
 			
 			// draw
 			deskenv::draw(
@@ -267,7 +219,7 @@ fn main() {
 				hover,
 				term_h,
 				&header,
-				&menu_path,
+				cur_menu.gen_path(term_w),
 				&content,
 				&footer);
 			need_draw = false;
@@ -287,12 +239,11 @@ fn main() {
 				&lua,
 				&mut mode,
 				&mut hover,
-				&mut menu_nav,
+				cur_menu,
 				&mut active,
 				&mut need_draw,
 				&mut content,
 				&mut footer,
-				&cur_menu,
 				key.unwrap());
 			
 			// update variables exposed to lua globals

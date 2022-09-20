@@ -30,58 +30,6 @@ pub enum HouseDeMode {
 	Output,
 }
 
-pub fn gen_menu_path(
-	mode: HouseDeMode,
-	menu_nav: &Vec<usize>,
-	term_w: u16,
-	user_menu: &Button,
-	sys_menu: &Button,
-	recovery_menu: &Button) -> String
-{
-	let mut result = String::new();
-
-	// find current menu and build menupath string
-	let mut sub_menu: &Button;
-	
-	match mode {
-		HouseDeMode::Normal => {
-			sub_menu = &user_menu;
-		},
-		
-		HouseDeMode::Recovery => {
-			sub_menu = &recovery_menu;
-		},
-		
-		HouseDeMode::Sysmenu => {
-			sub_menu = &sys_menu;
-		},
-		
-		HouseDeMode::Output => {
-			result.push_str("Output");
-			return result;
-		},
-	}
-	
-	for i in 0..menu_nav.len() {
-		result.push_str(&sub_menu.label);
-		result.push_str(" > ");
-		sub_menu = &sub_menu.buttons[menu_nav[i]];
-	}
-	
-	result.push_str(&sub_menu.label);
-	result.push_str(" > ");
-	
-	// if menupath string is too long, cut from begin til fit
-	let diff: isize = result.len() as isize - term_w as isize;
-	
-	if diff > 0 {
-		result = result.split_off(diff as usize + 3);
-		result.insert_str(0, "...");
-	}
-	
-	return result;
-}
-
 pub fn draw(
 	lgr: &mut Logger,
 	stdout: &mut termion::raw::RawTerminal<std::io::Stdout>,
@@ -89,7 +37,7 @@ pub fn draw(
 	hover: usize,
 	term_h: u16,
 	header: & String,
-	menu_path: &String,
+	menu_path: String,
 	content: &Vec<String>,
 	footer: &String)
 {
@@ -270,14 +218,21 @@ pub fn handle_key(
 	lua: &rlua::Lua,
 	mode: &mut HouseDeMode,
 	hover: &mut usize,
-	menu_nav: &mut Vec<usize>,
+	cur_menu: &mut Menu,
 	active: &mut bool,
 	need_draw: &mut bool,
 	content: &mut Vec<String>,
 	footer: &mut String,
-	cur_menu: &Button,
 	key: termion::event::Key)
 {
+	// get current button from menu
+	let mut cur_btn = &cur_menu.entry;
+	
+	for i in 0..cur_menu.nav.len() {
+		cur_btn = &cur_btn.buttons[i];
+	}
+	
+	// key	
 	match key {
 		Key::Ctrl('q') => {
 			*active = false;
@@ -318,8 +273,8 @@ pub fn handle_key(
 			if *mode == HouseDeMode::Output {}
 			else {
 				// if hovered button has buttons, add to menu nav, reset hover, flag draw
-				if cur_menu.buttons[*hover].buttons.len() > 0 {
-					menu_nav.push(*hover);
+				if cur_btn.buttons[*hover].buttons.len() > 0 {
+					cur_menu.nav.push(*hover);
 					*hover = 0;
 					*need_draw = true;
 				}
@@ -334,7 +289,7 @@ pub fn handle_key(
 			}
 			else {
 				// if nav has anything, pop, reset hover, flag draw
-				menu_nav.pop();
+				cur_menu.nav.pop();
 				*hover = 0;
 				*need_draw = true;
 			}
@@ -342,25 +297,25 @@ pub fn handle_key(
 		
 		Key::Char('\n') => {
 			// if hovered btn has lua, execute
-			if cur_menu.buttons[*hover].lua.len() > 0 {
+			if cur_btn.buttons[*hover].lua.len() > 0 {
 				let execresult = lua.context(|lua_ctx| {
-					return lua_ctx.load(&cur_menu.buttons[*hover].lua).exec();
+					return lua_ctx.load(&cur_btn.buttons[*hover].lua).exec();
 				});
 				
 				if !execresult.is_ok() {
 					lgr.log(format!(
 						"Lua \"\n{}\n\"\nfailed to execute",
-						cur_menu.buttons[*hover].lua,).as_str());
+						cur_btn.buttons[*hover].lua,).as_str());
 				}
 				
 				*need_draw = true;
 			}
 			
 			// if hovered btn has shell, execute output mode
-			if cur_menu.buttons[*hover].shell.exe.len() > 0 {
+			if cur_btn.buttons[*hover].shell.exe.len() > 0 {
 				let execresult = std::process::Command
-					::new(&cur_menu.buttons[*hover].shell.exe)
-					.args(&cur_menu.buttons[*hover].shell.args)
+					::new(&cur_btn.buttons[*hover].shell.exe)
+					.args(&cur_btn.buttons[*hover].shell.args)
 					.current_dir(env!("HOME"))
 					.output();
 
@@ -396,5 +351,61 @@ pub fn handle_key(
 		},
 		
 		_ => (),
+	}
+}
+
+pub struct Menu {
+	pub entry: Button,
+	pub nav: Vec<usize>,
+}
+
+impl Menu {
+	pub fn new(entry: Button) -> Menu {
+		return Menu {
+			entry: entry,
+			nav: Vec::<usize>::new(),
+		};
+	}
+	
+	pub fn gen_path(&self, term_w: u16) -> String {
+		let mut result = String::new();
+
+		// build menupath string
+		let mut sub_menu = &self.entry;
+		
+		for i in 0..self.nav.len() {
+			result.push_str(&sub_menu.label);
+			result.push_str(" > ");
+			sub_menu = &sub_menu.buttons[self.nav[i]];
+		}
+		
+		result.push_str(&sub_menu.label);
+		result.push_str(" > ");
+		
+		// if menupath string is too long, cut from begin til fit
+		let diff: isize = result.len() as isize - term_w as isize;
+		
+		if diff > 0 {
+			result = result.split_off(diff as usize + 3);
+			result.insert_str(0, "...");
+		}
+		
+		return result;
+	}
+	
+	pub fn set_content(&self, content: &mut Vec<String>) {
+		// get current button
+		let mut cur_btn = &self.entry;
+		
+		for i in 0..self.nav.len() {
+			cur_btn = &cur_btn.buttons[i];
+		}
+		
+		// set content
+		content.clear();
+		
+		for i in 0..cur_btn.buttons.len() {
+			content.push(cur_btn.buttons[i].label.clone());
+		}
 	}
 }

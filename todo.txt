@@ -112,9 +112,10 @@
 	 sysmenu will be empty
 	-about sysmenu cmd: use lua		v_11-33
 	
-	-sys_menu need's own menu_nav	.
-	-recovery_menu need's own 		.
+	-sys_menu need's own menu_nav	v_12-23
+	-recovery_menu need's own
 	 menu_nav
+		-> multiline output not shown	.
 	
 	-eliminate lua code duplication	.
 	-v								. -> 0.2.0
