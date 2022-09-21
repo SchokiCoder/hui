@@ -21,7 +21,7 @@
 
 {
 	-eliminate lua code duplication	.
-	 (by using sys_lua_lib)
+	 (by using other lua_lib)
 	 
 	-allow empty values in cfg		.
 	-when usercfg not in etc,		.
