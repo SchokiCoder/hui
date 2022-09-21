@@ -191,7 +191,9 @@ fn main() {
 		// if draw needed
 		if need_draw {
 			// generate strings
-			cur_menu.set_content(&mut content);
+			if mode != HouseDeMode::Output {
+				cur_menu.set_content(&mut content);
+			}
 			
 			match mode {
 				HouseDeMode::Normal => {

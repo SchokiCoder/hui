@@ -27,7 +27,7 @@ pub fn new_sys_menu() -> Button {
 			Button::from(
 				"About HouseDE",
 				ShellCmd::from("", ""),
-				format!("output = \"{} is licensed under the {}.\\nYou should have received a copy of the license along with this program.\\nIf not see <https://www.gnu.org/licenses/>\\n\\nThe source code of this program is available at:\\n{}\"", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_LICENSE"), env!("CARGO_PKG_REPOSITORY")).as_str(),
+				format!("output = \"{} {} is licensed under the {}.\\nYou should have received a copy of the license along with this program.\\nIf not see <https://www.gnu.org/licenses/>\\n\\nThe source code of this program is available at:\\n{}\"", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"), env!("CARGO_PKG_LICENSE"), env!("CARGO_PKG_REPOSITORY")).as_str(),
 				vec![]),
 
 			Button::from(

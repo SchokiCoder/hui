@@ -20,6 +20,9 @@
 }
 
 {
+	-eliminate lua code duplication	.
+	 (by using sys_lua_lib)
+	 
 	-allow empty values in cfg		.
 	-when usercfg not in etc,		.
 	 look in home
@@ -50,6 +53,8 @@
 	-manpage						.
 	-v								. 0.3.0
 }
+
+--- Done ---
 
 {
 	-create log file when not there	v_10-00_04-09-2022
@@ -115,13 +120,12 @@
 	-sys_menu need's own menu_nav	v_12-23
 	-recovery_menu need's own
 	 menu_nav
-		-> multiline output not shown	.
+		-> multiline output not shown	v_09-43_21-09-2022
 	
-	-eliminate lua code duplication	.
-	-v								. -> 0.2.0
+	-eliminate lua code duplication	x (closures, lifetimes...)
+	
+	-v								v_10-08 -> 0.2.0
 }
-
---- Done ---
 
 {
 	-cfg file format for		v_11-51_25-08-2022
