@@ -17,6 +17,25 @@
 */
 
 use crate::logger::Logger;
+use lua_sys::*;
+
+pub fn get
+	<T: std::marker::Copy + std::clone::Clone>
+	(lua: &lua_State, lgr: &mut Logger, map: &mut std::collections::HashMap<&'static str, T>)
+{
+	let globals = lua.globals();
+	
+	for (key, value) in map.iter_mut() {
+		let gresult = globals.get(*key);
+		
+		if gresult.is_ok() {
+			*value = gresult.unwrap();
+		}
+		else {
+			lgr.log(format!("Lua global \"{}\" could not be get", *key).as_str());
+		}
+	}
+}
 
 /*
 pub fn test(lua: &mlua::Lua) {
@@ -27,14 +46,50 @@ pub fn test(lua: &mlua::Lua) {
 }
 */
 
-pub struct LuaGlobal<'a, T: mlua::UserData + Clone + Copy + 'static> {
+/*
+pub fn get<'a, T: std::clone::Clone + mlua::ToLua<'a> + mlua::UserData + 'a>(lua: &mlua::Lua, lgr: &mut Logger, map: &mut std::collections::HashMap<&'static str, T>) {
+	let globals = lua.globals();
+	
+	for (key, value) in map.iter_mut() {
+		let gresult = globals.get(*key);
+		
+		if gresult.is_ok() {
+			*value = gresult.unwrap();
+		}
+		else {
+			lgr.log(format!("Lua global \"{}\" could not be get", *key).as_str());
+		}
+	}
+}
+
+pub fn set<'a, T: mlua::ToLua<'a>>(lua: &mlua::Lua, lgr: &mut Logger, map: &std::collections::HashMap<&'static str, T>) {
+	let globals = lua.globals();
+	
+	for (key, value) in map.iter_mut() {
+		let sresult = globals.set(*key, *value);
+		
+		if sresult.is_ok() == false {
+			lgr.log(format!("Lua global \"{}\" could not be set", *key).as_str());
+		}
+	}
+}
+*/
+
+/*
+pub struct LuaGlobal<'a, T> {
 	lua: &'a mlua::Lua,
 	name: &'static str,
 	value: T,
 }
 
-impl<'a, T: mlua::UserData + Clone + Copy + 'static> LuaGlobal<'a, T> {
-	pub fn new(lua: &'a mlua::Lua, lgr: &mut Logger, name: &'static str, value: T) -> LuaGlobal<'a, T> {	
+impl<'a, T: mlua::ToLua<'a> + Clone + Copy + mlua::UserData + 'static> LuaGlobal<'a, T> {
+	pub fn new(
+		lua: &'a mlua::Lua,
+		lgr: &mut Logger,
+		name: &'static str,
+		value: T)
+		-> LuaGlobal<'a, T>
+	{
 		let mut result = LuaGlobal {
 			lua: lua,
 			name: name,
@@ -77,3 +132,4 @@ impl<'a, T: mlua::UserData + Clone + Copy + 'static> LuaGlobal<'a, T> {
 		}
 	}
 }
+*/

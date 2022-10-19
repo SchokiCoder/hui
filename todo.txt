@@ -14,9 +14,18 @@
 }
 
 {
-	-super + NUMBER					.
+	-super + PgUp/PgDown			.
 	 workspaces
 	-v								. -> 0.?.0
+}
+
+{
+	-advance cmd in userconfig		.
+	 to handle commands, that
+	 start a process with
+	 mainloop vs simple output
+	 commands
+	 eg "ls /" vs "nano myfile"
 }
 
 {
@@ -30,15 +39,16 @@
 	-lua failed to execute null		.
 	 scripts (lets not pollute the
 	 logfile)
-	-message lines, split when		.
-	 too long
-	 
-	-advance cmd in userconfig		.
-	 to handle commands, that
-	 start a process with
-	 mainloop vs simple output
-	 commands
-	 eg "ls /" vs "nano myfile"
+	
+	-every char is explicitly		.
+	 colored (fg and bg)
+	 this also includes spaces
+	-reset fg and bg on exit		.
+	
+	-multiline messages				.
+		-ESC to exit msg				.
+		-add arrow key navigation		.
+		 to scroll left/right, up/down
 	 
 	-sysmenu: helpmsg				.
 	-ctl + h, to open help menu		.

@@ -215,7 +215,7 @@ pub fn set_output(
 
 pub fn handle_key(
 	lgr: &mut Logger,
-	lua: &rlua::Lua,
+	lua: &mlua::Lua,
 	mode: &mut HouseDeMode,
 	hover: &mut usize,
 	cur_menu: &mut Menu,
@@ -298,15 +298,26 @@ pub fn handle_key(
 		Key::Char('\n') => {
 			// if hovered btn has lua, execute
 			if cur_btn.buttons[*hover].lua.len() > 0 {
-				let execresult = lua.context(|lua_ctx| {
-					return lua_ctx.load(&cur_btn.buttons[*hover].lua).exec();
-				});
+				let loadresult = lua
+					.load(&cur_btn.buttons[*hover].lua)
+					.set_name("buttonscript");
 				
-				if !execresult.is_ok() {
-					lgr.log(format!(
+				if loadresult.is_ok() {
+					let execresult = loadresult.unwrap().exec();
+					
+					if execresult.is_ok() == false {
+						lgr.log(format!(
 						"Lua \"\n{}\n\"\nfailed to execute",
 						cur_btn.buttons[*hover].lua,).as_str());
+					}
 				}
+				else {
+					lgr.log(format!(
+						"Lua \"\n{}\n\"\nfailed to parse",
+						cur_btn.buttons[*hover].lua,).as_str());
+				}
+				
+				
 				
 				*need_draw = true;
 			}

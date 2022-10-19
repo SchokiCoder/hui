@@ -65,17 +65,18 @@ fn main() {
 	let mut stdout = stdout.unwrap();
 	
 	// get lua
-	let mut lua_bools = std::collections::HashMap::<&str, bool>::new();
+	/*let mut lua_bools = std::collections::HashMap::<&str, bool>::new();
 	lua_bools.insert("use_recoverymenu", false);
 	lua_bools.insert("app_active", true);
-	/*lua_bools.insert("logout", false);
-	lua_bools.insert("suspend", false);*/
+	lua_bools.insert("logout", false);
+	lua_bools.insert("suspend", false);
 	
 	let mut lua_strings = std::collections::HashMap::<&str, String>::new();
-	lua_strings.insert("output", String::new());
+	lua_strings.insert("output", String::new());*/
 	
-	let lua = rlua::Lua::new();
+	let lua = mlua::Lua::new();
 	
+	/*
 	// set lua globals
 	let ctxresult = lua.context(|lua_ctx| {
 		let globals = lua_ctx.globals();
@@ -117,7 +118,7 @@ fn main() {
 		
 		lgr.log(msg.as_str());
 		panic!("{}", msg);
-	}
+	}*/
 		
 	// get term size
 	let term_size = termion::terminal_size();
@@ -249,6 +250,7 @@ fn main() {
 				&mut footer,
 				key.unwrap());
 			
+			/*
 			// update variables exposed to lua globals
 			let ctxresult = lua.context(|lua_ctx| {
 				let globals = lua_ctx.globals();
@@ -301,7 +303,9 @@ fn main() {
 				lgr.log(msg.as_str());
 				panic!("{}", msg);
 			}
+			*/
 			
+			/*
 			// if not lua app_active, quit
 			if lua_bools["app_active"] == false {
 				active = false;
@@ -379,6 +383,7 @@ fn main() {
 					panic!("{}", msg);
 				}
 			}
+			*/
 			
 			if need_draw {
 				break;
