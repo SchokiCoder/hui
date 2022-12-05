@@ -56,6 +56,7 @@
 {  
   -feature planning           .
   -keybind planning           .
+  -mock up ui                 .
   
   -debatably unneccessary     .
    ansi c rewrite
