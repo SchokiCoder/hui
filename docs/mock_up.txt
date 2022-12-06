@@ -1,0 +1,115 @@
+Assuming a terminal with 80 x 24.
+Colors can not be displayed (because text editor).
+No backgrounds.
+
+The ui is split in 3 parts.
+
+The header contains the title and the current menu path.
+Title and path alignment can be individually configured to be left, middle,
+right.
+
+The body contains the current menu's options and the feedback.
+If feedback fits in one line, the last line of the body is used for it.
+For Feedback longer than a line, the current menu will be replaced with the
+command output and the command name will be appended to the path.
+
+The last line is reserved for command intput.
+Upon hitting the colon-key, a colon will be drawn into the command line and
+a cursor will be placed and shown after it.
+Also the line above will display middle scores all the way through.
+The command line (and the line above) are only displayed upon entering command
+mode.
+
+The following mock-ups are demonstrated within upper and under-score lines.
+
+Up ahead, default mode:
+
+
+________________________________________________________________________________
+Header_line_1
+Header_line_2
+Path / To / Cur / Menu
+————————————————————————————————————————————————————————————————————————————————
+> [Submenu1]
+> [Submenu2]
+> Command1
+> Command2
+> NeoVim
+
+
+
+
+
+
+
+
+
+
+
+
+Command feedback right here.
+————————————————————————————————————————————————————————————————————————————————
+:currently entering cmd
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+
+Up ahead, feedback mode:
+
+
+________________________________________________________________________________
+Header_line_1
+Header_line_2
+Path / To / Cur / Menu / Command1
+————————————————————————————————————————————————————————————————————————————————
+Here can be multiple lines of feedback.
+It really just depends on the application you started.
+Scrolling through this, is done with same keybinds used for normal menu
+navigation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+————————————————————————————————————————————————————————————————————————————————
+:currently entering cmd
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+
+Up ahead, multiplex mode:
+
+________________________________________________________________________________
+Path / To / Cur / Menu / NeoVim
+————————————————————————————————————————————————————————————————————————————————
+1
+~
+~
+~
+~                                 NVIM v0.3.4
+~
+~                 Nvim is open source and freely distributable
+~                           https://neovim.io/#chat
+~
+~                type :help nvim<Enter> if you are new!
+~                type :checkhealth<Enter> to optimize Nvim
+~                type :q<Enter> to exit
+~                type :help<Enter> for help
+~
+~                       Help poor children in Uganda!
+~                type :help iccf<Enter> for information
+~
+~
+~
+~
+————————————————————————————————————————————————————————————————————————————————
+:currently entering cmd
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
