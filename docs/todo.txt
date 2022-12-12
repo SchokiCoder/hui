@@ -54,18 +54,22 @@
 }
 
 {  
-  -feature planning           .
-  -keybind planning           .
-  -mock up ui                 .
+	-feature planning				v
+	-keybind planning				v
+	-mock up ui					v
+
+ 	-make lua work or ditch it for good		.
+	 (if ditched, use just native code as
+	  cfg, as a temporary solution)
+	-if lua ditched, check tcc			.
+ 
+
+	-debatably unneccessary				.
+	 ansi c rewrite
+	 (it's just more fun
+	 this way, alr)
   
-  -debatably unneccessary     .
-   ansi c rewrite
-   (it's just more fun
-    this way, alr)
-  
-  -extension via guile        .
-  
-  -version                    . -> 0.3.0
+	-version					. -> 0.3.0
 }
 
 --- Done ---
