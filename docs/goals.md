@@ -1,6 +1,7 @@
 # Before i can start
 - what cmd line options could there be (take a look at nvim)
-- what license: GPL-2.0 or Apache-2.0
+- what license: GPL-2.0, Apache-2.0 or BSD-3-clause (are patent-trolls that bad)
+- patching system? (take a look at dwm)
 
 # Goals
 The higher a goal in the list, the higher the priority.  
@@ -79,7 +80,7 @@ modifier is given regardless.
 This task is for creating/polishing the end-user cmd-line interface.  
 That includes:  
 - manpage
-- call options (at least POSIX, maybe GNU)
+- POSIX call options
 - return values
 - print messages (consistency, version information, license information)
 
@@ -103,5 +104,7 @@ Make their existence configurable, individually.
 Make the path delimiter configurable.  
 
 ## v1.4.0 GNU-style command line operands
-Add GNU-style operands as alias to the POSIX ones.
+Add GNU-style options as aliases to the POSIX ones.
+
+
 
