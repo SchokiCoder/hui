@@ -2,25 +2,25 @@ Assuming a terminal with 80 x 24.
 Colors can not be displayed (because text editor).
 No backgrounds.
 
-The ui is split in 3 parts.
+First is the header.
+It does not change throughout the application.
 
-The header contains the title and the current menu path.
-Title and path alignment can be individually configured to be left, middle,
-right.
+Then there is the title.
+It is given by the current menu.
 
-The body contains the current menu's options and the feedback.
-If feedback fits in one line, the last line of the body is used for it.
-For Feedback longer than a line, the current menu will be replaced with the
-command output and the command name will be appended to the path.
+The body contains the current menu's options or the feedback.
+If feedback fits in one line, the command line is used for it.
+For feedback longer than a line, the current menu will be replaced with the
+command output.
 
-The last line is reserved for command intput.
-Upon hitting the colon-key, a colon will be drawn into the command line and
-a cursor will be placed and shown after it.
-Also the line above will display middle scores all the way through.
-The command line (and the line above) are only displayed upon entering command
-mode.
+The last line is reserved for command input and single-line feedback.
+The command-key (by default ':') will always be drawn (with a space after it).
+Upon hitting the colon-key, the cursor will be placed and shown in the command
+line.
 
 The following mock-ups are demonstrated within upper and under-score lines.
+Only features are presented, which would resemble a 1.0.0 version of hui with
+standard configuration.
 
 Up ahead, default mode:
 
@@ -28,10 +28,10 @@ Up ahead, default mode:
 ________________________________________________________________________________
 Header_line_1
 Header_line_2
-Path / To / Cur / Menu
-————————————————————————————————————————————————————————————————————————————————
-> [Submenu1]
-> [Submenu2]
+Main Title (including the line below)
+—————————————————————————————————————
+> Submenu1
+> Submenu2
 > Command1
 > Command2
 > NeoVim
@@ -47,9 +47,9 @@ Path / To / Cur / Menu
 
 
 
-Command feedback right here.
-————————————————————————————————————————————————————————————————————————————————
-:currently entering cmd
+
+
+: Currently some command feedback right here
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 
 
@@ -59,12 +59,12 @@ Up ahead, feedback mode:
 ________________________________________________________________________________
 Header_line_1
 Header_line_2
-Path / To / Cur / Menu / Command1
-————————————————————————————————————————————————————————————————————————————————
-Here can be multiple lines of feedback.
-It really just depends on the application you started.
-Scrolling through this, is done with same keybinds used for normal menu
-navigation.
+Swallowed shampoo lol
+—————————————————————
+Swallowed shampoo,
+probably gonna die.
+It smelled like fruit,
+that was a lie.
 
 
 
@@ -79,17 +79,50 @@ navigation.
 
 
 
-————————————————————————————————————————————————————————————————————————————————
-:currently entering cmd
+
+: 
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 
 
-Up ahead, multiplex mode:
+Up ahead, stderr feedback:
+
 
 ________________________________________________________________________________
-Path / To / Cur / Menu / NeoVim
-————————————————————————————————————————————————————————————————————————————————
+Header_line_1
+Header_line_2
+Main Title (including the line below)
+—————————————————————————————————————
+> Submenu1
+> Submenu2
+> Command1
+> Command2
+> NeoVim
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+: ERROR Command2 stderr here
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+
+After 1.0.0:
+Up ahead, sub-app mode:
+
+
+________________________________________________________________________________
+NeoVim
 1
+~
 ~
 ~
 ~
@@ -109,7 +142,7 @@ Path / To / Cur / Menu / NeoVim
 ~
 ~
 ~
-————————————————————————————————————————————————————————————————————————————————
-:currently entering cmd
+~
+: 
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 
