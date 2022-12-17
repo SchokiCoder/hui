@@ -10,7 +10,7 @@ fixing asap and fixing this issue should become the next short-term goal.
 
 Long-term non-optional goal-list:  
 
-- ANSI-C, suckless code style
+- C99, suckless code style
 - configuration via C source code header
 - max. 3000 sloc in C (not including any config files)
 - max. 200 sloc for build system (eg. make)
@@ -36,7 +36,7 @@ A menu has entries containing commands and submenus.
 Every menu has it's own custom title, which is displayed under the header.  
 Use of fore- and background-colors are planned.  
 They are configurable.  
-The following areas can be configured (fore- and background color):
+The following areas can be configured (fore- and background color):  
 
 - header
 - title
@@ -45,7 +45,7 @@ The following areas can be configured (fore- and background color):
 - menu entry on which the user's cursor is hovering
 - internal command line
 
-If the implementation of color control is too cumbersome, compilcated,
+If the implementation of color control is too cumbersome, complicated,
 line-heavy or unportable, then it can be pushed into the front of the optional
 roadmap of features.  
 

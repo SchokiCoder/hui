@@ -30,13 +30,20 @@ many things), so now i return to the original ideas.
 Paths could still be emulated by configuring the title of each menu
 accordingly.  
 
-## Horizontal lines are dead
+### Horizontal lines are dead
 
 Can still be achieved by configuring the title accordingly.  
 **You cannot stop it, it's skill is limitless!**
 
-## Optional full-sub-app-execution
+### Optional full-sub-app-execution
 
 Unnecessary but the partial implementation is not, so it is not outright
 cancelled and i just made it optional.  
+
+## 17.12.2022
+
+### ANSI-C
+Today i started the implementation of the config and it i completely forgot
+that C90 forbids specifying subobjects to initialize structs.  
+Using them add maintainebility however... so i decided to ditch ANSI-C / C90.  
 
