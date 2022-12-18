@@ -2,10 +2,10 @@
 	-menu				.
 		-config struct			v
 		-draw				v
-		-get term size and print	.
+		-get term size and print	v
 		 amount of empty lines
 		 accordingly
-		-mainloop			.
+		-mainloop			v
 		-keyboard ctl			.
 		-colors				.
 

@@ -7,6 +7,8 @@
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <termios.h>
 
 #include "config.h"
 
@@ -20,7 +22,8 @@ struct TermInfo {
  * which counts the amount of new line characters
  * and line breaks due to terminal width
  */
-void hprint(struct TermInfo *term, const char *str)
+void
+hprint(struct TermInfo *term, const char *str)
 {
 	long unsigned i;
 	
@@ -35,45 +38,70 @@ void hprint(struct TermInfo *term, const char *str)
 	}
 }
 
-/* formatted print wrapper around hprint
- */
-void hprintf(struct TermInfo *term, const char *fmt, ...)
-{
-	char *buf;
-	va_list ap;
-	va_start(ap, fmt);
-	
-	sprintf(buf, fmt, ap);
-	hprint(term, buf);
-	
-	va_end(ap);
-}
-
-int main()
+void
+draw_menu(
+	struct TermInfo		*term,
+	const char		*header,
+	const struct Menu	 menu)
 {
 	long unsigned i;
-	struct winsize wsize;
-	struct TermInfo term;
-
-	/* get term size */
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
-	term.width = wsize.ws_width;
-	term.height = wsize.ws_height;
-
-	/* draw */
-	hprintf(&term, "%s%s\n", HEADER, MENU_MAIN.title);
+	
+	hprint(term, header);
+	hprint(term, menu.title);
+	hprint(term, "\n");
 
 	/* TODO this only works as long as the menu struct is cleanly allocated
 	 * find out if this could hinder portability
 	 */
-	for (i = 0; MENU_MAIN.entries[i].type != ET_NONE; i++)
-		hprintf(&term, "> %s\n", MENU_MAIN.entries[i].caption);
+	for (i = 0; menu.entries[i].type != ET_NONE; i++) {
+		hprint(term, "> ");
+		hprint(term, MENU_MAIN.entries[i].caption);
+		hprint(term, "\n");
+	}
 
-	/* TODO i < (term_height - entry_count) */
-	for (i = 0; i < 18; i++)
-		hprint(&term, "\n");
+	for (i = 0; term->y < (term->height - 1); i++)
+		hprint(term, "\n");
 
 	printf(":");
+}
+
+int
+main()
+{	
+	int active = -1;
+	struct winsize wsize;
+	struct termios orig, raw;
+	struct TermInfo term;
+	int key;
+	char c;
+
+	/* get term info and set raw mode */
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
+	term.width = wsize.ws_col;
+	term.height = wsize.ws_row;
+	term.x = 0;
+	term.y = 0;
+
+	tcgetattr(STDIN_FILENO, &orig);
+	raw = orig;
+	raw.c_lflag &= ~(ECHO | ICANON);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+
+	while (active) {
+		draw_menu(&term, HEADER, MENU_MAIN);
+		
+		key = read(STDIN_FILENO, &c, 1);
+	
+		/* TODO that doesn't quit */
+		if (key == 1) {
+			if (c == 'q') {
+				active = 0;
+			}
+		}
+	}
+	
+	/* restore original terminal mode */
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
 
 	return 0;
 }
