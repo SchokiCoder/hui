@@ -6,7 +6,15 @@
 		 amount of empty lines
 		 accordingly
 		-mainloop			v
+		-fixes				v
+			-disable stdout buf		v
+			-reset term x, y		v
 		-keyboard ctl			.
+			-cursor				.
+				-int, cntl			v
+				-draw				.
+			-j, k (down, up)		.
+			-l, h (right, left)		.
 		-colors				.
 
 	-v 0.1.0			.

@@ -22,15 +22,14 @@ struct TermInfo {
  * which counts the amount of new line characters
  * and line breaks due to terminal width
  */
-void
-hprint(struct TermInfo *term, const char *str)
+void hprint(struct TermInfo *term, const char *str)
 {
 	long unsigned i;
-	
+
 	for (i = 0; str[i] != '\0'; i++) {
 		putc(str[i], stdout);
 		term->x++;
-		
+
 		if (term->x > term->width || str[i] == '\n') {
 			term->x = 0;
 			term->y++;
@@ -39,13 +38,11 @@ hprint(struct TermInfo *term, const char *str)
 }
 
 void
-draw_menu(
-	struct TermInfo		*term,
-	const char		*header,
-	const struct Menu	 menu)
+draw_menu(struct TermInfo *term, const char *header, const struct Menu menu,
+	  const long unsigned cursor)
 {
 	long unsigned i;
-	
+
 	hprint(term, header);
 	hprint(term, menu.title);
 	hprint(term, "\n");
@@ -65,15 +62,14 @@ draw_menu(
 	printf(":");
 }
 
-int
-main()
-{	
+int main()
+{
 	int active = -1;
 	struct winsize wsize;
 	struct termios orig, raw;
 	struct TermInfo term;
-	int key;
 	char c;
+	long unsigned cursor = 0;
 
 	/* get term info and set raw mode */
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
@@ -82,24 +78,39 @@ main()
 	term.x = 0;
 	term.y = 0;
 
+	setbuf(stdout, NULL);
 	tcgetattr(STDIN_FILENO, &orig);
 	raw = orig;
 	raw.c_lflag &= ~(ECHO | ICANON);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
 	while (active) {
-		draw_menu(&term, HEADER, MENU_MAIN);
+		/* reset term info, draw */
+		term.x = 0;
+		term.y = 0;
+		draw_menu(&term, HEADER, MENU_MAIN, cursor);
+
+		/* key handling */
+		read(STDIN_FILENO, &c, 1);
 		
-		key = read(STDIN_FILENO, &c, 1);
-	
-		/* TODO that doesn't quit */
-		if (key == 1) {
-			if (c == 'q') {
-				active = 0;
-			}
+		switch (c) {
+		case 'q':
+			active = 0;
+			break;
+
+		case 'j':
+			if (MENU_MAIN.entries[cursor + 1].type !=
+			    ET_NONE)
+				cursor++;
+			break;
+
+		case 'k':
+			if (cursor > 0)
+				cursor--;
+			break;
 		}
 	}
-	
+
 	/* restore original terminal mode */
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
 
