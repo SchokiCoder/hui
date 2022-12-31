@@ -9,25 +9,27 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <termios.h>
+#include <termbox.h>
 
 #include "config.h"
 
-struct TermInfo {
+/*struct TermInfo {
 	long unsigned width;
 	long unsigned height;
 	long unsigned x, y;
-};
+};*/
 
 /* print function,
  * which counts the amount of new line characters
  * and line breaks due to terminal width
  */
-void hprint(struct TermInfo *term, const char *str)
+/*void hprint(struct TermInfo *term, const char *str)
 {
 	long unsigned i;
 
 	for (i = 0; str[i] != '\0'; i++) {
-		putc(str[i], stdout);
+		//putc(str[i], stdout);
+		tb_change_cell(0, 0, str[i], TB_BLUE, TB_GREEN);
 		term->x++;
 
 		if (term->x > term->width || str[i] == '\n') {
@@ -35,9 +37,9 @@ void hprint(struct TermInfo *term, const char *str)
 			term->y++;
 		}
 	}
-}
+}*/
 
-void
+/*void
 draw_menu(struct TermInfo *term, const char *header, const struct Menu menu,
 	  const long unsigned cursor)
 {
@@ -45,12 +47,12 @@ draw_menu(struct TermInfo *term, const char *header, const struct Menu menu,
 
 	hprint(term, header);
 	hprint(term, menu.title);
-	hprint(term, "\n");
+	hprint(term, "\n");*/
 
 	/* TODO this only works as long as the menu struct is cleanly allocated
 	 * find out if this could hinder portability
 	 */
-	for (i = 0; menu.entries[i].type != ET_NONE; i++) {
+/*	for (i = 0; menu.entries[i].type != ET_NONE; i++) {
 		hprint(term, "> ");
 		hprint(term, MENU_MAIN.entries[i].caption);
 		hprint(term, "\n");
@@ -60,19 +62,22 @@ draw_menu(struct TermInfo *term, const char *header, const struct Menu menu,
 		hprint(term, "\n");
 
 	printf(":");
-}
+}*/
 
 int main()
 {
 	int active = -1;
 	struct winsize wsize;
 	struct termios orig, raw;
-	struct TermInfo term;
+//	struct TermInfo term;
 	char c;
 	long unsigned cursor = 0;
 
 	/* get term info and set raw mode */
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
+	tb_init();
+	tb_select_output_mode(TB_OUTPUT_NORMAL);
+	
+/*	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
 	term.width = wsize.ws_col;
 	term.height = wsize.ws_row;
 	term.x = 0;
@@ -82,13 +87,22 @@ int main()
 	tcgetattr(STDIN_FILENO, &orig);
 	raw = orig;
 	raw.c_lflag &= ~(ECHO | ICANON);
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);*/
+	
+	tb_change_cell(2, 2, 'H', TB_BLUE, TB_GREEN);
+	tb_change_cell(2, 3, 'H', TB_BLUE, TB_GREEN);
+	tb_change_cell(3, 2, 'H', TB_BLUE, TB_GREEN);
+	tb_change_cell(3, 3, 'H', TB_BLUE, TB_GREEN);
+	tb_present();
+	
+	
 
 	while (active) {
 		/* reset term info, draw */
-		term.x = 0;
-		term.y = 0;
-		draw_menu(&term, HEADER, MENU_MAIN, cursor);
+		//term.x = 0;
+		//term.y = 0;
+		//draw_menu(&term, HEADER, MENU_MAIN, cursor);
+		
 
 		/* key handling */
 		read(STDIN_FILENO, &c, 1);
@@ -97,7 +111,8 @@ int main()
 		case 'q':
 			active = 0;
 			break;
-
+		}
+/*
 		case 'j':
 			if (MENU_MAIN.entries[cursor + 1].type !=
 			    ET_NONE)
@@ -108,11 +123,13 @@ int main()
 			if (cursor > 0)
 				cursor--;
 			break;
-		}
+		}*/
 	}
 
 	/* restore original terminal mode */
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
+	//tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
+	
+	tb_shutdown();
 
 	return 0;
 }
