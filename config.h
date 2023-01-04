@@ -28,7 +28,7 @@ static const struct Menu MENU_FILES = {
 
 static const struct Menu MENU_MAIN = {
 	.title = "Main menu\n"
-	         "—————————",
+	         "---------",
 	.entries = {
 		[0] = {
 			.caption = "Files menu",

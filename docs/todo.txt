@@ -9,15 +9,19 @@
 		-fixes				v
 			-disable stdout buf		v
 			-reset term x, y		v
-		-keyboard ctl			.
-			-cursor				.
-				-int, cntl			v
-				-draw				.
-			-j, k (down, up)		.
-			-l, h (right, left)		.
 		-termbox			.
-		 (get rid of the letgacy stuff)
+			-impl				v
+			-multichar fixes		.
+			 (middle score '—')
+			 
+		-keyboard ctl			.
+			-cursor				v
+				-int, cntl			v
+				-draw				v
+			-j, k (down, up)		v
+			-l, h (right, left)		.
 		-colors				.
 
 	-v 0.1.0			.
 }
+
