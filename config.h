@@ -8,10 +8,13 @@
 
 #include "menu.h"
 
+#define MENU_STACK_SIZE 64
+
 static const char *HEADER = "Maintenance tools\n" "\n";
 
 static const struct Menu MENU_FILES = {
-	.title = "Files menu",
+	.title = "Files menu\n"
+	         "----------",
 	.entries = {
 		[0] = {
 			.caption = "List home files",

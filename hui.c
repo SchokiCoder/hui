@@ -32,21 +32,29 @@ void hprint(struct TermCursor *tc, const char *str, uint16_t fg, uint16_t bg)
 	}
 }
 
+void draw_clear(uint16_t fg, uint16_t bg)
+{
+	long unsigned x, y;
+	
+	for (x = 0; x < tb_width(); x++) {
+		for (y = 0; y < tb_height(); y++) {
+			tb_change_cell(x, y, ' ', fg, bg);
+		}
+	}
+}
+
 void
-draw_menu(struct TermCursor *tc, const char *header, const struct Menu menu,
+draw_menu(struct TermCursor *tc, const char *header, const struct Menu *menu,
 	  const long unsigned cursor)
 {
 	long unsigned i;
 	uint16_t fg, bg;
 
 	hprint(tc, header, TB_WHITE, TB_DEFAULT);
-	hprint(tc, menu.title, TB_WHITE, TB_DEFAULT);
+	hprint(tc, menu->title, TB_WHITE, TB_DEFAULT);
 	hprint(tc, "\n", TB_WHITE, TB_DEFAULT);
 
-	/* TODO this only works as long as the menu struct is cleanly allocated
-	 * find out if this could hinder portability
-	 */
-	for (i = 0; menu.entries[i].type != ET_NONE; i++) {
+	for (i = 0; menu->entries[i].type != ET_NONE; i++) {
 		if (i == cursor) {
 			fg = TB_DEFAULT;
 			bg = TB_WHITE;
@@ -57,7 +65,7 @@ draw_menu(struct TermCursor *tc, const char *header, const struct Menu menu,
 		}
 		
 		hprint(tc, "> ", fg, bg);
-		hprint(tc, MENU_MAIN.entries[i].caption, fg, bg);
+		hprint(tc, menu->entries[i].caption, fg, bg);
 		hprint(tc, "\n", fg, bg);
 	}
 
@@ -73,6 +81,12 @@ int main()
 	long unsigned cursor = 0;
 	struct tb_event event;
 	struct TermCursor tc;
+	
+	long unsigned menu_stack_len = 1;
+	const struct Menu *menu_stack[MENU_STACK_SIZE] = {
+		[0] = &MENU_MAIN
+	};
+	const struct Menu *cur_menu = &MENU_MAIN;
 
 	if (tb_init() < 0) {
 		printf("Termbox init failed");
@@ -80,41 +94,58 @@ int main()
 	}
 	
 	tb_select_output_mode(TB_OUTPUT_NORMAL);
-	tb_set_clear_attributes(TB_WHITE, TB_DEFAULT);
 
 	while (active) {
 		tc.x = 0;
 		tc.y = 0;
 		
-		tb_clear();
+		draw_clear(TB_WHITE, TB_DEFAULT);
 		
-		draw_menu(&tc, HEADER, MENU_MAIN, cursor);
+		draw_menu(&tc, HEADER, cur_menu, cursor);
 		
 		tb_present();
 
 		/* key handling */
 		if (tb_poll_event(&event) == -1) {
-			hprint(&tc, "Poll event failed", TB_RED, TB_BLACK);
+			hprint(&tc, "Poll event failed", TB_RED, TB_DEFAULT);
 			goto cleanup;
 		}
 		
-		if (event.type == TB_EVENT_KEY) {
-			switch (event.ch) {
-			case 'q':
-				active = 0;
-				break;
+		/* if no keypress, skip */
+		if (event.type != TB_EVENT_KEY)
+			continue;
+		
+		switch (event.ch) {
+		case 'q':
+			active = 0;
+			break;
 
-			case 'j':
-				if (MENU_MAIN.entries[cursor + 1].type !=
-				    ET_NONE)
-					cursor++;
-				break;
+		case 'j':
+			if (cur_menu->entries[cursor + 1].type != ET_NONE)
+				cursor++;
+			break;
 
-			case 'k':
-				if (cursor > 0)
-					cursor--;
-				break;
+		case 'k':
+			if (cursor > 0)
+				cursor--;
+			break;
+
+		case 'l':
+			if (cur_menu->entries[cursor].type == ET_SUBMENU) {
+				cursor = 0;
+				cur_menu = cur_menu->entries[cursor].submenu;
+				menu_stack[menu_stack_len] = cur_menu;
+				menu_stack_len++;
 			}
+			break;
+		
+		case 'h':
+			if (menu_stack_len > 1) {
+				cursor = 0;
+				menu_stack_len--;
+				cur_menu = menu_stack[menu_stack_len - 1];
+			}
+			break;
 		}
 	}
 

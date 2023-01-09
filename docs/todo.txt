@@ -1,26 +1,31 @@
 {
-	-menu				.
-		-config struct			v
-		-draw				v
-		-get term size and print	v
-		 amount of empty lines
-		 accordingly
-		-mainloop			v
-		-fixes				v
-			-disable stdout buf		v
-			-reset term x, y		v
-		-termbox			.
-			-impl				v
-			-multichar fixes		.
-			 (middle score '—')
-			 
-		-keyboard ctl			.
+	-config struct			v
+	-draw				v
+	-get term size and print	v
+	 amount of empty lines
+	 accordingly
+	-mainloop			v
+		 
+	-keyboard ctl			v
+		-j, k (down, up)		v
 			-cursor				v
 				-int, cntl			v
 				-draw				v
-			-j, k (down, up)		v
-			-l, h (right, left)		.
-		-colors				.
+		-l, h (right, left)		v
+			-menu pointer			v
+			-menu switch			v
+	
+	-fixes				v
+		-disable stdout buf		v
+		-reset term x, y		v
+		-clear then redraw		.
+
+	-termbox			.
+		-impl				v
+		-multichar fixes		.
+		 (middle score '—')
+
+	-colors in config		.
 
 	-v 0.1.0			.
 }
