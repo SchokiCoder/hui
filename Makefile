@@ -4,10 +4,10 @@ SRC = hui.c
 LIBS = -l termbox
 
 hui: clean
-	$(CC) ${COPTS} ${LIBS} ${LOPTS} -Os -o $@ ${SRC}
+	$(CC) ${COPTS} ${LIBS} -Os -o $@ ${SRC}
 
 debug: clean
-	$(CC) ${COPTS} ${LIBS} ${LOPTS} -g -o hui ${SRC} -Wall -Wextra
+	$(CC) ${COPTS} ${LIBS} -g -o hui ${SRC} -Wall -Wextra
 
 clean:
 	rm -f hui

@@ -22,7 +22,7 @@ void hprint(struct TermCursor *tc, const char *str, uint16_t fg, uint16_t bg)
 	long unsigned i;
 
 	for (i = 0; str[i] != '\0'; i++) {
-		tb_change_cell(tc->x, tc->y, str[i], fg, bg);
+		tb_set_cell(tc->x, tc->y, str[i], fg, bg);
 		tc->x++;
 
 		if (tc->x > tb_width() || str[i] == '\n') {
@@ -38,7 +38,7 @@ void draw_clear(uint16_t fg, uint16_t bg)
 	
 	for (x = 0; x < tb_width(); x++) {
 		for (y = 0; y < tb_height(); y++) {
-			tb_change_cell(x, y, ' ', fg, bg);
+			tb_set_cell(x, y, ' ', fg, bg);
 		}
 	}
 }
@@ -50,9 +50,11 @@ draw_menu(struct TermCursor *tc, const char *header, const struct Menu *menu,
 	long unsigned i;
 	uint16_t fg, bg;
 
-	hprint(tc, header, TB_WHITE, TB_DEFAULT);
-	hprint(tc, menu->title, TB_WHITE, TB_DEFAULT);
-	hprint(tc, "\n", TB_WHITE, TB_DEFAULT);
+	//hprint(tc, header, TB_WHITE, TB_DEFAULT);
+	tb_printf(tc->x, tc->y++, 0, 0, header);
+	//hprint(tc, menu->title, TB_WHITE, TB_DEFAULT);
+	tb_printf(tc->x, tc->y++, 0, 0, menu->title);
+	//hprint(tc, "\n", TB_WHITE, TB_DEFAULT);
 
 	for (i = 0; menu->entries[i].type != ET_NONE; i++) {
 		if (i == cursor) {
@@ -64,9 +66,10 @@ draw_menu(struct TermCursor *tc, const char *header, const struct Menu *menu,
 			bg = TB_DEFAULT;
 		}
 		
-		hprint(tc, "> ", fg, bg);
-		hprint(tc, menu->entries[i].caption, fg, bg);
-		hprint(tc, "\n", fg, bg);
+		//hprint(tc, "> ", fg, bg);
+		//hprint(tc, menu->entries[i].caption, fg, bg);
+		//hprint(tc, "\n", fg, bg);
+		tb_printf(tc->x, tc->y++, fg, bg, "> %s", menu->entries[i].caption);
 	}
 
 	for (i = 0; tc->y < (tb_height() - 1); i++)
@@ -93,13 +96,14 @@ int main()
 		goto cleanup;
 	}
 	
-	tb_select_output_mode(TB_OUTPUT_NORMAL);
+	tb_set_output_mode(TB_OUTPUT_NORMAL);
 
 	while (active) {
 		tc.x = 0;
 		tc.y = 0;
 		
-		draw_clear(TB_WHITE, TB_DEFAULT);
+		//draw_clear(TB_WHITE, TB_DEFAULT);
+		tb_clear();
 		
 		draw_menu(&tc, HEADER, cur_menu, cursor);
 		
