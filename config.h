@@ -14,7 +14,7 @@ static const char *HEADER = "Maintenance tools\n" "\n";
 
 static const struct Menu MENU_FILES = {
 	.title = "Files menu\n"
-	         "----------",
+	         "——————————",
 	.entries = {
 		[0] = {
 			.caption = "List home files",
@@ -31,7 +31,7 @@ static const struct Menu MENU_FILES = {
 
 static const struct Menu MENU_MAIN = {
 	.title = "Main menu\n"
-	         "---------",
+	         "—————————",
 	.entries = {
 		[0] = {
 			.caption = "Files menu",

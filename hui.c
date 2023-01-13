@@ -3,129 +3,142 @@
  * license, that can be found in the LICENSE file.
  */
 
+#include <unistd.h>
+#include <sys/ioctl.h>
 #include <stdio.h>
-#include <stdint.h>
-#include <termbox.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <termios.h>
 
 #include "config.h"
 
-struct TermCursor {
+#define SEQ_CLEAR      "\x1b[2J"
+#define SEQ_FG_DEFAULT "\x1b[39m"
+#define SEQ_BG_DEFAULT "\x1b[49m"
+#define SEQ_CRSR_HIDE  "\033[?25l"
+#define SEQ_CRSR_SHOW  "\033[?25h"
+
+struct TermInfo {
+	long unsigned width;
+	long unsigned height;
 	long unsigned x, y;
 };
 
-/* print function, supporting colors,
+void set_fg(unsigned int r, unsigned int g, unsigned int b)
+{
+	printf("\x1b[38;2;%i;%i;%im", r, g, b);
+}
+
+void set_bg(unsigned int r, unsigned int g, unsigned int b)
+{
+	printf("\x1b[48;2;%i;%i;%im", r, g, b);
+}
+
+/* print function,
  * which counts the amount of new line characters
  * and line breaks due to terminal width
  */
-void hprint(struct TermCursor *tc, const char *str, uint16_t fg, uint16_t bg)
+void hprint(struct TermInfo *term, const char *str)
 {
 	long unsigned i;
 
 	for (i = 0; str[i] != '\0'; i++) {
-		tb_set_cell(tc->x, tc->y, str[i], fg, bg);
-		tc->x++;
+		putc(str[i], stdout);
+		term->x++;
 
-		if (tc->x > tb_width() || str[i] == '\n') {
-			tc->x = 0;
-			tc->y++;
-		}
-	}
-}
-
-void draw_clear(uint16_t fg, uint16_t bg)
-{
-	long unsigned x, y;
-	
-	for (x = 0; x < tb_width(); x++) {
-		for (y = 0; y < tb_height(); y++) {
-			tb_set_cell(x, y, ' ', fg, bg);
+		if (term->x > term->width || str[i] == '\n') {
+			term->x = 0;
+			term->y++;
 		}
 	}
 }
 
 void
-draw_menu(struct TermCursor *tc, const char *header, const struct Menu *menu,
-	  const long unsigned cursor)
+draw_menu(struct TermInfo     *term,
+          const char          *header,
+          const struct Menu   *menu,
+	  const long unsigned  cursor)
 {
 	long unsigned i;
-	uint16_t fg, bg;
 
-	//hprint(tc, header, TB_WHITE, TB_DEFAULT);
-	tb_printf(tc->x, tc->y++, 0, 0, header);
-	//hprint(tc, menu->title, TB_WHITE, TB_DEFAULT);
-	tb_printf(tc->x, tc->y++, 0, 0, menu->title);
-	//hprint(tc, "\n", TB_WHITE, TB_DEFAULT);
+	hprint(term, header);
+	hprint(term, menu->title);
+	hprint(term, "\n");
 
 	for (i = 0; menu->entries[i].type != ET_NONE; i++) {
 		if (i == cursor) {
-			fg = TB_DEFAULT;
-			bg = TB_WHITE;
+			set_fg(0, 0, 0);
+			set_bg(255, 255, 255);
 		}
 		else {
-			fg = TB_WHITE;
-			bg = TB_DEFAULT;
+			printf(SEQ_FG_DEFAULT);
+			printf(SEQ_BG_DEFAULT);
 		}
 		
-		//hprint(tc, "> ", fg, bg);
-		//hprint(tc, menu->entries[i].caption, fg, bg);
-		//hprint(tc, "\n", fg, bg);
-		tb_printf(tc->x, tc->y++, fg, bg, "> %s", menu->entries[i].caption);
+		hprint(term, "> ");
+		hprint(term, menu->entries[i].caption);
+		
+		printf(SEQ_FG_DEFAULT);
+		printf(SEQ_BG_DEFAULT);
+		
+		hprint(term, "\n");
 	}
 
-	for (i = 0; tc->y < (tb_height() - 1); i++)
-		hprint(tc, "\n", TB_WHITE, TB_DEFAULT);
+	for (i = 0; term->y < (term->height - 1); i++)
+		hprint(term, "\n");
 
-	hprint(tc, ":", TB_WHITE, TB_DEFAULT);
+	// TODO this printf doesn't mess with cursor pos, so i keep it for now
+	// this is a hprint later
+	printf(":");
 }
 
 int main()
 {
 	int active = -1;
+	struct winsize wsize;
+	struct termios orig, raw;
+	struct TermInfo term;
+	char c;
 	long unsigned cursor = 0;
-	struct tb_event event;
-	struct TermCursor tc;
-	
+
 	long unsigned menu_stack_len = 1;
 	const struct Menu *menu_stack[MENU_STACK_SIZE] = {
 		[0] = &MENU_MAIN
 	};
 	const struct Menu *cur_menu = &MENU_MAIN;
 
-	if (tb_init() < 0) {
-		printf("Termbox init failed");
-		goto cleanup;
-	}
+	/* get term info and set raw mode */	
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
+	term.width = wsize.ws_col;
+	term.height = wsize.ws_row;
+	term.x = 0;
+	term.y = 0;
+
+	setbuf(stdout, NULL);
+	tcgetattr(STDIN_FILENO, &orig);
+	raw = orig;
+	raw.c_lflag &= ~(ECHO | ICANON);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	
-	tb_set_output_mode(TB_OUTPUT_NORMAL);
+	printf(SEQ_CRSR_HIDE);
 
 	while (active) {
-		tc.x = 0;
-		tc.y = 0;
-		
-		//draw_clear(TB_WHITE, TB_DEFAULT);
-		tb_clear();
-		
-		draw_menu(&tc, HEADER, cur_menu, cursor);
-		
-		tb_present();
+		/* reset term info, draw */
+		term.x = 0;
+		term.y = 0;
+		puts(SEQ_CLEAR);
+		draw_menu(&term, HEADER, cur_menu, cursor);
 
 		/* key handling */
-		if (tb_poll_event(&event) == -1) {
-			hprint(&tc, "Poll event failed", TB_RED, TB_DEFAULT);
-			goto cleanup;
-		}
+		read(STDIN_FILENO, &c, 1);
 		
-		/* if no keypress, skip */
-		if (event.type != TB_EVENT_KEY)
-			continue;
-		
-		switch (event.ch) {
+		switch (c) {
 		case 'q':
 			active = 0;
 			break;
 
 		case 'j':
-			if (cur_menu->entries[cursor + 1].type != ET_NONE)
+			if (MENU_MAIN.entries[cursor + 1].type != ET_NONE)
 				cursor++;
 			break;
 
@@ -133,7 +146,7 @@ int main()
 			if (cursor > 0)
 				cursor--;
 			break;
-
+		
 		case 'l':
 			if (cur_menu->entries[cursor].type == ET_SUBMENU) {
 				cursor = 0;
@@ -153,8 +166,9 @@ int main()
 		}
 	}
 
-cleanup:	
-	tb_shutdown();
+	/* restore original terminal mode */
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
+	printf(SEQ_CRSR_SHOW);
 
 	return 0;
 }

@@ -18,13 +18,21 @@
 	-fixes				v
 		-disable stdout buf		v
 		-reset term x, y		v
-		-clear then redraw		.
+		-clear then redraw		x
 
-	-termbox			.
+	-termbox			x
 		-impl				v
-		-multichar fixes		.
+		-multichar fixes		x
 		 (middle score '—')
 
+	-rollback			v
+	 (a8a4e09c4bd6dac4c7df99c131bcf9ca7d57d990)
+	 
+	-backport menu switch sys	v
+	-clear screen			v
+	-colors				v
+	-hide terminal text cursor	v
+	-draw menu cursor		v
 	-colors in config		.
 
 	-v 0.1.0			.
