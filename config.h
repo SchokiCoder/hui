@@ -6,9 +6,66 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#include "color.h"
 #include "menu.h"
 
 #define MENU_STACK_SIZE 64
+
+static const struct Color HEADER_FG = {
+	.active = -1,
+	.r = 255,
+	.g = 255,
+	.b = 255
+};
+
+static const struct Color HEADER_BG = {
+	.active = 0,
+	.r = 0,
+	.g = 0,
+	.b = 0
+};
+
+static const struct Color TITLE_FG = {
+	.active = -1,
+	.r = 255,
+	.g = 255,
+	.b = 255
+};
+
+static const struct Color TITLE_BG = {
+	.active = 0,
+	.r = 0,
+	.g = 0,
+	.b = 0
+};
+
+static const struct Color ENTRY_FG = {
+	.active = -1,
+	.r = 255,
+	.g = 255,
+	.b = 255
+};
+
+static const struct Color ENTRY_BG = {
+	.active = 0,
+	.r = 0,
+	.g = 0,
+	.b = 0
+};
+
+static const struct Color ENTRY_HOVER_FG = {
+	.active = -1,
+	.r = 0,
+	.g = 0,
+	.b = 0
+};
+
+static const struct Color ENTRY_HOVER_BG = {
+	.active = -1,
+	.r = 255,
+	.g = 255,
+	.b = 255
+};
 
 static const char *HEADER = "Maintenance tools\n" "\n";
 

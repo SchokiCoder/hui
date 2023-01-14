@@ -139,4 +139,4 @@ modifier is given unnecessarily.
 After all other things had been done, these are next:  
 
 - various commands, keybinds and cmdline options
-- libc independence
+

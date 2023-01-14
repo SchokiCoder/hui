@@ -1,6 +1,6 @@
 CC = cc
 COPTS = -std=c99 -pedantic
-SRC = hui.c
+SRC = hui.c color.c
 
 hui: clean
 	$(CC) ${COPTS} -Os -o $@ ${SRC}

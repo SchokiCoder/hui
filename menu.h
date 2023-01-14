@@ -6,6 +6,10 @@
 #ifndef _MENU_H
 #define _MENU_H
 
+#include "config.h"
+
+#define MENU_MAX_ENTRIES 128
+
 struct Entry;
 struct Menu;
 
@@ -25,7 +29,7 @@ struct Entry {
 
 struct Menu {
 	char *title;
-	struct Entry entries[128];
+	struct Entry entries[MENU_MAX_ENTRIES];
 };
 
 #endif /* _MENU_H */

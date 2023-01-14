@@ -8,31 +8,19 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
 #include <termios.h>
 
+#include "sequences.h"
 #include "config.h"
 
-#define SEQ_CLEAR      "\x1b[2J"
-#define SEQ_FG_DEFAULT "\x1b[39m"
-#define SEQ_BG_DEFAULT "\x1b[49m"
-#define SEQ_CRSR_HIDE  "\033[?25l"
-#define SEQ_CRSR_SHOW  "\033[?25h"
+#define VERSION "0.0.1"
 
 struct TermInfo {
 	long unsigned width;
 	long unsigned height;
 	long unsigned x, y;
 };
-
-void set_fg(unsigned int r, unsigned int g, unsigned int b)
-{
-	printf("\x1b[38;2;%i;%i;%im", r, g, b);
-}
-
-void set_bg(unsigned int r, unsigned int g, unsigned int b)
-{
-	printf("\x1b[48;2;%i;%i;%im", r, g, b);
-}
 
 /* print function,
  * which counts the amount of new line characters
@@ -53,6 +41,18 @@ void hprint(struct TermInfo *term, const char *str)
 	}
 }
 
+/* hprint with color setting */
+void
+hprintc(struct TermInfo    *term,
+        const char         *str,
+        const struct Color  fg,
+        const struct Color  bg)
+{
+	set_fg(fg);
+	set_bg(bg);
+	hprint(term, str);
+}
+
 void
 draw_menu(struct TermInfo     *term,
           const char          *header,
@@ -61,18 +61,21 @@ draw_menu(struct TermInfo     *term,
 {
 	long unsigned i;
 
-	hprint(term, header);
-	hprint(term, menu->title);
+	hprintc(term, header, HEADER_FG, HEADER_BG);
+	hprintc(term, menu->title, TITLE_FG, TITLE_BG);
+	
+	printf(SEQ_FG_DEFAULT);
+	printf(SEQ_BG_DEFAULT);
 	hprint(term, "\n");
 
 	for (i = 0; menu->entries[i].type != ET_NONE; i++) {
 		if (i == cursor) {
-			set_fg(0, 0, 0);
-			set_bg(255, 255, 255);
+			set_fg(ENTRY_HOVER_FG);
+			set_bg(ENTRY_HOVER_BG);
 		}
 		else {
-			printf(SEQ_FG_DEFAULT);
-			printf(SEQ_BG_DEFAULT);
+			set_fg(ENTRY_FG);
+			set_bg(ENTRY_BG);
 		}
 		
 		hprint(term, "> ");
@@ -80,7 +83,6 @@ draw_menu(struct TermInfo     *term,
 		
 		printf(SEQ_FG_DEFAULT);
 		printf(SEQ_BG_DEFAULT);
-		
 		hprint(term, "\n");
 	}
 
@@ -92,7 +94,7 @@ draw_menu(struct TermInfo     *term,
 	printf(":");
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 	int active = -1;
 	struct winsize wsize;
@@ -106,6 +108,12 @@ int main()
 		[0] = &MENU_MAIN
 	};
 	const struct Menu *cur_menu = &MENU_MAIN;
+	
+	/* parse opts */
+	if (argc == 2 && !strcmp("-v", argv[1])) {
+		printf("hui: version " VERSION "\n");
+		return 0;
+	}
 
 	/* get term info and set raw mode */	
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
