@@ -44,9 +44,9 @@ void hprint(struct TermInfo *term, const char *str)
 /* hprint with color setting */
 void
 hprintc(struct TermInfo    *term,
-        const char         *str,
         const struct Color  fg,
-        const struct Color  bg)
+        const struct Color  bg,
+        const char         *str)
 {
 	set_fg(fg);
 	set_bg(bg);
@@ -57,12 +57,13 @@ void
 draw_menu(struct TermInfo     *term,
           const char          *header,
           const struct Menu   *menu,
-	  const long unsigned  cursor)
+	  const long unsigned  cursor,
+	  const char          *feedback)
 {
 	long unsigned i;
 
-	hprintc(term, header, HEADER_FG, HEADER_BG);
-	hprintc(term, menu->title, TITLE_FG, TITLE_BG);
+	hprintc(term, HEADER_FG, HEADER_BG, header);
+	hprintc(term, TITLE_FG, TITLE_BG, menu->title);
 	
 	printf(SEQ_FG_DEFAULT);
 	printf(SEQ_BG_DEFAULT);
@@ -92,16 +93,25 @@ draw_menu(struct TermInfo     *term,
 	// TODO this printf doesn't mess with cursor pos, so i keep it for now
 	// this is a hprint later
 	printf(":");
+	
+	if (feedback == NULL || strlen(feedback) <= 0)
+		return;
+	
+	set_fg(FEEDBACK_FG);
+	set_bg(FEEDBACK_BG);
+	printf(feedback); // TODO evil printf -> hprint
 }
 
 int main(int argc, char *argv[])
 {
-	int active = -1;
 	struct winsize wsize;
 	struct termios orig, raw;
 	struct TermInfo term;
 	char c;
+	
+	int active = -1;
 	long unsigned cursor = 0;
+	const char *feedback = "this is a test"; // TODO set to NULL
 
 	long unsigned menu_stack_len = 1;
 	const struct Menu *menu_stack[MENU_STACK_SIZE] = {
@@ -135,7 +145,7 @@ int main(int argc, char *argv[])
 		term.x = 0;
 		term.y = 0;
 		puts(SEQ_CLEAR);
-		draw_menu(&term, HEADER, cur_menu, cursor);
+		draw_menu(&term, HEADER, cur_menu, cursor, feedback);
 
 		/* key handling */
 		read(STDIN_FILENO, &c, 1);
@@ -157,6 +167,7 @@ int main(int argc, char *argv[])
 		
 		case 'l':
 			if (cur_menu->entries[cursor].type == ET_SUBMENU) {
+				feedback = NULL;
 				cursor = 0;
 				cur_menu = cur_menu->entries[cursor].submenu;
 				menu_stack[menu_stack_len] = cur_menu;
@@ -166,6 +177,7 @@ int main(int argc, char *argv[])
 		
 		case 'h':
 			if (menu_stack_len > 1) {
+				feedback = NULL;
 				cursor = 0;
 				menu_stack_len--;
 				cur_menu = menu_stack[menu_stack_len - 1];

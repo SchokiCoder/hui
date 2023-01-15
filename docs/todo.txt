@@ -1,11 +1,21 @@
 {
-	-portability tests		.
-	-feedback line			.
-	-feedback line color cfg	.
+	-portability tests		v
+	 works on openbsd and freebsd
+	 via tcc
+	 
+	-feedback line			v
+	-feedback color cfg		v
+	-header bg color		.
 	-body bg color			.
+	-footer bg color		.
 	-internal cmd line color	.
+	-handle in src todos		.
+	 (and // comments)
+
 	-v 0.1.0			.
 }
+
+--- Done ---
 
 {
 	-config struct			v

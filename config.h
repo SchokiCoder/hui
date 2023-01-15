@@ -67,6 +67,20 @@ static const struct Color ENTRY_HOVER_BG = {
 	.b = 255
 };
 
+static const struct Color FEEDBACK_FG = {
+	.active = -1,
+	.r = 175,
+	.g = 175,
+	.b = 175
+};
+
+static const struct Color FEEDBACK_BG = {
+	.active = 0,
+	.r = 0,
+	.g = 0,
+	.b = 0
+};
+
 static const char *HEADER = "Maintenance tools\n" "\n";
 
 static const struct Menu MENU_FILES = {
