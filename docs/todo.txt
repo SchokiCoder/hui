@@ -5,12 +5,17 @@
 	 
 	-feedback line			v
 	-feedback color cfg		v
-	-header bg color		.
-	-body bg color			.
-	-footer bg color		.
-	-internal cmd line color	.
-	-handle in src todos		.
+	-cmd line color cfg		v
+	-draw simplicifcation		v
+	-bg color			v
+	-internal cmd line color	v
+	-handle in src todos		v
 	 (and // comments)
+	-cmdline prepend string cfg	.
+	-cmdline enter			.
+	 (':')
+	-cmdline leave			.
+	 (ctl + 'c'; enter)
 
 	-v 0.1.0			.
 }

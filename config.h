@@ -81,6 +81,27 @@ static const struct Color FEEDBACK_BG = {
 	.b = 0
 };
 
+static const struct Color CMDLINE_FG = {
+	.active = -1,
+	.r = 240,
+	.g = 255,
+	.b = 240
+};
+
+static const struct Color CMDLINE_BG = {
+	.active = 0,
+	.r = 0,
+	.g = 0,
+	.b = 0
+};
+
+static const struct Color OVERALL_BG = {
+	.active = 0,
+	.r = 0,
+	.g = 20,
+	.b = 0
+};
+
 static const char *HEADER = "Maintenance tools\n" "\n";
 
 static const struct Menu MENU_FILES = {

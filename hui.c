@@ -16,102 +16,75 @@
 
 #define VERSION "0.0.1"
 
-struct TermInfo {
-	long unsigned width;
-	long unsigned height;
-	long unsigned x, y;
-};
+static long unsigned term_x_last, term_y_last;
 
-/* print function,
- * which counts the amount of new line characters
- * and line breaks due to terminal width
- */
-void hprint(struct TermInfo *term, const char *str)
+void move_cursor(const long unsigned x, const long unsigned y)
 {
-	long unsigned i;
-
-	for (i = 0; str[i] != '\0'; i++) {
-		putc(str[i], stdout);
-		term->x++;
-
-		if (term->x > term->width || str[i] == '\n') {
-			term->x = 0;
-			term->y++;
-		}
-	}
+	printf("\033[%lu;%luH", y, x);
 }
 
-/* hprint with color setting */
+/* printf with color setting */
 void
-hprintc(struct TermInfo    *term,
-        const struct Color  fg,
+hprintf(const struct Color  fg,
         const struct Color  bg,
-        const char         *str)
+        const char         *fmt,
+        ...)
 {
+	va_list ap;
+	va_start(ap, fmt);
+	
 	set_fg(fg);
 	set_bg(bg);
-	hprint(term, str);
+	vfprintf(stdout, fmt, ap);
+	
+	va_end(ap);
 }
 
 void
-draw_menu(struct TermInfo     *term,
-          const char          *header,
+draw_menu(const char          *header,
           const struct Menu   *menu,
 	  const long unsigned  cursor,
 	  const char          *feedback)
 {
 	long unsigned i;
-
-	hprintc(term, HEADER_FG, HEADER_BG, header);
-	hprintc(term, TITLE_FG, TITLE_BG, menu->title);
 	
-	printf(SEQ_FG_DEFAULT);
-	printf(SEQ_BG_DEFAULT);
-	hprint(term, "\n");
+	/* draw bg colors */
+	hprintf(OVERALL_BG, OVERALL_BG, SEQ_CLEAR);
+	
+	/* draw menu text */
+	move_cursor(1, 1);
+	hprintf(HEADER_FG, HEADER_BG, header);
+	hprintf(TITLE_FG, TITLE_BG, "%s\n", menu->title);
 
 	for (i = 0; menu->entries[i].type != ET_NONE; i++) {
 		if (i == cursor) {
-			set_fg(ENTRY_HOVER_FG);
-			set_bg(ENTRY_HOVER_BG);
+			hprintf(ENTRY_HOVER_FG, ENTRY_HOVER_BG,
+			        "> %s\n", menu->entries[i].caption);
 		}
 		else {
-			set_fg(ENTRY_FG);
-			set_bg(ENTRY_BG);
+			hprintf(ENTRY_FG, ENTRY_BG,
+			        "> %s\n", menu->entries[i].caption);
 		}
-		
-		hprint(term, "> ");
-		hprint(term, menu->entries[i].caption);
-		
-		printf(SEQ_FG_DEFAULT);
-		printf(SEQ_BG_DEFAULT);
-		hprint(term, "\n");
 	}
-
-	for (i = 0; term->y < (term->height - 1); i++)
-		hprint(term, "\n");
-
-	// TODO this printf doesn't mess with cursor pos, so i keep it for now
-	// this is a hprint later
-	printf(":");
+	
+	move_cursor(1, term_y_last);	
+	hprintf(CMDLINE_FG, CMDLINE_BG, ":");
 	
 	if (feedback == NULL || strlen(feedback) <= 0)
 		return;
 	
-	set_fg(FEEDBACK_FG);
-	set_bg(FEEDBACK_BG);
-	printf(feedback); // TODO evil printf -> hprint
+	hprintf(FEEDBACK_FG, FEEDBACK_BG, feedback);
 }
 
 int main(int argc, char *argv[])
 {
 	struct winsize wsize;
 	struct termios orig, raw;
-	struct TermInfo term;
 	char c;
 	
 	int active = -1;
 	long unsigned cursor = 0;
-	const char *feedback = "this is a test"; // TODO set to NULL
+	const char *feedback = NULL;
 
 	long unsigned menu_stack_len = 1;
 	const struct Menu *menu_stack[MENU_STACK_SIZE] = {
@@ -127,10 +100,8 @@ int main(int argc, char *argv[])
 
 	/* get term info and set raw mode */	
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
-	term.width = wsize.ws_col;
-	term.height = wsize.ws_row;
-	term.x = 0;
-	term.y = 0;
+	term_x_last = wsize.ws_col;
+	term_y_last = wsize.ws_row;
 
 	setbuf(stdout, NULL);
 	tcgetattr(STDIN_FILENO, &orig);
@@ -141,11 +112,7 @@ int main(int argc, char *argv[])
 	printf(SEQ_CRSR_HIDE);
 
 	while (active) {
-		/* reset term info, draw */
-		term.x = 0;
-		term.y = 0;
-		puts(SEQ_CLEAR);
-		draw_menu(&term, HEADER, cur_menu, cursor, feedback);
+		draw_menu(HEADER, cur_menu, cursor, feedback);
 
 		/* key handling */
 		read(STDIN_FILENO, &c, 1);
@@ -186,9 +153,11 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* restore original terminal mode */
+	/* restore original terminal settings */
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
 	printf(SEQ_CRSR_SHOW);
+	printf(SEQ_FG_DEFAULT);
+	printf(SEQ_BG_DEFAULT);
 
 	return 0;
 }
