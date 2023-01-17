@@ -1,3 +1,5 @@
+--- Done ---
+
 {
 	-portability tests		v
 	 works on openbsd and freebsd
@@ -8,19 +10,16 @@
 	-cmd line color cfg		v
 	-draw simplicifcation		v
 	-bg color			v
-	-internal cmd line color	v
 	-handle in src todos		v
 	 (and // comments)
-	-cmdline prepend string cfg	.
-	-cmdline enter			.
+	-cmdline prepend string cfg	v
+	-cmdline enter			v
 	 (':')
-	-cmdline leave			.
+	-cmdline leave			v
 	 (ctl + 'c'; enter)
 
-	-v 0.1.0			.
+	-v 0.1.0			v
 }
-
---- Done ---
 
 {
 	-config struct			v

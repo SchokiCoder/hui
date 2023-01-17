@@ -9,6 +9,8 @@
 #include "color.h"
 #include "menu.h"
 
+#define CMD_IN_MAX_LEN 64
+
 #define MENU_STACK_SIZE 64
 
 static const struct Color HEADER_FG = {
@@ -102,7 +104,8 @@ static const struct Color OVERALL_BG = {
 	.b = 0
 };
 
-static const char *HEADER = "Maintenance tools\n" "\n";
+static const char *HEADER =      "Maintenance tools\n" "\n";
+static const char *CMD_PREPEND = ":";
 
 static const struct Menu MENU_FILES = {
 	.title = "Files menu\n"

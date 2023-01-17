@@ -14,13 +14,39 @@
 #include "sequences.h"
 #include "config.h"
 
-#define VERSION "0.0.1"
+enum InputMode {
+	IM_NORMAL = 0,
+	IM_CMD =    1
+};
+
+#define VERSION "0.1.0"
+
+#define SIGINT  '\003'
+#define SIGTSTP '\032'
 
 static long unsigned term_x_last, term_y_last;
 
 void move_cursor(const long unsigned x, const long unsigned y)
 {
 	printf("\033[%lu;%luH", y, x);
+}
+
+
+void strn_bleach(char *str, const long unsigned len)
+{
+	long unsigned i;
+	
+	for (i = 0; i < len; i++) {
+		str[i] = '\0';
+	}
+}
+
+void str_add_char(char *str, const char c)
+{
+	long unsigned len = strlen(str);
+	
+	str[len] = c;
+	str[len + 1] = '\0';
 }
 
 /* printf with color setting */
@@ -44,7 +70,8 @@ void
 draw_menu(const char          *header,
           const struct Menu   *menu,
 	  const long unsigned  cursor,
-	  const char          *feedback)
+	  const char          *feedback,
+	  const char          *cmd_input)
 {
 	long unsigned i;
 	
@@ -68,12 +95,15 @@ draw_menu(const char          *header,
 	}
 	
 	move_cursor(1, term_y_last);	
-	hprintf(CMDLINE_FG, CMDLINE_BG, ":");
+	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
 	
-	if (feedback == NULL || strlen(feedback) <= 0)
-		return;
-	
-	hprintf(FEEDBACK_FG, FEEDBACK_BG, feedback);
+	if (cmd_input != NULL && strlen(cmd_input) > 0) {
+		hprintf(CMDLINE_FG, CMDLINE_BG, cmd_input);
+	} else {
+		if (feedback != NULL && strlen(feedback) > 0) {
+			hprintf(FEEDBACK_FG, FEEDBACK_BG, feedback);
+		}
+	}
 }
 
 int main(int argc, char *argv[])
@@ -83,6 +113,8 @@ int main(int argc, char *argv[])
 	char c;
 	
 	int active = -1;
+	enum InputMode imode = IM_NORMAL;
+	char cmdin[CMD_IN_MAX_LEN] = "";
 	long unsigned cursor = 0;
 	const char *feedback = NULL;
 
@@ -106,16 +138,41 @@ int main(int argc, char *argv[])
 	setbuf(stdout, NULL);
 	tcgetattr(STDIN_FILENO, &orig);
 	raw = orig;
-	raw.c_lflag &= ~(ECHO | ICANON);
+	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	
 	printf(SEQ_CRSR_HIDE);
 
 	while (active) {
-		draw_menu(HEADER, cur_menu, cursor, feedback);
+		draw_menu(HEADER, cur_menu, cursor, feedback, cmdin);
+
+		if (imode == IM_CMD) {
+			printf(SEQ_CRSR_SHOW);
+		} else {
+			printf(SEQ_CRSR_HIDE);
+		}
 
 		/* key handling */
 		read(STDIN_FILENO, &c, 1);
+		
+		if (imode == IM_CMD) {
+			switch (c) {
+			case '\n':
+				// TODO cmd parsing will be here
+				// TODO NO BREAK STATEMENT here
+				
+			case SIGINT:
+			case SIGTSTP:
+				strn_bleach(cmdin, CMD_IN_MAX_LEN);
+				imode = IM_NORMAL;
+				break;
+			default:
+				str_add_char(cmdin, c);
+				break;
+			}
+
+			continue;
+		}
 		
 		switch (c) {
 		case 'q':
@@ -149,6 +206,15 @@ int main(int argc, char *argv[])
 				menu_stack_len--;
 				cur_menu = menu_stack[menu_stack_len - 1];
 			}
+			break;
+		
+		case ':':
+			imode = IM_CMD;
+			break;
+		
+		case SIGINT:
+		case SIGTSTP:
+			active = 0;
 			break;
 		}
 	}
