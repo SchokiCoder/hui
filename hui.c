@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'j':
-			if (MENU_MAIN.entries[cursor + 1].type != ET_NONE)
+			if (cur_menu->entries[cursor + 1].type != ET_NONE)
 				cursor++;
 			break;
 
@@ -191,20 +191,20 @@ int main(int argc, char *argv[])
 		
 		case 'l':
 			if (cur_menu->entries[cursor].type == ET_SUBMENU) {
-				feedback = NULL;
-				cursor = 0;
 				cur_menu = cur_menu->entries[cursor].submenu;
 				menu_stack[menu_stack_len] = cur_menu;
 				menu_stack_len++;
+				feedback = NULL;
+				cursor = 0;
 			}
 			break;
 		
 		case 'h':
 			if (menu_stack_len > 1) {
-				feedback = NULL;
-				cursor = 0;
 				menu_stack_len--;
 				cur_menu = menu_stack[menu_stack_len - 1];
+				feedback = NULL;
+				cursor = 0;
 			}
 			break;
 		
