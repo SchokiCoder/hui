@@ -1,8 +1,20 @@
 {
+	-menus with a lot of entries	.
+	 ends up butchering output
+	 -> vertical menu scrolling
+}
+
+{
+	-fix menu open using cursor=0	v
+	-fix cursor down		v
+	 using main menu
+	 
+	-code restructuring		v
+
 	-commands			.
 		-"quit", "q", "exit"		.
 		-number				.
-		 (move entry cursor to x)
+		 (move entry cursor to num)
 		
 	-keybinds			.
 		-number + key sys		.
@@ -12,18 +24,6 @@
 		-"gg" goto 1st entry		.
 	
 	-v 0.2.0
-}
-
-{
-	-fix menu open using cursor=0	v
-	-fix cursor down		v
-	 using main menu
-	 
-	-menus with a lot of entries	.
-	 end up butchering output
-	 -> vertical menu scrolling
-	 
-	-v 0.1.1			.
 }
 
 --- Done ---
