@@ -49,6 +49,15 @@ void init_runtime(struct Runtime *rt)
 	rt->cur_menu = &MENU_MAIN;
 }
 
+long unsigned count_menu_entries(const struct Menu *menu)
+{
+	long unsigned i;
+	
+	for (i = 0; menu->entries[i].type != ET_NONE; i++) {}
+	
+	return i;
+}
+
 void move_cursor(const long unsigned x, const long unsigned y)
 {
 	printf("\033[%lu;%luH", y, x);
@@ -125,6 +134,31 @@ void draw_menu(const char *header, const struct Runtime *rt)
 	}
 }
 
+void handle_command(const char *cmd, struct Runtime *rt)
+{
+	int n;
+	long unsigned menu_len;
+	
+	if (strcmp(cmd, "q") == 0
+	    || strcmp(cmd, "quit") == 0
+	    || strcmp(cmd, "exit") == 0) {
+		rt->active = 0;
+	} else {
+		n = atoi(rt->cmdin);
+		
+		if (n > 0) {
+			menu_len = count_menu_entries(rt->cur_menu);
+			if (n >= menu_len)
+				rt->cursor = menu_len - 1;
+			else
+				rt->cursor = n - 1;
+		} else {
+			rt->feedback = "Command not recognised";
+			return;
+		}
+	}
+}
+
 /* Handles key presses from user.
  * Returns:
  * 0 - nothing needs to be done by calling code
@@ -135,8 +169,7 @@ int handle_key(const char key, struct Runtime *rt)
 	if (rt->imode == IM_CMD) {
 		switch (key) {
 		case '\n':
-			// TODO cmd parsing will be here
-			// TODO NO BREAK STATEMENT here
+			handle_command(rt->cmdin, rt);
 			
 		case SIGINT:
 		case SIGTSTP:

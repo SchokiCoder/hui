@@ -11,9 +11,9 @@
 	 
 	-code restructuring		v
 
-	-commands			.
-		-"quit", "q", "exit"		.
-		-number				.
+	-commands			v
+		-"quit", "q", "exit"		v
+		-number				v
 		 (move entry cursor to num)
 		
 	-keybinds			.

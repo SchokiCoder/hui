@@ -32,5 +32,7 @@ struct Menu {
 	struct Entry entries[MENU_MAX_ENTRIES];
 };
 
+long unsigned count_menu_entries(const struct Menu *menu);
+
 #endif /* _MENU_H */
 
