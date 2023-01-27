@@ -1,8 +1,32 @@
+{ optional features
+	-runtime menu creation		?
+	
+	-keybinds			.
+		-number + key sys		.
+		-bind display			.
+		 (display characters,
+		  that do not yet match a bind)
+		-"gg" goto 1st entry		.
+		-'g' goto entry			.
+		-'G' goto last entry		.
+}
+
 {
+	-multiline feedback		.
 	-menus with a lot of entries	.
 	 ends up butchering output
 	 -> vertical menu scrolling
+
+	-execute			.
+		-keybind			.
+		-get stdout			.
+		-get stderr			.
+		-print according to goal	.
+		
+	-v 0.3.0			.
 }
+
+--- Done ---
 
 {
 	-fix menu open using cursor=0	v
@@ -15,18 +39,9 @@
 		-"quit", "q", "exit"		v
 		-number				v
 		 (move entry cursor to num)
-		
-	-keybinds			.
-		-number + key sys		.
-		-number display			.
-		-'g' goto entry			.
-		-'G' goto last entry		.
-		-"gg" goto 1st entry		.
 	
-	-v 0.2.0
+	-v 0.2.0			v
 }
-
---- Done ---
 
 {
 	-portability tests		v

@@ -19,7 +19,7 @@ enum InputMode {
 	IM_CMD =    1
 };
 
-#define VERSION "0.1.0"
+#define VERSION "0.2.0"
 
 #define SIGINT  '\003'
 #define SIGTSTP '\032'
@@ -63,7 +63,8 @@ void move_cursor(const long unsigned x, const long unsigned y)
 	printf("\033[%lu;%luH", y, x);
 }
 
-/* zero out n characters of string */
+/* zero out n characters of string
+ */
 void strn_bleach(char *str, const long unsigned len)
 {
 	long unsigned i;
@@ -73,7 +74,8 @@ void strn_bleach(char *str, const long unsigned len)
 	}
 }
 
-/* append char to string */
+/* append char to string
+ */
 void str_add_char(char *str, const char c)
 {
 	long unsigned len = strlen(str);
@@ -82,7 +84,8 @@ void str_add_char(char *str, const char c)
 	str[len + 1] = '\0';
 }
 
-/* printf with color setting */
+/* printf with color setting
+ */
 void
 hprintf(const struct Color  fg,
         const struct Color  bg,
@@ -99,6 +102,8 @@ hprintf(const struct Color  fg,
 	va_end(valist);
 }
 
+/* Doesn't manipulate the runtime.
+ */
 void draw_menu(const char *header, const struct Runtime *rt)
 {
 	long unsigned i;
@@ -134,6 +139,8 @@ void draw_menu(const char *header, const struct Runtime *rt)
 	}
 }
 
+/* Manipulates the runtime depending on given command.
+ */
 void handle_command(const char *cmd, struct Runtime *rt)
 {
 	int n;
@@ -159,7 +166,7 @@ void handle_command(const char *cmd, struct Runtime *rt)
 	}
 }
 
-/* Handles key presses from user.
+/* Manipulates the runtime depending on given key.
  * Returns:
  * 0 - nothing needs to be done by calling code
  * 1 - the mainloop should "continue"
