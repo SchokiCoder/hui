@@ -35,6 +35,7 @@ struct Runtime {
 	long unsigned        menu_stack_len;
 	const struct Menu   *menu_stack[MENU_STACK_SIZE];
 	char                *feedback;
+	char                *long_feedback; /* aka multi line feedback */
 };
 
 void init_runtime(struct Runtime *rt)
@@ -43,7 +44,17 @@ void init_runtime(struct Runtime *rt)
 	rt->imode = IM_NORMAL;
 	rt->cmdin[0] = '\0';
 	rt->cursor = 0;
-	rt->feedback = NULL;
+	
+	
+	#warning TEST_VALUES_AHEAD
+	rt->feedback = "feedback single";
+	rt->long_feedback = "Swallowed shampoo,\nprobably gonna die.\nIt smelled like fruit,\nthat was a lie.";
+	/* once an sub-app gives strings via stdout and stderr, they will be
+	 * assigned to our char pointers ^
+	 * so for testing i will just simulate this manually for now
+	 */
+	
+	
 	rt->menu_stack_len = 1;
 	rt->menu_stack[0] = &MENU_MAIN;
 	rt->cur_menu = &MENU_MAIN;
@@ -84,6 +95,29 @@ void str_add_char(char *str, const char c)
 	str[len + 1] = '\0';
 }
 
+/* Returns:
+   0 - when the string fits in one line
+   1 - when the string doesn't fit in one line
+ */
+int str_has_multiple_lines(char *str, long unsigned line_len)
+{
+	long unsigned i;
+	
+	for (i = i; i < line_len; i++) {
+		switch (str[i]) {
+		case '\n':
+			return 1;
+			break;
+			
+		case '\0':
+			return 0;
+			break;
+		}
+	}
+	
+	return 1;
+}
+
 /* printf with color setting
  */
 void
@@ -102,19 +136,62 @@ hprintf(const struct Color  fg,
 	va_end(valist);
 }
 
-/* Doesn't manipulate the runtime.
- */
-void draw_menu(const char *header, const struct Runtime *rt)
+void draw_upper(const char *header, const char *title)
 {
-	long unsigned i;
-	
 	/* draw bg color (clear) */
 	hprintf(OVERALL_BG, OVERALL_BG, SEQ_CLEAR);
 	
 	/* draw menu text */
 	move_cursor(1, 1);
 	hprintf(HEADER_FG, HEADER_BG, header);
-	hprintf(TITLE_FG, TITLE_BG, "%s\n", rt->cur_menu->title);
+	hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
+}
+
+void draw_lower(const char *cmdin, const char *feedback)
+{
+	move_cursor(1, term_y_last);
+	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
+	
+	if (cmdin != NULL && strlen(cmdin) > 0) {
+		hprintf(CMDLINE_FG, CMDLINE_BG, cmdin);
+	} else {
+		if (feedback != NULL && strlen(feedback) > 0) {
+			hprintf(FEEDBACK_FG, FEEDBACK_BG, feedback);
+		}
+	}
+}
+
+/* Doesn't manipulate the runtime.
+ */
+void draw_multiline_feedback(const char *header, const struct Runtime *rt)
+{	
+	const long unsigned long_feedback_len = strlen(rt->long_feedback);
+	long unsigned i, x = 0;
+	
+	draw_upper(header, rt->cur_menu->title);
+	
+	for (i = 0; i < long_feedback_len; i++) {
+			
+		if (x >= term_x_last) {
+			putc('\n', stdout);
+			x = 0;
+			continue;
+		}
+		
+		putc(rt->long_feedback[i], stdout);
+		x++;		
+	}
+	
+	draw_lower(rt->cmdin, rt->feedback);
+}
+
+/* Doesn't manipulate the runtime.
+ */
+void draw_menu(const char *header, const struct Runtime *rt)
+{
+	long unsigned i;
+	
+	draw_upper(header, rt->cur_menu->title);
 
 	for (i = 0; rt->cur_menu->entries[i].type != ET_NONE; i++) {
 		if (i == rt->cursor) {
@@ -127,16 +204,7 @@ void draw_menu(const char *header, const struct Runtime *rt)
 		}
 	}
 	
-	move_cursor(1, term_y_last);
-	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
-	
-	if (rt->cmdin != NULL && strlen(rt->cmdin) > 0) {
-		hprintf(CMDLINE_FG, CMDLINE_BG, rt->cmdin);
-	} else {
-		if (rt->feedback != NULL && strlen(rt->feedback) > 0) {
-			hprintf(FEEDBACK_FG, FEEDBACK_BG, rt->feedback);
-		}
-	}
+	draw_lower(rt->cmdin, rt->feedback);
 }
 
 /* Manipulates the runtime depending on given command.
@@ -183,6 +251,7 @@ int handle_key(const char key, struct Runtime *rt)
 			strn_bleach(rt->cmdin, CMD_IN_MAX_LEN);
 			rt->imode = IM_NORMAL;
 			break;
+
 		default:
 			str_add_char(rt->cmdin, key);
 			break;
@@ -244,7 +313,7 @@ int main(int argc, char *argv[])
 	struct termios orig, raw;
 	char c;
 	struct Runtime rt;
-	int ret_handle_key;
+	const long unsigned prepend_len = strlen(CMD_PREPEND);
 	
 	init_runtime(&rt);
 	
@@ -268,18 +337,18 @@ int main(int argc, char *argv[])
 	printf(SEQ_CRSR_HIDE);
 
 	while (rt.active) {
-		draw_menu(HEADER, &rt);
+		if (rt.long_feedback != NULL)
+			draw_multiline_feedback(HEADER, &rt);
+		else
+			draw_menu(HEADER, &rt);
 
-		if (rt.imode == IM_CMD) {
+		if (rt.imode == IM_CMD)
 			printf(SEQ_CRSR_SHOW);
-		} else {
+		else
 			printf(SEQ_CRSR_HIDE);
-		}
 
 		read(STDIN_FILENO, &c, 1);
-		ret_handle_key = handle_key(c, &rt);
-		
-		if (ret_handle_key == 1)
+		if (handle_key(c, &rt) == 1)
 			continue;
 	}
 

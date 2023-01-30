@@ -80,7 +80,7 @@ That includes:
 - print messages (consistency, version information, license information)
 
 Provide sane, generalist standard configuration but with a compiler warning,
-that is had been untouched.
+that it had been untouched.
 
 # Optional goals
 

@@ -1,5 +1,8 @@
 { optional features
 	-runtime menu creation		?
+	-function pointer as entry cmd	?
+	 (as an addition to the
+	  shell string)
 	
 	-keybinds			.
 		-number + key sys		.
@@ -12,7 +15,9 @@
 }
 
 {
-	-multiline feedback		.
+	-multiline feedback		v
+		-> vertical scrolling		.
+
 	-menus with a lot of entries	.
 	 ends up butchering output
 	 -> vertical menu scrolling
@@ -22,6 +27,9 @@
 		-get stdout			.
 		-get stderr			.
 		-print according to goal	.
+	
+	-remove manually set feedback	.
+	 (in init_rt)
 		
 	-v 0.3.0			.
 }
@@ -31,7 +39,7 @@
 {
 	-fix menu open using cursor=0	v
 	-fix cursor down		v
-	 using main menu
+	 using main menu bounds
 	 
 	-code restructuring		v
 
