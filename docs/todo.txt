@@ -16,7 +16,10 @@
 
 {
 	-multiline feedback		v
-		-> vertical scrolling		.
+		-> vertical scrolling		v
+		-> fix 1st line being empty	.
+		   when scrolled
+
 
 	-menus with a lot of entries	.
 	 ends up butchering output
@@ -30,6 +33,10 @@
 	
 	-remove manually set feedback	.
 	 (in init_rt)
+
+	-handle_key returns int for	?
+	 continue flagging,
+	 is it obsolete
 		
 	-v 0.3.0			.
 }

@@ -6,12 +6,12 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
 
 #include "sequences.h"
+#include "hstring.h"
 #include "config.h"
 
 enum InputMode {
@@ -29,6 +29,7 @@ static long unsigned term_x_last, term_y_last;
 struct Runtime {
 	int                  active;
 	long unsigned        cursor;
+	long unsigned        scroll;
 	enum InputMode       imode;
 	char                 cmdin[CMD_IN_MAX_LEN];
 	const struct Menu   *cur_menu;
@@ -36,6 +37,7 @@ struct Runtime {
 	const struct Menu   *menu_stack[MENU_STACK_SIZE];
 	char                *feedback;
 	char                *long_feedback; /* aka multi line feedback */
+	long unsigned        long_feedback_lines;
 };
 
 void init_runtime(struct Runtime *rt)
@@ -44,11 +46,13 @@ void init_runtime(struct Runtime *rt)
 	rt->imode = IM_NORMAL;
 	rt->cmdin[0] = '\0';
 	rt->cursor = 0;
+	rt->scroll = 0;
 	
 	
 	#warning TEST_VALUES_AHEAD
 	rt->feedback = "feedback single";
 	rt->long_feedback = "Swallowed shampoo,\nprobably gonna die.\nIt smelled like fruit,\nthat was a lie.";
+	rt->long_feedback_lines = str_lines(rt->long_feedback, term_x_last);
 	/* once an sub-app gives strings via stdout and stderr, they will be
 	 * assigned to our char pointers ^
 	 * so for testing i will just simulate this manually for now
@@ -72,68 +76,6 @@ long unsigned count_menu_entries(const struct Menu *menu)
 void move_cursor(const long unsigned x, const long unsigned y)
 {
 	printf("\033[%lu;%luH", y, x);
-}
-
-/* zero out n characters of string
- */
-void strn_bleach(char *str, const long unsigned len)
-{
-	long unsigned i;
-	
-	for (i = 0; i < len; i++) {
-		str[i] = '\0';
-	}
-}
-
-/* append char to string
- */
-void str_add_char(char *str, const char c)
-{
-	long unsigned len = strlen(str);
-	
-	str[len] = c;
-	str[len + 1] = '\0';
-}
-
-/* Returns:
-   0 - when the string fits in one line
-   1 - when the string doesn't fit in one line
- */
-int str_has_multiple_lines(char *str, long unsigned line_len)
-{
-	long unsigned i;
-	
-	for (i = i; i < line_len; i++) {
-		switch (str[i]) {
-		case '\n':
-			return 1;
-			break;
-			
-		case '\0':
-			return 0;
-			break;
-		}
-	}
-	
-	return 1;
-}
-
-/* printf with color setting
- */
-void
-hprintf(const struct Color  fg,
-        const struct Color  bg,
-        const char         *fmt,
-        ...)
-{
-	va_list valist;
-	va_start(valist, fmt);
-	
-	set_fg(fg);
-	set_bg(bg);
-	vfprintf(stdout, fmt, valist);
-	
-	va_end(valist);
 }
 
 void draw_upper(const char *header, const char *title)
@@ -161,25 +103,36 @@ void draw_lower(const char *cmdin, const char *feedback)
 	}
 }
 
-/* Doesn't manipulate the runtime.
+/* Draw the environment in which multi-line feedback is displayed.
+ * Doesn't manipulate the runtime.
  */
-void draw_multiline_feedback(const char *header, const struct Runtime *rt)
+void draw_reader(const char *header, const struct Runtime *rt)
 {	
 	const long unsigned long_feedback_len = strlen(rt->long_feedback);
-	long unsigned i, x = 0;
+	long unsigned i, x = 0, y = 0;
+	int wrap_line = 0;
 	
 	draw_upper(header, rt->cur_menu->title);
 	
-	for (i = 0; i < long_feedback_len; i++) {
-			
+	for (i = 0; i < long_feedback_len; i++) {			
 		if (x >= term_x_last) {
-			putc('\n', stdout);
 			x = 0;
-			continue;
+			y++;
+			wrap_line = 1;
 		}
 		
-		putc(rt->long_feedback[i], stdout);
-		x++;		
+		if (rt->long_feedback[i] == '\n')
+				y++;
+		
+		if (y >= rt->scroll) {
+			if (wrap_line)
+				putc('\n', stdout);
+
+			putc(rt->long_feedback[i], stdout);
+		}
+		
+		wrap_line = 0;
+		x++;
 	}
 	
 	draw_lower(rt->cmdin, rt->feedback);
@@ -234,32 +187,8 @@ void handle_command(const char *cmd, struct Runtime *rt)
 	}
 }
 
-/* Manipulates the runtime depending on given key.
- * Returns:
- * 0 - nothing needs to be done by calling code
- * 1 - the mainloop should "continue"
- */
-int handle_key(const char key, struct Runtime *rt)
+void menu_handle_key(const char key, struct Runtime *rt)
 {
-	if (rt->imode == IM_CMD) {
-		switch (key) {
-		case '\n':
-			handle_command(rt->cmdin, rt);
-			
-		case SIGINT:
-		case SIGTSTP:
-			strn_bleach(rt->cmdin, CMD_IN_MAX_LEN);
-			rt->imode = IM_NORMAL;
-			break;
-
-		default:
-			str_add_char(rt->cmdin, key);
-			break;
-		}
-
-		return 1;
-	}
-
 	switch (key) {
 	case 'q':
 		rt->active = 0;
@@ -303,6 +232,70 @@ int handle_key(const char key, struct Runtime *rt)
 		rt->active = 0;
 		break;
 	}
+}
+
+void reader_handle_key(const char key, struct Runtime *rt)
+{
+	switch (key) {
+	case 'q':
+		rt->active = 0;
+		break;
+
+	case 'j':
+		if (rt->scroll < rt->long_feedback_lines)
+			rt->scroll += 1;
+		break;
+
+	case 'k':
+		if (rt->scroll > 0)
+			rt->scroll -= 1;
+		break;
+	
+	case 'h':
+		rt->long_feedback = NULL;
+		break;
+
+	case ':':
+		rt->imode = IM_CMD;
+		break;
+
+	case SIGINT:
+	case SIGTSTP:
+		rt->active = 0;
+		break;
+	}
+}
+
+/* Manipulates the runtime depending on given key.
+ * Returns:
+ * 0 - nothing needs to be done by calling code
+ * 1 - the mainloop should "continue"
+ */
+int handle_key(const char key, struct Runtime *rt)
+{
+	if (rt->imode == IM_CMD) {
+		switch (key) {
+		case '\n':
+			handle_command(rt->cmdin, rt);
+			
+		case SIGINT:
+		case SIGTSTP:
+			strn_bleach(rt->cmdin, CMD_IN_MAX_LEN);
+			rt->imode = IM_NORMAL;
+			break;
+
+		default:
+			str_add_char(rt->cmdin, key);
+			break;
+		}
+
+		return 1;
+	}
+
+	if (rt->long_feedback != NULL)
+		reader_handle_key(key, rt);
+	else
+		menu_handle_key(key, rt);
 	
 	return 0;
 }
@@ -315,6 +308,11 @@ int main(int argc, char *argv[])
 	struct Runtime rt;
 	const long unsigned prepend_len = strlen(CMD_PREPEND);
 	
+	/* get term size */
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
+	term_x_last = wsize.ws_col;
+	term_y_last = wsize.ws_row;
+	
 	init_runtime(&rt);
 	
 	/* parse opts */
@@ -323,11 +321,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	/* get term info and set raw mode */	
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
-	term_x_last = wsize.ws_col;
-	term_y_last = wsize.ws_row;
-
+	/* get term info and set raw mode */
 	setbuf(stdout, NULL);
 	tcgetattr(STDIN_FILENO, &orig);
 	raw = orig;
@@ -338,7 +332,7 @@ int main(int argc, char *argv[])
 
 	while (rt.active) {
 		if (rt.long_feedback != NULL)
-			draw_multiline_feedback(HEADER, &rt);
+			draw_reader(HEADER, &rt);
 		else
 			draw_menu(HEADER, &rt);
 
