@@ -17,9 +17,12 @@
 {
 	-multiline feedback		v
 		-> vertical scrolling		v
-		-> fix 1st line being empty	.
-		   when scrolled
-
+	
+	-fix scroll limit		v
+	-fix 1st line being just empty	v
+	 when scrolled
+	-fix str_lines not handling	v
+	 empty strings
 
 	-menus with a lot of entries	.
 	 ends up butchering output

@@ -30,6 +30,11 @@ void str_add_char(char *str, const char c)
 long unsigned str_lines(char *str, long unsigned line_len)
 {
 	long unsigned i = 0, x = 0, ret = 1;
+	
+	if (str == NULL)
+		return 0;
+	else if (str[0] == '\0')
+		return 0;
 
 	while (str[i] != '\0') {
 		if (x > line_len) {

@@ -14,8 +14,9 @@ void strn_bleach(char *str, const long unsigned len);
  */
 void str_add_char(char *str, const char c);
 
-/* Returns the amount of lines measured by str len, line len and amount of
- * newline characters.
+/* Returns:
+ * the amount of lines needed to display given string
+ * 0 - if the string is not displayable
  */
 long unsigned str_lines(char *str, long unsigned line_len);
 

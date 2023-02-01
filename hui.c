@@ -51,7 +51,7 @@ void init_runtime(struct Runtime *rt)
 	
 	#warning TEST_VALUES_AHEAD
 	rt->feedback = "feedback single";
-	rt->long_feedback = "Swallowed shampoo,\nprobably gonna die.\nIt smelled like fruit,\nthat was a lie.";
+	rt->long_feedback = NULL;//"Swallowed shampoo,\nprobably gonna die.\nIt smelled like fruit,\nthat was a lie.";
 	rt->long_feedback_lines = str_lines(rt->long_feedback, term_x_last);
 	/* once an sub-app gives strings via stdout and stderr, they will be
 	 * assigned to our char pointers ^
@@ -121,15 +121,15 @@ void draw_reader(const char *header, const struct Runtime *rt)
 			wrap_line = 1;
 		}
 		
-		if (rt->long_feedback[i] == '\n')
-				y++;
-		
-		if (y >= rt->scroll) {
+		if (y >= rt->scroll) { /* > instead of >=    ? */
 			if (wrap_line)
 				putc('\n', stdout);
 
 			putc(rt->long_feedback[i], stdout);
 		}
+		
+		if (rt->long_feedback[i] == '\n')
+			y++;
 		
 		wrap_line = 0;
 		x++;
@@ -242,7 +242,7 @@ void reader_handle_key(const char key, struct Runtime *rt)
 		break;
 
 	case 'j':
-		if (rt->scroll < rt->long_feedback_lines)
+		if (rt->scroll < (rt->long_feedback_lines - 1))
 			rt->scroll += 1;
 		break;
 
