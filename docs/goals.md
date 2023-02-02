@@ -67,7 +67,7 @@ If sub-app prints to stderr:
 - if stderr multineline: display only stderr in multiline feedback
 - if stderr one line: display it in commandline and stdout in multiline feedback
 
-stderr prints is always prepended by "ERROR ".  
+stderr prints are always prepended by "ERROR ".  
 
 ## v1.0.0 Final polish
 

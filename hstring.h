@@ -28,5 +28,9 @@ hprintf(const struct Color  fg,
         const char         *fmt,
         ...);
 
+/* removes spaces, tabs and newlines from end of the string
+ */
+void str_rtrim(char *str);
+
 
 #endif /* _HSTRING_H */

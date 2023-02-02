@@ -113,13 +113,13 @@ static const struct Menu MENU_FILES = {
 	.entries = {
 		[0] = {
 			.caption = "List home files",
-			.type = ET_COMMAND,
-			.command = "ls -la \"$HOME\""
+			.type = ET_SHELL,
+			.shell = "ls -la \"$HOME\""
 		},
 		[1] = {
 			.caption = "List bin files",
-			.type = ET_COMMAND,
-			.command = "ls -ls /usr/bin"
+			.type = ET_SHELL,
+			.shell = "ls -ls /usr/bin"
 		}
 	}
 };
@@ -130,108 +130,108 @@ static const struct Menu MENU_LONG = {
 	.entries = {
 		[0] = {
 			.caption = "1",
-			.type = ET_COMMAND,
-			.command = "echo '1'"
+			.type = ET_SHELL,
+			.shell = "echo '1'"
 		},
 		[1] = {
 			.caption = "2",
-			.type = ET_COMMAND,
-			.command = "echo '2'"
+			.type = ET_SHELL,
+			.shell = "echo '2'"
 		},
 		[2] = {
 			.caption = "3",
-			.type = ET_COMMAND,
-			.command = "echo '3'"
+			.type = ET_SHELL,
+			.shell = "echo '3'"
 		},
 		[3] = {
 			.caption = "4",
-			.type = ET_COMMAND,
-			.command = "echo '4'"
+			.type = ET_SHELL,
+			.shell = "echo '4'"
 		},
 		[4] = {
 			.caption = "5",
-			.type = ET_COMMAND,
-			.command = "echo '5'"
+			.type = ET_SHELL,
+			.shell = "echo '5'"
 		},
 		[5] = {
 			.caption = "6",
-			.type = ET_COMMAND,
-			.command = "echo '6'"
+			.type = ET_SHELL,
+			.shell = "echo '6'"
 		},
 		[6] = {
 			.caption = "7",
-			.type = ET_COMMAND,
-			.command = "echo '7'"
+			.type = ET_SHELL,
+			.shell = "echo '7'"
 		},
 		[7] = {
 			.caption = "8",
-			.type = ET_COMMAND,
-			.command = "echo '8'"
+			.type = ET_SHELL,
+			.shell = "echo '8'"
 		},
 		[8] = {
 			.caption = "9",
-			.type = ET_COMMAND,
-			.command = "echo '9'"
+			.type = ET_SHELL,
+			.shell = "echo '9'"
 		},
 		[9] = {
 			.caption = "10",
-			.type = ET_COMMAND,
-			.command = "echo '10'"
+			.type = ET_SHELL,
+			.shell = "echo '10'"
 		},
 		[10] = {
 			.caption = "11",
-			.type = ET_COMMAND,
-			.command = "echo '11'"
+			.type = ET_SHELL,
+			.shell = "echo '11'"
 		},
 		[11] = {
 			.caption = "12",
-			.type = ET_COMMAND,
-			.command = "echo '12'"
+			.type = ET_SHELL,
+			.shell = "echo '12'"
 		},
 		[12] = {
 			.caption = "13",
-			.type = ET_COMMAND,
-			.command = "echo '13'"
+			.type = ET_SHELL,
+			.shell = "echo '13'"
 		},
 		[13] = {
 			.caption = "14",
-			.type = ET_COMMAND,
-			.command = "echo '14'"
+			.type = ET_SHELL,
+			.shell = "echo '14'"
 		},
 		[14] = {
 			.caption = "15",
-			.type = ET_COMMAND,
-			.command = "echo '15'"
+			.type = ET_SHELL,
+			.shell = "echo '15'"
 		},
 		[15] = {
 			.caption = "16",
-			.type = ET_COMMAND,
-			.command = "echo '16'"
+			.type = ET_SHELL,
+			.shell = "echo '16'"
 		},
 		[16] = {
 			.caption = "17",
-			.type = ET_COMMAND,
-			.command = "echo '17'"
+			.type = ET_SHELL,
+			.shell = "echo '17'"
 		},
 		[17] = {
 			.caption = "18",
-			.type = ET_COMMAND,
-			.command = "echo '18'"
+			.type = ET_SHELL,
+			.shell = "echo '18'"
 		},
 		[18] = {
 			.caption = "19",
-			.type = ET_COMMAND,
-			.command = "echo '19'"
+			.type = ET_SHELL,
+			.shell = "echo '19'"
 		},
 		[19] = {
 			.caption = "20",
-			.type = ET_COMMAND,
-			.command = "echo '20'"
+			.type = ET_SHELL,
+			.shell = "echo '20'"
 		},
 		[20] = {
 			.caption = "21",
-			.type = ET_COMMAND,
-			.command = "echo '21'"
+			.type = ET_SHELL,
+			.shell = "echo '21'"
 		}
 	}
 };
@@ -254,8 +254,8 @@ static const struct Menu MENU_MAIN = {
 		
 		[2] = {
 			.caption = "Show current user",
-			.type = ET_COMMAND,
-			.command = "echo \"$USER\""
+			.type = ET_SHELL,
+			.shell = "echo \"$USER\""
 		}
 	}
 };

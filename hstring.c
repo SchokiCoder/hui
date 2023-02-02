@@ -78,3 +78,17 @@ hprintf(const struct Color  fg,
 	va_end(valist);
 }
 
+void str_rtrim(char *str)
+{
+	long unsigned pos = 0;
+	
+	while (str[pos] != '\0')
+		pos += 1;
+
+	do
+		pos -= 1;
+	while (str[pos] == ' ' || str[pos] == '\t' || str[pos] == '\n');
+	
+	str[pos + 1] = '\0';
+}
+

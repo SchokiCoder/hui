@@ -21,25 +21,28 @@
 	-fix scroll limit		v
 	-fix 1st line being just empty	v
 	 when scrolled
+	 (newline prepended at top)
 	-fix str_lines not handling	v
 	 empty strings
 
-	-menus with a lot of entries	.
-	 ends up butchering output
-	 -> vertical menu scrolling
-
 	-execute			.
-		-keybind			.
-		-get stdout			.
+		-keybind			v
+		-get stdout			v
 		-get stderr			.
 		-print according to goal	.
 	
 	-remove manually set feedback	.
 	 (in init_rt)
 
+	-vertical menu scrolling	?
+	 extra button or cursor follow?
+
 	-handle_key returns int for	?
 	 continue flagging,
 	 is it obsolete
+	
+	-handle any todos		.
+	 or // comments
 		
 	-v 0.3.0			.
 }

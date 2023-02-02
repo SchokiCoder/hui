@@ -49,9 +49,9 @@ void init_runtime(struct Runtime *rt)
 	rt->scroll = 0;
 	
 	
-	#warning TEST_VALUES_AHEAD
+	// TODO remove test values
 	rt->feedback = "feedback single";
-	rt->long_feedback = NULL;//"Swallowed shampoo,\nprobably gonna die.\nIt smelled like fruit,\nthat was a lie.";
+	rt->long_feedback = NULL;
 	rt->long_feedback_lines = str_lines(rt->long_feedback, term_x_last);
 	/* once an sub-app gives strings via stdout and stderr, they will be
 	 * assigned to our char pointers ^
@@ -160,6 +160,38 @@ void draw_menu(const char *header, const struct Runtime *rt)
 	draw_lower(rt->cmdin, rt->feedback);
 }
 
+/* Manipulates the runtime depending on given shell string.
+ */
+void handle_sh(const char* sh, struct Runtime *rt)
+{
+	FILE *p;
+	const long unsigned pout_len = 1024;
+	char pout[pout_len];
+	long unsigned pout_lines;
+	
+	p = popen(sh, "r");
+	
+	if (p == NULL) {
+		rt->feedback = "ERROR shell could not execute";
+		return;
+	}
+	
+	fgets(pout, pout_len, p);
+	pclose(p);
+	str_rtrim(pout);
+	
+	pout_lines = str_lines(pout, term_x_last);
+	
+	if (pout_lines == 0) {
+		rt->feedback = "Executed without feedback";
+	} else if (pout_lines == 1) {
+		rt->feedback = pout;
+	} else {
+		rt->long_feedback = pout;
+		rt->long_feedback_lines = pout_lines;
+	}
+}
+
 /* Manipulates the runtime depending on given command.
  */
 void handle_command(const char *cmd, struct Runtime *rt)
@@ -220,6 +252,12 @@ void menu_handle_key(const char key, struct Runtime *rt)
 			rt->cur_menu = rt->menu_stack[rt->menu_stack_len - 1];
 			rt->feedback = NULL;
 			rt->cursor = 0;
+		}
+		break;
+	
+	case 'L':
+		if (rt->cur_menu->entries[rt->cursor].type == ET_SHELL) {
+			handle_sh(rt->cur_menu->entries[rt->cursor].shell, rt);
 		}
 		break;
 

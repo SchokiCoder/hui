@@ -16,7 +16,7 @@ struct Menu;
 enum EntryType {
 	ET_NONE = 0,
 	ET_SUBMENU = 1,
-	ET_COMMAND = 2
+	ET_SHELL = 2
 };
 
 struct Entry {
@@ -24,7 +24,7 @@ struct Entry {
 	
 	enum EntryType type;
 	const struct Menu *submenu;
-	char *command;
+	char *shell;
 };
 
 struct Menu {
