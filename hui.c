@@ -165,10 +165,10 @@ void draw_menu(const char *header, const struct Runtime *rt)
 void handle_sh(const char* sh, struct Runtime *rt)
 {
 	FILE *p;
-	const long unsigned pout_len = 1024;
-	char pout[pout_len];
-	long unsigned pout_lines;
-	
+	const long unsigned pout_len = 1024, perr_len = 1024;
+	char pout[pout_len], perr[perr_len];
+	long unsigned pout_lines, perr_lines;
+
 	p = popen(sh, "r");
 	
 	if (p == NULL) {
@@ -176,19 +176,29 @@ void handle_sh(const char* sh, struct Runtime *rt)
 		return;
 	}
 	
+	// TODO how to get process stderr?
 	fgets(pout, pout_len, p);
 	pclose(p);
+	
 	str_rtrim(pout);
-	
+	str_rtrim(perr);
 	pout_lines = str_lines(pout, term_x_last);
+	perr_lines = str_lines(perr, term_x_last);
 	
-	if (pout_lines == 0) {
+	if (pout_lines == 0 && perr_lines == 0) {
 		rt->feedback = "Executed without feedback";
-	} else if (pout_lines == 1) {
-		rt->feedback = pout;
-	} else {
+	} else if (perr_lines > 1) {
+		rt->long_feedback = perr;
+		rt->long_feedback_lines = perr_lines;
+		
+		if (pout_lines == 1)
+			rt->feedback = pout;
+	} else if (pout_lines > 1) {
 		rt->long_feedback = pout;
 		rt->long_feedback_lines = pout_lines;
+		
+		if (perr_lines == 1)
+			rt->feedback = perr;
 	}
 }
 

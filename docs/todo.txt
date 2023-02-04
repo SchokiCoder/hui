@@ -4,6 +4,9 @@
 	 (as an addition to the
 	  shell string)
 	
+	-display child return no if err	?
+	 (as returned by pclose())
+	
 	-keybinds			.
 		-number + key sys		.
 		-bind display			.
@@ -29,6 +32,7 @@
 		-keybind			v
 		-get stdout			v
 		-get stderr			.
+		 https://stackoverflow.com/questions/15058876/how-to-capture-the-exit-code-and-stderr-of-the-command-that-is-run-in-c
 		-print according to goal	.
 	
 	-remove manually set feedback	.
@@ -43,6 +47,7 @@
 	
 	-handle any todos		.
 	 or // comments
+	-remove outvserr.c		.
 		
 	-v 0.3.0			.
 }

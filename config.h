@@ -241,6 +241,24 @@ static const struct Menu MENU_MAIN = {
 	         "—————————",
 	.entries = {
 		[0] = {
+			.caption = "stdout",
+			.type = ET_SHELL,
+			.shell = "./outvserr 0"
+		},
+		
+		[1] = {
+			.caption = "stderr",
+			.type = ET_SHELL,
+			.shell = "./outvserr 1"
+		},
+		
+		[2] = {
+			.caption = "invalid sh",
+			.type = ET_SHELL,
+			.shell = "./noexist"
+		}
+
+/*		[0] = {
 			.caption = "Files menu",
 			.type = ET_SUBMENU,
 			.submenu = &MENU_FILES
@@ -256,7 +274,7 @@ static const struct Menu MENU_MAIN = {
 			.caption = "Show current user",
 			.type = ET_SHELL,
 			.shell = "echo \"$USER\""
-		}
+		}*/
 	}
 };
 
