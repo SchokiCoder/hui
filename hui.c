@@ -47,18 +47,9 @@ void init_runtime(struct Runtime *rt)
 	rt->cmdin[0] = '\0';
 	rt->cursor = 0;
 	rt->scroll = 0;
-	
-	
-	// TODO remove test values
-	rt->feedback = "feedback single";
+	rt->feedback = "";
 	rt->long_feedback = NULL;
-	rt->long_feedback_lines = str_lines(rt->long_feedback, term_x_last);
-	/* once an sub-app gives strings via stdout and stderr, they will be
-	 * assigned to our char pointers ^
-	 * so for testing i will just simulate this manually for now
-	 */
-	
-	
+	rt->long_feedback_lines = str_lines(rt->long_feedback, term_x_last);	
 	rt->menu_stack_len = 1;
 	rt->menu_stack[0] = &MENU_MAIN;
 	rt->cur_menu = &MENU_MAIN;
@@ -165,10 +156,10 @@ void draw_menu(const char *header, const struct Runtime *rt)
 void handle_sh(const char* sh, struct Runtime *rt)
 {
 	FILE *p;
-	const long unsigned pout_len = 1024, perr_len = 1024;
-	char pout[pout_len], perr[perr_len];
-	long unsigned pout_lines, perr_lines;
-
+	const long unsigned pout_len = 1024;
+	char pout[pout_len];
+	long unsigned pout_lines;
+	
 	p = popen(sh, "r");
 	
 	if (p == NULL) {
@@ -176,29 +167,19 @@ void handle_sh(const char* sh, struct Runtime *rt)
 		return;
 	}
 	
-	// TODO how to get process stderr?
 	fgets(pout, pout_len, p);
 	pclose(p);
-	
 	str_rtrim(pout);
-	str_rtrim(perr);
-	pout_lines = str_lines(pout, term_x_last);
-	perr_lines = str_lines(perr, term_x_last);
 	
-	if (pout_lines == 0 && perr_lines == 0) {
+	pout_lines = str_lines(pout, term_x_last);
+	
+	if (pout_lines == 0) {
 		rt->feedback = "Executed without feedback";
-	} else if (perr_lines > 1) {
-		rt->long_feedback = perr;
-		rt->long_feedback_lines = perr_lines;
-		
-		if (pout_lines == 1)
-			rt->feedback = pout;
-	} else if (pout_lines > 1) {
+	} else if (pout_lines == 1) {
+		rt->feedback = pout;
+	} else {
 		rt->long_feedback = pout;
 		rt->long_feedback_lines = pout_lines;
-		
-		if (perr_lines == 1)
-			rt->feedback = perr;
 	}
 }
 
@@ -319,7 +300,7 @@ void reader_handle_key(const char key, struct Runtime *rt)
  * 0 - nothing needs to be done by calling code
  * 1 - the mainloop should "continue"
  */
-int handle_key(const char key, struct Runtime *rt)
+void handle_key(const char key, struct Runtime *rt)
 {
 	if (rt->imode == IM_CMD) {
 		switch (key) {
@@ -337,15 +318,13 @@ int handle_key(const char key, struct Runtime *rt)
 			break;
 		}
 
-		return 1;
+		return;
 	}
 
 	if (rt->long_feedback != NULL)
 		reader_handle_key(key, rt);
 	else
 		menu_handle_key(key, rt);
-	
-	return 0;
 }
 
 int main(int argc, char *argv[])
@@ -390,8 +369,7 @@ int main(int argc, char *argv[])
 			printf(SEQ_CRSR_HIDE);
 
 		read(STDIN_FILENO, &c, 1);
-		if (handle_key(c, &rt) == 1)
-			continue;
+		handle_key(c, &rt);
 	}
 
 	/* restore original terminal settings */
