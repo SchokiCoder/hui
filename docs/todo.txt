@@ -22,38 +22,54 @@
 }
 
 {
-	-multiline feedback		v
-		-> vertical scrolling		v
+	-multiline feedback			v
+		-> vertical scrolling			v
 	
-	-fix scroll limit		v
-	-fix 1st line being just empty	v
+	-fix scroll limit			v
+	-fix 1st line being just empty		v
 	 when scrolled
 	 (newline prepended at top)
-	-fix str_lines not handling	v
+	-fix str_lines not handling		v
 	 empty strings
 
-	-execute			v
-		-keybind			v
-		-get stdout			v
-		-get stderr			x
-		-print according to goal	x
+	-execute				v
+		-keybind				v
+		-get stdout				v
+		-get stderr				x
+		-print according to goal		x
 	
-	-remove manually set feedback	v
+	-remove manually set feedback		v
 	 (in init_rt)
 
-	-handle_key returns int for	v
+	-handle_key returns int for		v
 	 continue flagging,
 	 is it obsolete?
 	 yes, was at end of
 	 mainloop anyway lol.
+	
+	-stdout fgets stops at newline		v
+	 use fread
+	
+	-long feedback reader			.
+		-sometimes scroll-up just removes	v
+		 top-line but doesn't move the text up
+		 
+	 	/\ caused by missing x counter reset \/
+		 
+		-lines are unnecessarily broken		v
+		 by newline
+		 
+		-prints beyond string len		.
+		 until scroll
+		 (just replace current with mem alloc)
 
-	-vertical menu scrolling	?
+	-vertical menu scrolling		?
 	 extra button or cursor follow?
 	
-	-handle any todos		.
+	-handle any todos			.
 	 or // comments
 		
-	-v 0.3.0			.
+	-v 0.3.0				.
 }
 
 --- Done ---

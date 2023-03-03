@@ -98,13 +98,13 @@ void draw_lower(const char *cmdin, const char *feedback)
  * Doesn't manipulate the runtime.
  */
 void draw_reader(const char *header, const struct Runtime *rt)
-{	
+{
 	const long unsigned long_feedback_len = strlen(rt->long_feedback);
 	long unsigned i, x = 0, y = 0;
 	int wrap_line = 0;
 	
 	draw_upper(header, rt->cur_menu->title);
-	
+
 	for (i = 0; i < long_feedback_len; i++) {			
 		if (x >= term_x_last) {
 			x = 0;
@@ -112,20 +112,22 @@ void draw_reader(const char *header, const struct Runtime *rt)
 			wrap_line = 1;
 		}
 		
-		if (y >= rt->scroll) { /* > instead of >=    ? */
+		if (y >= rt->scroll) {
 			if (wrap_line)
 				putc('\n', stdout);
 
 			putc(rt->long_feedback[i], stdout);
 		}
 		
-		if (rt->long_feedback[i] == '\n')
+		if (rt->long_feedback[i] == '\n') {
+			x = 0;
 			y++;
+		}
 		
 		wrap_line = 0;
 		x++;
 	}
-	
+
 	draw_lower(rt->cmdin, rt->feedback);
 }
 
@@ -167,7 +169,7 @@ void handle_sh(const char* sh, struct Runtime *rt)
 		return;
 	}
 	
-	fgets(pout, pout_len, p);
+	fread(pout, sizeof(char), pout_len, p);
 	pclose(p);
 	str_rtrim(pout);
 	
