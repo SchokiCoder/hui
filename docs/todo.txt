@@ -50,24 +50,27 @@
 	-stdout fgets stops at newline		v
 	 use fread
 	
-	-long feedback reader			.
-		-sometimes scroll-up just removes	v
-		 top-line but doesn't move the text up
+	-long feedback reader			v
+		-missing x counter reset		v
+		 (causes scroll-up just hiding
+		  top line
+		  and unnecessary line breaks)
 		 
-	 	/\ caused by missing x counter reset \/
-		 
-		-lines are unnecessarily broken		v
-		 by newline
-		 
-		-prints beyond string len		.
+		-prints beyond string len		v
 		 until scroll
 		 (just replace current with mem alloc)
+	
+		-new feedback doesnt replace old one	v
+		-once reader is used, it will		v
+		 always be used for feedback
 
 	-vertical menu scrolling		?
 	 extra button or cursor follow?
 	
 	-handle any todos			.
 	 or // comments
+	
+	-consider yoda notation			.
 		
 	-v 0.3.0				.
 }

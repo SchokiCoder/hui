@@ -24,6 +24,8 @@ enum InputMode {
 #define SIGINT  '\003'
 #define SIGTSTP '\032'
 
+#define STRING_BLOCK_SIZE 1024
+
 static long unsigned term_x_last, term_y_last;
 
 struct Runtime {
@@ -36,8 +38,9 @@ struct Runtime {
 	long unsigned        menu_stack_len;
 	const struct Menu   *menu_stack[MENU_STACK_SIZE];
 	char                *feedback;
-	char                *long_feedback; /* aka multi line feedback */
-	long unsigned        long_feedback_lines;
+	long unsigned        feedback_len;
+	long unsigned        feedback_size;
+	long unsigned        feedback_lines;
 };
 
 void init_runtime(struct Runtime *rt)
@@ -47,9 +50,10 @@ void init_runtime(struct Runtime *rt)
 	rt->cmdin[0] = '\0';
 	rt->cursor = 0;
 	rt->scroll = 0;
-	rt->feedback = "";
-	rt->long_feedback = NULL;
-	rt->long_feedback_lines = str_lines(rt->long_feedback, term_x_last);	
+	rt->feedback = malloc(STRING_BLOCK_SIZE);
+	rt->feedback_len = 0;
+	rt->feedback_size = STRING_BLOCK_SIZE;
+	rt->feedback_lines = 0;	
 	rt->menu_stack_len = 1;
 	rt->menu_stack[0] = &MENU_MAIN;
 	rt->cur_menu = &MENU_MAIN;
@@ -80,16 +84,19 @@ void draw_upper(const char *header, const char *title)
 	hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
 }
 
-void draw_lower(const char *cmdin, const char *feedback)
+/* Draw the lower part.
+ * Doesn't manipulate the runtime.
+ */
+void draw_lower(const struct Runtime *rt)
 {
 	move_cursor(1, term_y_last);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
 	
-	if (cmdin != NULL && strlen(cmdin) > 0) {
-		hprintf(CMDLINE_FG, CMDLINE_BG, cmdin);
+	if (rt->cmdin != NULL && strlen(rt->cmdin) > 0) {
+		hprintf(CMDLINE_FG, CMDLINE_BG, rt->cmdin);
 	} else {
-		if (feedback != NULL && strlen(feedback) > 0) {
-			hprintf(FEEDBACK_FG, FEEDBACK_BG, feedback);
+		if (1 == rt->feedback_lines) {
+			hprintf(FEEDBACK_FG, FEEDBACK_BG, rt->feedback);
 		}
 	}
 }
@@ -99,13 +106,12 @@ void draw_lower(const char *cmdin, const char *feedback)
  */
 void draw_reader(const char *header, const struct Runtime *rt)
 {
-	const long unsigned long_feedback_len = strlen(rt->long_feedback);
 	long unsigned i, x = 0, y = 0;
 	int wrap_line = 0;
 	
 	draw_upper(header, rt->cur_menu->title);
 
-	for (i = 0; i < long_feedback_len; i++) {			
+	for (i = 0; i < rt->feedback_len; i++) {			
 		if (x >= term_x_last) {
 			x = 0;
 			y++;
@@ -116,10 +122,10 @@ void draw_reader(const char *header, const struct Runtime *rt)
 			if (wrap_line)
 				putc('\n', stdout);
 
-			putc(rt->long_feedback[i], stdout);
+			putc(rt->feedback[i], stdout);
 		}
 		
-		if (rt->long_feedback[i] == '\n') {
+		if ('\n' == rt->feedback[i]) {
 			x = 0;
 			y++;
 		}
@@ -128,7 +134,7 @@ void draw_reader(const char *header, const struct Runtime *rt)
 		x++;
 	}
 
-	draw_lower(rt->cmdin, rt->feedback);
+	draw_lower(rt);
 }
 
 /* Doesn't manipulate the runtime.
@@ -150,38 +156,50 @@ void draw_menu(const char *header, const struct Runtime *rt)
 		}
 	}
 	
-	draw_lower(rt->cmdin, rt->feedback);
+	draw_lower(rt);
 }
 
 /* Manipulates the runtime depending on given shell string.
  */
-void handle_sh(const char* sh, struct Runtime *rt)
+void handle_sh(const char *sh, struct Runtime *rt)
 {
 	FILE *p;
-	const long unsigned pout_len = 1024;
-	char pout[pout_len];
-	long unsigned pout_lines;
+	char buf[STRING_BLOCK_SIZE];
+	long unsigned read_len;
+	int read = 1;
+	
+	strn_bleach(rt->feedback, rt->feedback_len);
+	rt->feedback_len = 0;
+	rt->feedback[0] = '\0';
 	
 	p = popen(sh, "r");
-	
-	if (p == NULL) {
-		rt->feedback = "ERROR shell could not execute";
+	if (NULL == p) {
+		strcpy(rt->feedback, "ERROR shell could not execute");
+		rt->feedback_lines = 1;
 		return;
 	}
 	
-	fread(pout, sizeof(char), pout_len, p);
+	while (read) {
+		read_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, p);
+		if (read_len < STRING_BLOCK_SIZE)
+			read = 0;
+		
+		if (read_len > (rt->feedback_size - rt->feedback_len)) {
+			rt->feedback_size += STRING_BLOCK_SIZE;
+			rt->feedback = realloc(rt->feedback, rt->feedback_size);
+		}
+		
+		strncpy(&rt->feedback[rt->feedback_len], buf, read_len);
+		rt->feedback_len += read_len;
+	}
 	pclose(p);
-	str_rtrim(pout);
 	
-	pout_lines = str_lines(pout, term_x_last);
+	str_rtrim(rt->feedback);
+	rt->feedback_lines = str_lines(rt->feedback, term_x_last);
 	
-	if (pout_lines == 0) {
-		rt->feedback = "Executed without feedback";
-	} else if (pout_lines == 1) {
-		rt->feedback = pout;
-	} else {
-		rt->long_feedback = pout;
-		rt->long_feedback_lines = pout_lines;
+	if (rt->feedback_lines == 0) {
+		strcpy(rt->feedback, "Executed without feedback");
+		rt->feedback_lines = 1;
 	}
 }
 
@@ -234,7 +252,7 @@ void menu_handle_key(const char key, struct Runtime *rt)
 			rt->cur_menu = rt->cur_menu->entries[rt->cursor].submenu;
 			rt->menu_stack[rt->menu_stack_len] = rt->cur_menu;
 			rt->menu_stack_len += 1;
-			rt->feedback = NULL;
+			rt->feedback_lines = 0;
 			rt->cursor = 0;
 		}
 		break;
@@ -243,7 +261,7 @@ void menu_handle_key(const char key, struct Runtime *rt)
 		if (rt->menu_stack_len > 1) {
 			rt->menu_stack_len -= 1;
 			rt->cur_menu = rt->menu_stack[rt->menu_stack_len - 1];
-			rt->feedback = NULL;
+			rt->feedback_lines = 0;
 			rt->cursor = 0;
 		}
 		break;
@@ -273,7 +291,7 @@ void reader_handle_key(const char key, struct Runtime *rt)
 		break;
 
 	case 'j':
-		if (rt->scroll < (rt->long_feedback_lines - 1))
+		if (rt->scroll < (rt->feedback_lines - 1))
 			rt->scroll += 1;
 		break;
 
@@ -283,7 +301,7 @@ void reader_handle_key(const char key, struct Runtime *rt)
 		break;
 	
 	case 'h':
-		rt->long_feedback = NULL;
+		rt->feedback_lines = 0;
 		break;
 
 	case ':':
@@ -323,7 +341,7 @@ void handle_key(const char key, struct Runtime *rt)
 		return;
 	}
 
-	if (rt->long_feedback != NULL)
+	if (rt->feedback_lines > 1)
 		reader_handle_key(key, rt);
 	else
 		menu_handle_key(key, rt);
@@ -337,30 +355,30 @@ int main(int argc, char *argv[])
 	struct Runtime rt;
 	const long unsigned prepend_len = strlen(CMD_PREPEND);
 	
+	/* parse opts */
+	if (argc == 2 && !strcmp("-v", argv[1])) {
+		printf("hui: version " VERSION "\n");
+		return 0;
+	}
+	
 	/* get term size */
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
 	term_x_last = wsize.ws_col;
 	term_y_last = wsize.ws_row;
 	
 	init_runtime(&rt);
-	
-	/* parse opts */
-	if (argc == 2 && !strcmp("-v", argv[1])) {
-		printf("hui: version " VERSION "\n");
-		return 0;
-	}
 
 	/* get term info and set raw mode */
 	setbuf(stdout, NULL);
 	tcgetattr(STDIN_FILENO, &orig);
 	raw = orig;
 	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-	
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);	
 	printf(SEQ_CRSR_HIDE);
 
+	/* mainloop */
 	while (rt.active) {
-		if (rt.long_feedback != NULL)
+		if (rt.feedback_lines > 1)
 			draw_reader(HEADER, &rt);
 		else
 			draw_menu(HEADER, &rt);
@@ -379,6 +397,8 @@ int main(int argc, char *argv[])
 	printf(SEQ_CRSR_SHOW);
 	printf(SEQ_FG_DEFAULT);
 	printf(SEQ_BG_DEFAULT);
+	
+	free(rt.feedback);
 
 	return 0;
 }
