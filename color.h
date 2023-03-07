@@ -6,8 +6,6 @@
 #ifndef _COLOR_H
 #define _COLOR_H
 
-#include <stdio.h>
-
 struct Color {
 	int active;
 	unsigned int r;

@@ -12,4 +12,6 @@
 #define SEQ_CRSR_HIDE  "\033[?25l"
 #define SEQ_CRSR_SHOW  "\033[?25h"
 
+void set_cursor(const long unsigned x, const long unsigned y);
+
 #endif /* _SEQUENCES_H */

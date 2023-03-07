@@ -62,10 +62,15 @@
 	
 		-new feedback doesnt replace old one	v
 		-once reader is used, it will		v
-		 always be used for feedback
+		 always be used for feedback	
 
-	-vertical menu scrolling		?
-	 extra button or cursor follow?
+	-reader height awareness		v
+	
+	-vertical menu scrolling		.
+	 cursor follow
+	
+	-reader after scroll 1st line is	.
+	 always empty
 	
 	-handle any todos			.
 	 or // comments

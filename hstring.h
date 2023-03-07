@@ -18,7 +18,7 @@ void str_add_char(char *str, const char c);
  * the amount of lines needed to display given string
  * 0 - if the string is not displayable
  */
-long unsigned str_lines(char *str, long unsigned line_len);
+long unsigned str_lines(const char *str, long unsigned line_len);
 
 /* printf with color setting
  */

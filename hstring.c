@@ -27,7 +27,7 @@ void str_add_char(char *str, const char c)
 	str[len + 1] = '\0';
 }
 
-long unsigned str_lines(char *str, long unsigned line_len)
+long unsigned str_lines(const char *str, long unsigned line_len)
 {
 	long unsigned i = 0, x = 0, ret = 1;
 	

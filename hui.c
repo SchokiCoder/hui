@@ -31,7 +31,8 @@ static long unsigned term_x_last, term_y_last;
 struct Runtime {
 	int                  active;
 	long unsigned        cursor;
-	long unsigned        scroll;
+	long unsigned        menu_scroll;
+	long unsigned        reader_scroll;
 	enum InputMode       imode;
 	char                 cmdin[CMD_IN_MAX_LEN];
 	const struct Menu   *cur_menu;
@@ -49,7 +50,8 @@ void init_runtime(struct Runtime *rt)
 	rt->imode = IM_NORMAL;
 	rt->cmdin[0] = '\0';
 	rt->cursor = 0;
-	rt->scroll = 0;
+	rt->menu_scroll = 0;
+	rt->reader_scroll = 0;
 	rt->feedback = malloc(STRING_BLOCK_SIZE);
 	rt->feedback_len = 0;
 	rt->feedback_size = STRING_BLOCK_SIZE;
@@ -68,20 +70,23 @@ long unsigned count_menu_entries(const struct Menu *menu)
 	return i;
 }
 
-void move_cursor(const long unsigned x, const long unsigned y)
+/* Returns the amount of lines needed for this print.
+ */
+long unsigned draw_upper(const char *header, const char *title)
 {
-	printf("\033[%lu;%luH", y, x);
-}
-
-void draw_upper(const char *header, const char *title)
-{
+	long unsigned ret = 0;
+	
 	/* draw bg color (clear) */
 	hprintf(OVERALL_BG, OVERALL_BG, SEQ_CLEAR);
 	
 	/* draw menu text */
-	move_cursor(1, 1);
+	set_cursor(1, 1);
 	hprintf(HEADER_FG, HEADER_BG, header);
 	hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
+	
+	ret += str_lines(header, term_x_last);
+	ret += str_lines(title, term_x_last);
+	return ret;
 }
 
 /* Draw the lower part.
@@ -89,16 +94,13 @@ void draw_upper(const char *header, const char *title)
  */
 void draw_lower(const struct Runtime *rt)
 {
-	move_cursor(1, term_y_last);
+	set_cursor(1, term_y_last);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
 	
-	if (rt->cmdin != NULL && strlen(rt->cmdin) > 0) {
+	if (rt->cmdin != NULL && strlen(rt->cmdin) > 0)
 		hprintf(CMDLINE_FG, CMDLINE_BG, rt->cmdin);
-	} else {
-		if (1 == rt->feedback_lines) {
-			hprintf(FEEDBACK_FG, FEEDBACK_BG, rt->feedback);
-		}
-	}
+	else if (1 == rt->feedback_lines)
+		hprintf(FEEDBACK_FG, FEEDBACK_BG, rt->feedback);
 }
 
 /* Draw the environment in which multi-line feedback is displayed.
@@ -106,32 +108,37 @@ void draw_lower(const struct Runtime *rt)
  */
 void draw_reader(const char *header, const struct Runtime *rt)
 {
-	long unsigned i, x = 0, y = 0;
-	int wrap_line = 0;
+	long unsigned i, text_x = 0, text_y = 0, stdout_y;
 	
-	draw_upper(header, rt->cur_menu->title);
-
-	for (i = 0; i < rt->feedback_len; i++) {			
-		if (x >= term_x_last) {
-			x = 0;
-			y++;
-			wrap_line = 1;
+	stdout_y = draw_upper(header, rt->cur_menu->title);
+	
+	/* skip the text that is scrolled over */
+	for (i = 0; i < rt->feedback_len; i++) {		
+		if (text_x >= term_x_last || rt->feedback[i] == '\n') {
+			text_x = 0;
+			text_y += 1;
 		}
 		
-		if (y >= rt->scroll) {
-			if (wrap_line)
-				putc('\n', stdout);
-
+		if (text_y >= rt->reader_scroll)
+			break;
+		
+		text_x += 1;
+	}
+	
+	/* print text */
+	for (i = i; i < rt->feedback_len; i++) {
+		if (text_x >= term_x_last || rt->feedback[i] == '\n') {
+			putc('\n', stdout);
+			text_x = 0;
+			text_y += 1;
+			stdout_y += 1;
+		} else {
 			putc(rt->feedback[i], stdout);
+			text_x += 1;
 		}
 		
-		if ('\n' == rt->feedback[i]) {
-			x = 0;
-			y++;
-		}
-		
-		wrap_line = 0;
-		x++;
+		if (stdout_y >= (term_y_last - 1))
+			break;
 	}
 
 	draw_lower(rt);
@@ -165,7 +172,7 @@ void handle_sh(const char *sh, struct Runtime *rt)
 {
 	FILE *p;
 	char buf[STRING_BLOCK_SIZE];
-	long unsigned read_len;
+	long unsigned buf_len;
 	int read = 1;
 	
 	strn_bleach(rt->feedback, rt->feedback_len);
@@ -180,17 +187,17 @@ void handle_sh(const char *sh, struct Runtime *rt)
 	}
 	
 	while (read) {
-		read_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, p);
-		if (read_len < STRING_BLOCK_SIZE)
+		buf_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, p);
+		if (buf_len < STRING_BLOCK_SIZE)
 			read = 0;
 		
-		if (read_len > (rt->feedback_size - rt->feedback_len)) {
+		if (buf_len > (rt->feedback_size - rt->feedback_len)) {
 			rt->feedback_size += STRING_BLOCK_SIZE;
 			rt->feedback = realloc(rt->feedback, rt->feedback_size);
 		}
 		
-		strncpy(&rt->feedback[rt->feedback_len], buf, read_len);
-		rt->feedback_len += read_len;
+		strncpy(&rt->feedback[rt->feedback_len], buf, buf_len);
+		rt->feedback_len += buf_len;
 	}
 	pclose(p);
 	
@@ -291,13 +298,13 @@ void reader_handle_key(const char key, struct Runtime *rt)
 		break;
 
 	case 'j':
-		if (rt->scroll < (rt->feedback_lines - 1))
-			rt->scroll += 1;
+		if (rt->reader_scroll < (rt->feedback_lines - 1))
+			rt->reader_scroll += 1;
 		break;
 
 	case 'k':
-		if (rt->scroll > 0)
-			rt->scroll -= 1;
+		if (rt->reader_scroll > 0)
+			rt->reader_scroll -= 1;
 		break;
 	
 	case 'h':
