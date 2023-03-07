@@ -113,7 +113,7 @@ void draw_reader(const char *header, const struct Runtime *rt)
 	stdout_y = draw_upper(header, rt->cur_menu->title);
 	
 	/* skip the text that is scrolled over */
-	for (i = 0; i < rt->feedback_len; i++) {		
+	for (i = 0; i < rt->feedback_len; i += 1) {
 		if (text_x >= term_x_last || rt->feedback[i] == '\n') {
 			text_x = 0;
 			text_y += 1;
@@ -124,9 +124,9 @@ void draw_reader(const char *header, const struct Runtime *rt)
 		
 		text_x += 1;
 	}
-	
+
 	/* print text */
-	for (i = i; i < rt->feedback_len; i++) {
+	for (i = i + 1; i < rt->feedback_len; i += 1) {
 		if (text_x >= term_x_last || rt->feedback[i] == '\n') {
 			putc('\n', stdout);
 			text_x = 0;
@@ -137,7 +137,7 @@ void draw_reader(const char *header, const struct Runtime *rt)
 			text_x += 1;
 		}
 		
-		if (stdout_y >= (term_y_last - 1))
+		if (stdout_y >= term_y_last)
 			break;
 	}
 
