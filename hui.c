@@ -19,7 +19,7 @@ enum InputMode {
 	IM_CMD =    1
 };
 
-#define VERSION "0.2.0"
+#define VERSION "0.3.0"
 
 #define SIGINT  '\003'
 #define SIGTSTP '\032'
@@ -31,7 +31,6 @@ static long unsigned term_x_last, term_y_last;
 struct Runtime {
 	int                  active;
 	long unsigned        cursor;
-	long unsigned        menu_scroll;
 	long unsigned        reader_scroll;
 	enum InputMode       imode;
 	char                 cmdin[CMD_IN_LEN];
@@ -50,7 +49,6 @@ void init_runtime(struct Runtime *rt)
 	rt->imode = IM_NORMAL;
 	rt->cmdin[0] = '\0';
 	rt->cursor = 0;
-	rt->menu_scroll = 0;
 	rt->reader_scroll = 0;
 	rt->feedback = malloc(STRING_BLOCK_SIZE);
 	rt->feedback_len = 0;
@@ -96,11 +94,6 @@ void draw_lower(const struct Runtime *rt)
 {
 	set_cursor(1, term_y_last);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
-
-// TODO debug
-printf("feedback_lines = %lu, reader_scroll = %lu", rt->feedback_lines, rt->reader_scroll);
-return;
-// TODO
 
 	if (rt->cmdin != NULL && strlen(rt->cmdin) > 0)
 		hprintf(CMDLINE_FG, CMDLINE_BG, rt->cmdin);
@@ -156,11 +149,19 @@ void draw_reader(const char *header, const struct Runtime *rt)
  */
 void draw_menu(const char *header, const struct Runtime *rt)
 {
-	long unsigned i;
+	long unsigned i = 0, available_rows, stdout_y;
+	stdout_y = draw_upper(header, rt->cur_menu->title);
 	
-	draw_upper(header, rt->cur_menu->title);
+	/* calc first entry to be drawn */
+	available_rows = term_y_last - stdout_y - 1;
+	if (rt->cursor > available_rows)
+		i = rt->cursor - available_rows;
 
-	for (i = 0; rt->cur_menu->entries[i].type != ET_NONE; i++) {
+	/* draw */
+	for (i = i; rt->cur_menu->entries[i].type != ET_NONE; i++) {
+		if (stdout_y >= term_y_last)
+			break;
+			
 		if (i == rt->cursor) {
 			hprintf(ENTRY_HOVER_FG, ENTRY_HOVER_BG,
 			        "> %s\n", rt->cur_menu->entries[i].caption);
@@ -169,6 +170,8 @@ void draw_menu(const char *header, const struct Runtime *rt)
 			hprintf(ENTRY_FG, ENTRY_BG,
 			        "> %s\n", rt->cur_menu->entries[i].caption);
 		}
+		
+		stdout_y += 1;
 	}
 	
 	draw_lower(rt);

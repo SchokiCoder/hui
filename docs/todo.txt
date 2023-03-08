@@ -22,6 +22,12 @@
 }
 
 {
+	-enforce or remove yoda notation	.
+}
+
+--- Done ---
+
+{
 	-multiline feedback			v
 		-> vertical scrolling			v
 	
@@ -80,18 +86,16 @@
 	
 	-reader_scroll reset on exit		v
 	
-	-vertical menu scrolling		.
+	-menu draw height awareness		v
+	
+	-vertical menu scrolling		v
 	 cursor follow
 	
-	-handle any todos			.
+	-handle any todos			v
 	 or // comments
-	
-	-consider yoda notation			.
 		
-	-v 0.3.0				.
+	-v 0.3.0				v
 }
-
---- Done ---
 
 {
 	-fix menu open using cursor=0	v
