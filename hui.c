@@ -34,7 +34,7 @@ struct Runtime {
 	long unsigned        menu_scroll;
 	long unsigned        reader_scroll;
 	enum InputMode       imode;
-	char                 cmdin[CMD_IN_MAX_LEN];
+	char                 cmdin[CMD_IN_LEN];
 	const struct Menu   *cur_menu;
 	long unsigned        menu_stack_len;
 	const struct Menu   *menu_stack[MENU_STACK_SIZE];
@@ -83,7 +83,7 @@ long unsigned draw_upper(const char *header, const char *title)
 	set_cursor(1, 1);
 	hprintf(HEADER_FG, HEADER_BG, header);
 	hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
-	
+
 	ret += str_lines(header, term_x_last);
 	ret += str_lines(title, term_x_last);
 	return ret;
@@ -96,7 +96,12 @@ void draw_lower(const struct Runtime *rt)
 {
 	set_cursor(1, term_y_last);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
-	
+
+// TODO debug
+printf("feedback_lines = %lu, reader_scroll = %lu", rt->feedback_lines, rt->reader_scroll);
+return;
+// TODO
+
 	if (rt->cmdin != NULL && strlen(rt->cmdin) > 0)
 		hprintf(CMDLINE_FG, CMDLINE_BG, rt->cmdin);
 	else if (1 == rt->feedback_lines)
@@ -124,9 +129,12 @@ void draw_reader(const char *header, const struct Runtime *rt)
 		
 		text_x += 1;
 	}
+	
+	if ('\n' == rt->feedback[i])
+		i += 1;
 
 	/* print text */
-	for (i = i + 1; i < rt->feedback_len; i += 1) {
+	for (i = i; i < rt->feedback_len; i += 1) {
 		if (text_x >= term_x_last || rt->feedback[i] == '\n') {
 			putc('\n', stdout);
 			text_x = 0;
@@ -309,6 +317,7 @@ void reader_handle_key(const char key, struct Runtime *rt)
 	
 	case 'h':
 		rt->feedback_lines = 0;
+		rt->reader_scroll = 0;
 		break;
 
 	case ':':
@@ -336,7 +345,7 @@ void handle_key(const char key, struct Runtime *rt)
 			
 		case SIGINT:
 		case SIGTSTP:
-			strn_bleach(rt->cmdin, CMD_IN_MAX_LEN);
+			strn_bleach(rt->cmdin, CMD_IN_LEN);
 			rt->imode = IM_NORMAL;
 			break;
 

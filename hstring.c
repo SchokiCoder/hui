@@ -31,20 +31,19 @@ long unsigned str_lines(const char *str, long unsigned line_len)
 {
 	long unsigned i = 0, x = 0, ret = 1;
 	
-	if (str == NULL)
-		return 0;
-	else if (str[0] == '\0')
+	if (NULL == str || '\0' == str[0])
 		return 0;
 
 	while (str[i] != '\0') {
 		if (x > line_len) {
-			ret++;
+			ret += 1;
 			x = 0;
 		}
 		
 		switch (str[i]) {
 		case '\n':
-			ret++;
+			ret += 1;
+			x = 0;
 			break;
 			
 		case '\0':
@@ -52,11 +51,11 @@ long unsigned str_lines(const char *str, long unsigned line_len)
 			break;
 		
 		default:
-			x++;
+			x += 1;
 			break;
 		}
 		
-		i++;
+		i += 1;
 	}
 	
 	return ret;

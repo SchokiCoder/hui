@@ -9,7 +9,7 @@
 #include "color.h"
 #include "menu.h"
 
-#define CMD_IN_MAX_LEN 64
+#define CMD_IN_LEN 64
 
 #define MENU_STACK_SIZE 64
 

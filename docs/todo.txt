@@ -71,9 +71,14 @@
 	-reader after scroll 1st line is	v
 	 always empty
 	
-	-reader can overscroll past the		.
+	-reader can overscroll past the		v
 	 last line
 	 rt->feedback_lines is too high
+	 str_lines() missing x reset
+	
+	-reader 1st character missing		v
+	
+	-reader_scroll reset on exit		v
 	
 	-vertical menu scrolling		.
 	 cursor follow
