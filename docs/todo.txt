@@ -14,15 +14,27 @@
 		-'G' goto last entry		.
 }
 
-{ delayed from 0.3.0
+{
+	-arg a (print version, license, repo)	v
+	
+	-enforce yoda notation			v
+	
+	-reader sigint and sigtstp		v
+	 just end reader
+	
 	-get stderr				.
 	 (fork and exec-family didn't help)
+		->print feedback accordingly		.
+	 if ^this doesn't work, omit
 	
-	-print feedback accordingly		.
-}
-
-{
-	-enforce or remove yoda notation	.
+	-return values				.
+	-print message consistency		.
+	 (format, stdout vs stderr)
+	-std config				.
+	 (with compiler warning when untouched)
+	-manpage				.
+	
+	-v 1.0.0				.
 }
 
 --- Done ---

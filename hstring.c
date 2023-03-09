@@ -1,4 +1,4 @@
-/* Copyright 2022 Andy Frank Schoknecht
+/* Copyright (C) 2022 - 2023 Andy Frank Schoknecht
  * Use of this source code is governed by the BSD-3-Clause
  * license, that can be found in the LICENSE file.
  */
@@ -86,7 +86,7 @@ void str_rtrim(char *str)
 
 	do
 		pos -= 1;
-	while (str[pos] == ' ' || str[pos] == '\t' || str[pos] == '\n');
+	while (' ' == str[pos] || '\t' == str[pos] || '\n' == str[pos]);
 	
 	str[pos + 1] = '\0';
 }

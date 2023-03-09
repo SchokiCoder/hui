@@ -1,4 +1,4 @@
-/* Copyright 2022 Andy Frank Schoknecht
+/* Copyright (C) 2022 - 2023 Andy Frank Schoknecht
  * Use of this source code is governed by the BSD-3-Clause
  * license, that can be found in the LICENSE file.
  */
@@ -112,7 +112,7 @@ void draw_reader(const char *header, const struct Runtime *rt)
 	
 	/* skip the text that is scrolled over */
 	for (i = 0; i < rt->feedback_len; i += 1) {
-		if (text_x >= term_x_last || rt->feedback[i] == '\n') {
+		if (text_x >= term_x_last || '\n' == rt->feedback[i]) {
 			text_x = 0;
 			text_y += 1;
 		}
@@ -128,7 +128,7 @@ void draw_reader(const char *header, const struct Runtime *rt)
 
 	/* print text */
 	for (i = i; i < rt->feedback_len; i += 1) {
-		if (text_x >= term_x_last || rt->feedback[i] == '\n') {
+		if (text_x >= term_x_last || '\n' == rt->feedback[i]) {
 			putc('\n', stdout);
 			text_x = 0;
 			text_y += 1;
@@ -162,7 +162,7 @@ void draw_menu(const char *header, const struct Runtime *rt)
 		if (stdout_y >= term_y_last)
 			break;
 			
-		if (i == rt->cursor) {
+		if (rt->cursor == i) {
 			hprintf(ENTRY_HOVER_FG, ENTRY_HOVER_BG,
 			        "> %s\n", rt->cur_menu->entries[i].caption);
 		}
@@ -215,7 +215,7 @@ void handle_sh(const char *sh, struct Runtime *rt)
 	str_rtrim(rt->feedback);
 	rt->feedback_lines = str_lines(rt->feedback, term_x_last);
 	
-	if (rt->feedback_lines == 0) {
+	if (0 == rt->feedback_lines) {
 		strcpy(rt->feedback, "Executed without feedback");
 		rt->feedback_lines = 1;
 	}
@@ -266,7 +266,7 @@ void menu_handle_key(const char key, struct Runtime *rt)
 		break;
 
 	case 'l':
-		if (rt->cur_menu->entries[rt->cursor].type == ET_SUBMENU) {
+		if (ET_SUBMENU == rt->cur_menu->entries[rt->cursor].type) {
 			rt->cur_menu = rt->cur_menu->entries[rt->cursor].submenu;
 			rt->menu_stack[rt->menu_stack_len] = rt->cur_menu;
 			rt->menu_stack_len += 1;
@@ -285,7 +285,7 @@ void menu_handle_key(const char key, struct Runtime *rt)
 		break;
 	
 	case 'L':
-		if (rt->cur_menu->entries[rt->cursor].type == ET_SHELL) {
+		if (ET_SHELL == rt->cur_menu->entries[rt->cursor].type) {
 			handle_sh(rt->cur_menu->entries[rt->cursor].shell, rt);
 		}
 		break;
@@ -318,6 +318,8 @@ void reader_handle_key(const char key, struct Runtime *rt)
 			rt->reader_scroll -= 1;
 		break;
 	
+	case SIGINT:
+	case SIGTSTP:
 	case 'h':
 		rt->feedback_lines = 0;
 		rt->reader_scroll = 0;
@@ -325,11 +327,6 @@ void reader_handle_key(const char key, struct Runtime *rt)
 
 	case ':':
 		rt->imode = IM_CMD;
-		break;
-
-	case SIGINT:
-	case SIGTSTP:
-		rt->active = 0;
 		break;
 	}
 }
@@ -341,7 +338,7 @@ void reader_handle_key(const char key, struct Runtime *rt)
  */
 void handle_key(const char key, struct Runtime *rt)
 {
-	if (rt->imode == IM_CMD) {
+	if (IM_CMD == rt->imode) {
 		switch (key) {
 		case '\n':
 			handle_command(rt->cmdin, rt);
@@ -366,7 +363,7 @@ void handle_key(const char key, struct Runtime *rt)
 		menu_handle_key(key, rt);
 }
 
-int main(int argc, char *argv[])
+int main(const int argc, const char *argv[])
 {
 	struct winsize wsize;
 	struct termios orig, raw;
@@ -375,9 +372,25 @@ int main(int argc, char *argv[])
 	const long unsigned prepend_len = strlen(CMD_PREPEND);
 	
 	/* parse opts */
-	if (argc == 2 && !strcmp("-v", argv[1])) {
-		printf("hui: version " VERSION "\n");
-		return 0;
+	if (2 == argc) {
+		switch (argv[1][1]) {
+		case 'v':
+			printf("hui: version " VERSION "\n");
+			return 0;
+			break;
+		
+		case 'a':
+			printf("\"House User Interface\" aka hui %s is licensed "
+			       "under the BSD-3-Clause license.\n"
+			       "You should have received a copy of the license "
+			       "along with this program.\n\n"
+			       "The source code of this program is available at:"
+			       "\nhttps://github.com/SchokiCoder/hui\n\n"
+			       "Copyright 2022 - 2023 Andy Frank Schoknecht\n",
+			       VERSION);
+			return 0;
+			break;
+		}
 	}
 	
 	/* get term size */
@@ -402,7 +415,7 @@ int main(int argc, char *argv[])
 		else
 			draw_menu(HEADER, &rt);
 
-		if (rt.imode == IM_CMD)
+		if (IM_CMD == rt.imode)
 			printf(SEQ_CRSR_SHOW);
 		else
 			printf(SEQ_CRSR_HIDE);
