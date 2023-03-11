@@ -24,39 +24,42 @@ enum InputMode {
 #define SIGINT  '\003'
 #define SIGTSTP '\032'
 
-#define STRING_BLOCK_SIZE 1024
-
 static long unsigned term_x_last, term_y_last;
 
-struct Runtime {
-	int                  active;
-	long unsigned        cursor;
-	long unsigned        reader_scroll;
-	enum InputMode       imode;
-	char                 cmdin[CMD_IN_LEN];
-	const struct Menu   *cur_menu;
-	long unsigned        menu_stack_len;
-	const struct Menu   *menu_stack[MENU_STACK_SIZE];
-	char                *feedback;
-	long unsigned        feedback_len;
-	long unsigned        feedback_size;
-	long unsigned        feedback_lines;
+struct AppMenu {
+	const struct Menu *cur_menu;
+	long unsigned      menu_stack_len;
+	const struct Menu *menu_stack[MENU_STACK_SIZE];
+	long unsigned      cursor;
 };
 
-void init_runtime(struct Runtime *rt)
+struct AppReader {
+	struct String feedback;
+	long unsigned feedback_lines;
+	long unsigned reader_scroll;
+};
+
+struct AppMenu AppMenu_new()
 {
-	rt->active = -1;
-	rt->imode = IM_NORMAL;
-	rt->cmdin[0] = '\0';
-	rt->cursor = 0;
-	rt->reader_scroll = 0;
-	rt->feedback = malloc(STRING_BLOCK_SIZE);
-	rt->feedback_len = 0;
-	rt->feedback_size = STRING_BLOCK_SIZE;
-	rt->feedback_lines = 0;	
-	rt->menu_stack_len = 1;
-	rt->menu_stack[0] = &MENU_MAIN;
-	rt->cur_menu = &MENU_MAIN;
+	struct AppMenu ret = {
+		.cur_menu = &MENU_MAIN,
+		.menu_stack_len = 1,
+		.menu_stack[0] = &MENU_MAIN,
+		.cursor = 0
+	};
+	
+	return ret;	
+}
+
+struct AppReader AppReader_new()
+{
+	struct AppReader ret = {
+		.reader_scroll = 0,
+		.feedback = String_new(),
+		.feedback_lines = 0
+	};
+	
+	return ret;
 }
 
 long unsigned count_menu_entries(const struct Menu *menu)
@@ -68,7 +71,8 @@ long unsigned count_menu_entries(const struct Menu *menu)
 	return i;
 }
 
-/* Returns the amount of lines needed for this print.
+/* Draw header and title.
+ * Returns the amount of lines needed for this print.
  */
 long unsigned draw_upper(const char *header, const char *title)
 {
@@ -87,54 +91,56 @@ long unsigned draw_upper(const char *header, const char *title)
 	return ret;
 }
 
-/* Draw the lower part.
- * Doesn't manipulate the runtime.
+/* Draw the command line.
  */
-void draw_lower(const struct Runtime *rt)
+void draw_lower(const char *cmdin, const struct AppReader *app_reader)
 {
 	set_cursor(1, term_y_last);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
 
-	if (rt->cmdin != NULL && strlen(rt->cmdin) > 0)
-		hprintf(CMDLINE_FG, CMDLINE_BG, rt->cmdin);
-	else if (1 == rt->feedback_lines)
-		hprintf(FEEDBACK_FG, FEEDBACK_BG, rt->feedback);
+	if (cmdin != NULL && strlen(cmdin) > 0)
+		hprintf(CMDLINE_FG, CMDLINE_BG, cmdin);
+	else if (1 == app_reader->feedback_lines)
+		hprintf(FEEDBACK_FG, FEEDBACK_BG, app_reader->feedback.str);
 }
 
 /* Draw the environment in which multi-line feedback is displayed.
- * Doesn't manipulate the runtime.
  */
-void draw_reader(const char *header, const struct Runtime *rt)
+void
+draw_reader(const char             *header,
+            const struct AppMenu   *app_menu,
+            const struct AppReader *app_reader,
+            const char             *cmdin)
 {
 	long unsigned i, text_x = 0, text_y = 0, stdout_y;
 	
-	stdout_y = draw_upper(header, rt->cur_menu->title);
+	stdout_y = draw_upper(header, app_menu->cur_menu->title);
 	
 	/* skip the text that is scrolled over */
-	for (i = 0; i < rt->feedback_len; i += 1) {
-		if (text_x >= term_x_last || '\n' == rt->feedback[i]) {
+	for (i = 0; i < app_reader->feedback.len; i += 1) {
+		if (text_x >= term_x_last || '\n' == app_reader->feedback.str[i]) {
 			text_x = 0;
 			text_y += 1;
 		}
 		
-		if (text_y >= rt->reader_scroll)
+		if (text_y >= app_reader->reader_scroll)
 			break;
 		
 		text_x += 1;
 	}
 	
-	if ('\n' == rt->feedback[i])
+	if ('\n' == app_reader->feedback.str[i])
 		i += 1;
 
 	/* print text */
-	for (i = i; i < rt->feedback_len; i += 1) {
-		if (text_x >= term_x_last || '\n' == rt->feedback[i]) {
+	for (i = i; i < app_reader->feedback.len; i += 1) {
+		if (text_x >= term_x_last || '\n' == app_reader->feedback.str[i]) {
 			putc('\n', stdout);
 			text_x = 0;
 			text_y += 1;
 			stdout_y += 1;
 		} else {
-			putc(rt->feedback[i], stdout);
+			putc(app_reader->feedback.str[i], stdout);
 			text_x += 1;
 		}
 		
@@ -142,58 +148,58 @@ void draw_reader(const char *header, const struct Runtime *rt)
 			break;
 	}
 
-	draw_lower(rt);
+	draw_lower(cmdin, app_reader);
 }
 
-/* Doesn't manipulate the runtime.
- */
-void draw_menu(const char *header, const struct Runtime *rt)
+void
+draw_menu(const char             *header,
+          const struct AppMenu   *app_menu,
+          const struct AppReader *app_reader,
+          const char             *cmdin)
 {
 	long unsigned i = 0, available_rows, stdout_y;
-	stdout_y = draw_upper(header, rt->cur_menu->title);
+	stdout_y = draw_upper(header, app_menu->cur_menu->title);
 	
 	/* calc first entry to be drawn */
 	available_rows = term_y_last - stdout_y - 1;
-	if (rt->cursor > available_rows)
-		i = rt->cursor - available_rows;
+	if (app_menu->cursor > available_rows)
+		i = app_menu->cursor - available_rows;
 
 	/* draw */
-	for (i = i; rt->cur_menu->entries[i].type != ET_NONE; i++) {
+	for (i = i; app_menu->cur_menu->entries[i].type != ET_NONE; i++) {
 		if (stdout_y >= term_y_last)
 			break;
 			
-		if (rt->cursor == i) {
+		if (app_menu->cursor == i) {
 			hprintf(ENTRY_HOVER_FG, ENTRY_HOVER_BG,
-			        "> %s\n", rt->cur_menu->entries[i].caption);
+			        "> %s\n", app_menu->cur_menu->entries[i].caption);
 		}
 		else {
 			hprintf(ENTRY_FG, ENTRY_BG,
-			        "> %s\n", rt->cur_menu->entries[i].caption);
+			        "> %s\n", app_menu->cur_menu->entries[i].caption);
 		}
 		
 		stdout_y += 1;
 	}
 	
-	draw_lower(rt);
+	draw_lower(cmdin, app_reader);
 }
 
 /* Manipulates the runtime depending on given shell string.
  */
-void handle_sh(const char *sh, struct Runtime *rt)
+void handle_sh(const char *sh, struct AppReader *app_reader)
 {
 	FILE *p;
 	char buf[STRING_BLOCK_SIZE];
 	long unsigned buf_len;
 	int read = 1;
 	
-	strn_bleach(rt->feedback, rt->feedback_len);
-	rt->feedback_len = 0;
-	rt->feedback[0] = '\0';
+	String_bleach(&app_reader->feedback);
 	
 	p = popen(sh, "r");
 	if (NULL == p) {
-		strcpy(rt->feedback, "ERROR shell could not execute");
-		rt->feedback_lines = 1;
+		String_copy(&app_reader->feedback, "ERROR shell could not execute");
+		app_reader->feedback_lines = 1;
 		return;
 	}
 	
@@ -202,28 +208,27 @@ void handle_sh(const char *sh, struct Runtime *rt)
 		if (buf_len < STRING_BLOCK_SIZE)
 			read = 0;
 		
-		if (buf_len > (rt->feedback_size - rt->feedback_len)) {
-			rt->feedback_size += STRING_BLOCK_SIZE;
-			rt->feedback = realloc(rt->feedback, rt->feedback_size);
-		}
-		
-		strncpy(&rt->feedback[rt->feedback_len], buf, buf_len);
-		rt->feedback_len += buf_len;
+		String_append(&app_reader->feedback, buf);
 	}
 	pclose(p);
 	
-	str_rtrim(rt->feedback);
-	rt->feedback_lines = str_lines(rt->feedback, term_x_last);
+	String_rtrim(&app_reader->feedback);
+	app_reader->feedback_lines = str_lines(app_reader->feedback.str, term_x_last);
 	
-	if (0 == rt->feedback_lines) {
-		strcpy(rt->feedback, "Executed without feedback");
-		rt->feedback_lines = 1;
+	if (0 == app_reader->feedback_lines) {
+		String_copy(&app_reader->feedback, "Executed without feedback");
+		app_reader->feedback_lines = 1;
 	}
 }
 
 /* Manipulates the runtime depending on given command.
  */
-void handle_command(const char *cmd, struct Runtime *rt)
+void
+handle_command(const char       *cmd,
+               int              *active,
+               const char       *cmdin,
+               struct AppMenu   *app_menu,
+               struct AppReader *app_reader)
 {
 	int n;
 	long unsigned menu_len;
@@ -231,144 +236,161 @@ void handle_command(const char *cmd, struct Runtime *rt)
 	if (strcmp(cmd, "q") == 0
 	    || strcmp(cmd, "quit") == 0
 	    || strcmp(cmd, "exit") == 0) {
-		rt->active = 0;
+		*active = 0;
 	} else {
-		n = atoi(rt->cmdin);
+		n = atoi(cmdin);
 		
 		if (n > 0) {
-			menu_len = count_menu_entries(rt->cur_menu);
+			menu_len = count_menu_entries(app_menu->cur_menu);
 			if (n >= menu_len)
-				rt->cursor = menu_len - 1;
+				app_menu->cursor = menu_len - 1;
 			else
-				rt->cursor = n - 1;
+				app_menu->cursor = n - 1;
 		} else {
-			rt->feedback = "Command not recognised";
+			String_copy(&app_reader->feedback, "Command not recognised");
 			return;
 		}
 	}
 }
 
-void menu_handle_key(const char key, struct Runtime *rt)
+void
+menu_handle_key(const char        key,
+                int              *active,
+                struct AppMenu   *app_menu,
+                struct AppReader *app_reader,
+                enum InputMode   *imode)
 {
 	switch (key) {
 	case 'q':
-		rt->active = 0;
+		*active = 0;
 		break;
 
 	case 'j':
-		if (rt->cur_menu->entries[rt->cursor + 1].type != ET_NONE)
-			rt->cursor += 1;
+		if (app_menu->cur_menu->entries[app_menu->cursor + 1].type != ET_NONE)
+			app_menu->cursor += 1;
 		break;
 
 	case 'k':
-		if (rt->cursor > 0)
-			rt->cursor -= 1;
+		if (app_menu->cursor > 0)
+			app_menu->cursor -= 1;
 		break;
 
 	case 'l':
-		if (ET_SUBMENU == rt->cur_menu->entries[rt->cursor].type) {
-			rt->cur_menu = rt->cur_menu->entries[rt->cursor].submenu;
-			rt->menu_stack[rt->menu_stack_len] = rt->cur_menu;
-			rt->menu_stack_len += 1;
-			rt->feedback_lines = 0;
-			rt->cursor = 0;
+		if (ET_SUBMENU == app_menu->cur_menu->entries[app_menu->cursor].type) {
+			app_menu->cur_menu = app_menu->cur_menu->entries[app_menu->cursor].submenu;
+			app_menu->menu_stack[app_menu->menu_stack_len] = app_menu->cur_menu;
+			app_menu->menu_stack_len += 1;
+			app_reader->feedback_lines = 0;
+			app_menu->cursor = 0;
 		}
 		break;
 
 	case 'h':
-		if (rt->menu_stack_len > 1) {
-			rt->menu_stack_len -= 1;
-			rt->cur_menu = rt->menu_stack[rt->menu_stack_len - 1];
-			rt->feedback_lines = 0;
-			rt->cursor = 0;
+		if (app_menu->menu_stack_len > 1) {
+			app_menu->menu_stack_len -= 1;
+			app_menu->cur_menu = app_menu->menu_stack[app_menu->menu_stack_len - 1];
+			app_reader->feedback_lines = 0;
+			app_menu->cursor = 0;
 		}
 		break;
 	
 	case 'L':
-		if (ET_SHELL == rt->cur_menu->entries[rt->cursor].type) {
-			handle_sh(rt->cur_menu->entries[rt->cursor].shell, rt);
+		if (ET_SHELL == app_menu->cur_menu->entries[app_menu->cursor].type) {
+			handle_sh(app_menu->cur_menu->entries[app_menu->cursor].shell, app_reader);
 		}
 		break;
 
 	case ':':
-		rt->imode = IM_CMD;
+		*imode = IM_CMD;
 		break;
 
 	case SIGINT:
 	case SIGTSTP:
-		rt->active = 0;
+		*active = 0;
 		break;
 	}
 }
 
-void reader_handle_key(const char key, struct Runtime *rt)
+void
+reader_handle_key(const char        key,
+                  int              *active,
+                  struct AppReader *app_reader,
+                  enum InputMode   *imode)
 {
 	switch (key) {
 	case 'q':
-		rt->active = 0;
+		*active = 0;
 		break;
 
 	case 'j':
-		if (rt->reader_scroll < (rt->feedback_lines - 1))
-			rt->reader_scroll += 1;
+		if (app_reader->reader_scroll < (app_reader->feedback_lines - 1))
+			app_reader->reader_scroll += 1;
 		break;
 
 	case 'k':
-		if (rt->reader_scroll > 0)
-			rt->reader_scroll -= 1;
+		if (app_reader->reader_scroll > 0)
+			app_reader->reader_scroll -= 1;
 		break;
 	
 	case SIGINT:
 	case SIGTSTP:
 	case 'h':
-		rt->feedback_lines = 0;
-		rt->reader_scroll = 0;
+		app_reader->feedback_lines = 0;
+		app_reader->reader_scroll = 0;
 		break;
 
 	case ':':
-		rt->imode = IM_CMD;
+		*imode = IM_CMD;
 		break;
 	}
 }
 
 /* Manipulates the runtime depending on given key.
- * Returns:
- * 0 - nothing needs to be done by calling code
- * 1 - the mainloop should "continue"
  */
-void handle_key(const char key, struct Runtime *rt)
+void
+handle_key(const char        key,
+           int              *active,
+           enum InputMode   *imode,
+           char             *cmdin,
+           struct AppMenu   *app_menu,
+           struct AppReader *app_reader)
 {
-	if (IM_CMD == rt->imode) {
+	if (IM_CMD == *imode) {
 		switch (key) {
 		case '\n':
-			handle_command(rt->cmdin, rt);
+			handle_command(cmdin, active, cmdin, app_menu, app_reader);
 			
 		case SIGINT:
 		case SIGTSTP:
-			strn_bleach(rt->cmdin, CMD_IN_LEN);
-			rt->imode = IM_NORMAL;
+			strn_bleach(cmdin, CMD_IN_LEN);
+			*imode = IM_NORMAL;
 			break;
 
 		default:
-			str_add_char(rt->cmdin, key);
+			str_add_char(cmdin, key);
 			break;
 		}
 
 		return;
 	}
 
-	if (rt->feedback_lines > 1)
-		reader_handle_key(key, rt);
+	if (app_reader->feedback_lines > 1)
+		reader_handle_key(key, active, app_reader, imode);
 	else
-		menu_handle_key(key, rt);
+		menu_handle_key(key, active, app_menu, app_reader, imode);
 }
 
 int main(const int argc, const char *argv[])
 {
+	int              active = 1;	
+	enum InputMode   imode = IM_NORMAL;
+	char             cmdin[CMD_IN_LEN] = "\0";
+	struct AppMenu   app_menu = AppMenu_new();
+	struct AppReader app_reader = AppReader_new();
+	
 	struct winsize wsize;
 	struct termios orig, raw;
 	char c;
-	struct Runtime rt;
 	const long unsigned prepend_len = strlen(CMD_PREPEND);
 	
 	/* parse opts */
@@ -397,8 +419,6 @@ int main(const int argc, const char *argv[])
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
 	term_x_last = wsize.ws_col;
 	term_y_last = wsize.ws_row;
-	
-	init_runtime(&rt);
 
 	/* get term info and set raw mode */
 	setbuf(stdout, NULL);
@@ -409,19 +429,19 @@ int main(const int argc, const char *argv[])
 	printf(SEQ_CRSR_HIDE);
 
 	/* mainloop */
-	while (rt.active) {
-		if (rt.feedback_lines > 1)
-			draw_reader(HEADER, &rt);
+	while (active) {
+		if (app_reader.feedback_lines > 1)
+			draw_reader(HEADER, &app_menu, &app_reader, cmdin);
 		else
-			draw_menu(HEADER, &rt);
+			draw_menu(HEADER, &app_menu, &app_reader, cmdin);
 
-		if (IM_CMD == rt.imode)
+		if (IM_CMD == imode)
 			printf(SEQ_CRSR_SHOW);
 		else
 			printf(SEQ_CRSR_HIDE);
 
 		read(STDIN_FILENO, &c, 1);
-		handle_key(c, &rt);
+		handle_key(c, &active, &imode, cmdin, &app_menu, &app_reader);
 	}
 
 	/* restore original terminal settings */
@@ -430,7 +450,7 @@ int main(const int argc, const char *argv[])
 	printf(SEQ_FG_DEFAULT);
 	printf(SEQ_BG_DEFAULT);
 	
-	free(rt.feedback);
+	String_free(&app_reader.feedback);
 
 	return 0;
 }

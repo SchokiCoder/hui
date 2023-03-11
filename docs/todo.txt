@@ -22,6 +22,22 @@
 	-reader sigint and sigtstp		v
 	 just end reader
 	
+	-split struct "runtime" into structs	v
+	 of data that relate to each other
+	 "data flow rework"
+	
+	-string rework				.
+		-as struct				v
+		-realloc invalid old size		.
+		 (reader very long text)
+		-double free				.
+		 (sigint while reader)
+		-1st char missing			.
+		 (all feedback)
+	
+	-remove draw_upper and draw_lower	.
+	 from draw_reader and draw_menu
+	
 	-get stderr				.
 	 (fork and exec-family didn't help)
 		->print feedback accordingly		.

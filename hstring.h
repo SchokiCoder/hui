@@ -6,6 +6,28 @@
 #ifndef _HSTRING_H
 #define _HSTRING_H
 
+#define STRING_BLOCK_SIZE 2048
+
+struct String {
+	long unsigned size;
+	long unsigned len;
+	char *str;
+};
+
+struct String String_new();
+
+void String_copy(struct String *string, const char *src);
+
+void String_append(struct String *string, const char *src);
+
+void String_rtrim(struct String *string);
+
+void String_grow(struct String *string);
+
+void String_bleach(struct String *string);
+
+void String_free(struct String *string);
+
 /* zero out n characters of string
  */
 void strn_bleach(char *str, const long unsigned len);
@@ -28,9 +50,10 @@ hprintf(const struct Color  fg,
         const char         *fmt,
         ...);
 
-/* removes spaces, tabs and newlines from end of the string
+/* Removes spaces, tabs and newlines from end of the string.
+ * Returns the new length of the string.
  */
-void str_rtrim(char *str);
+long unsigned str_rtrim(char *str);
 
 
 #endif /* _HSTRING_H */

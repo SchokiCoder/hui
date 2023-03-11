@@ -6,9 +6,68 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "color.h"
 #include "hstring.h"
+
+struct String String_new()
+{
+	struct String ret = {
+		.size = STRING_BLOCK_SIZE,
+		.len = 0,
+		.str = malloc(STRING_BLOCK_SIZE)
+	};
+	
+	return ret;
+}
+
+void String_copy(struct String *string, const char *src)
+{
+	const long unsigned src_len = strlen(src);
+	
+	while (src_len > string->size) {
+		String_grow(string);
+	}
+	
+	strncpy(string->str, src, src_len);
+	string->len = src_len;
+}
+
+void String_append(struct String *string, const char *src)
+{
+	const long unsigned src_len = strlen(src);
+	const long unsigned new_len = src_len + string->len;
+	
+	while (new_len > string->size) {
+		String_grow(string);
+	}
+	
+	strncpy(&string->str[string->len - 1], src, src_len);
+	string->len = new_len;
+}
+
+void String_rtrim(struct String *string)
+{
+	string->len = str_rtrim(string->str); 
+}
+
+void String_grow(struct String *string)
+{
+	string->size += STRING_BLOCK_SIZE;
+	string->str = realloc(string->str, string->size);
+}
+
+void String_bleach(struct String *string)
+{
+	strn_bleach(string->str, string->len);
+	string->len = 0;
+}
+
+void String_free(struct String *string)
+{
+	free(string->str);
+}
 
 void strn_bleach(char *str, const long unsigned len)
 {
@@ -77,7 +136,7 @@ hprintf(const struct Color  fg,
 	va_end(valist);
 }
 
-void str_rtrim(char *str)
+long unsigned str_rtrim(char *str)
 {
 	long unsigned pos = 0;
 	
@@ -88,6 +147,10 @@ void str_rtrim(char *str)
 		pos -= 1;
 	while (' ' == str[pos] || '\t' == str[pos] || '\n' == str[pos]);
 	
-	str[pos + 1] = '\0';
+	pos += 1;
+	
+	str[pos] = '\0';
+	
+	return pos;
 }
 
