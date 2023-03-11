@@ -26,17 +26,24 @@
 	 of data that relate to each other
 	 "data flow rework"
 	
-	-string rework				.
+	-string rework				v
 		-as struct				v
-		-realloc invalid old size		.
-		 (reader very long text)
-		-double free				.
-		 (sigint while reader)
-		-1st char missing			.
-		 (all feedback)
+		
+		-realloc invalid old size on		v
+		 reader very long text
+		 and 1st char missing
+		 and double free
+		 (caused by String_append to wrong pos)
+		 
+		-feedback has weird characters		v
+		 and continues beyond actual text
+		 (String_append had invalid src_len) 
 	
 	-remove draw_upper and draw_lower	.
 	 from draw_reader and draw_menu
+	
+	-rename "app_menu" and "app_reader"	.
+	 into "amnu" + "ardr" in hui.c
 	
 	-get stderr				.
 	 (fork and exec-family didn't help)

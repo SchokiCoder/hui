@@ -34,16 +34,18 @@ void String_copy(struct String *string, const char *src)
 	string->len = src_len;
 }
 
-void String_append(struct String *string, const char *src)
+void
+String_append(struct String       *string,
+              const char          *src,
+              const long unsigned  src_len)
 {
-	const long unsigned src_len = strlen(src);
 	const long unsigned new_len = src_len + string->len;
 	
 	while (new_len > string->size) {
 		String_grow(string);
 	}
 	
-	strncpy(&string->str[string->len - 1], src, src_len);
+	strncpy(&string->str[string->len], src, src_len);
 	string->len = new_len;
 }
 

@@ -18,7 +18,10 @@ struct String String_new();
 
 void String_copy(struct String *string, const char *src);
 
-void String_append(struct String *string, const char *src);
+void
+String_append(struct String       *string,
+              const char          *src,
+              const long unsigned  src_len);
 
 void String_rtrim(struct String *string);
 

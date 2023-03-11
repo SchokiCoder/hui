@@ -208,7 +208,7 @@ void handle_sh(const char *sh, struct AppReader *app_reader)
 		if (buf_len < STRING_BLOCK_SIZE)
 			read = 0;
 		
-		String_append(&app_reader->feedback, buf);
+		String_append(&app_reader->feedback, buf, buf_len);
 	}
 	pclose(p);
 	
