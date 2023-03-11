@@ -72,134 +72,122 @@ long unsigned count_menu_entries(const struct Menu *menu)
 }
 
 /* Draw header and title.
- * Returns the amount of lines needed for this print.
  */
-long unsigned draw_upper(const char *header, const char *title)
-{
-	long unsigned ret = 0;
-	
-	/* draw bg color (clear) */
-	hprintf(OVERALL_BG, OVERALL_BG, SEQ_CLEAR);
-	
-	/* draw menu text */
+void draw_upper(long unsigned *stdout_y, const char *header, const char *title)
+{	
+	/* draw menu text, update stdout_y */
 	set_cursor(1, 1);
 	hprintf(HEADER_FG, HEADER_BG, header);
 	hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
 
-	ret += str_lines(header, term_x_last);
-	ret += str_lines(title, term_x_last);
-	return ret;
+	*stdout_y += str_lines(header, term_x_last);
+	*stdout_y += str_lines(title, term_x_last);
 }
 
-/* Draw the command line.
+/* Jump to last line and draw the command line.
  */
-void draw_lower(const char *cmdin, const struct AppReader *app_reader)
+void
+draw_lower(const char             *cmdin,
+           const struct AppReader *ardr)
 {
 	set_cursor(1, term_y_last);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
 
 	if (cmdin != NULL && strlen(cmdin) > 0)
 		hprintf(CMDLINE_FG, CMDLINE_BG, cmdin);
-	else if (1 == app_reader->feedback_lines)
-		hprintf(FEEDBACK_FG, FEEDBACK_BG, app_reader->feedback.str);
+	else if (1 == ardr->feedback_lines)
+		hprintf(FEEDBACK_FG, FEEDBACK_BG, ardr->feedback.str);
 }
 
 /* Draw the environment in which multi-line feedback is displayed.
  */
 void
-draw_reader(const char             *header,
-            const struct AppMenu   *app_menu,
-            const struct AppReader *app_reader,
+draw_reader(long unsigned          *stdout_y,
+            const struct AppReader *ardr,
             const char             *cmdin)
 {
-	long unsigned i, text_x = 0, text_y = 0, stdout_y;
-	
-	stdout_y = draw_upper(header, app_menu->cur_menu->title);
+	long unsigned i, text_x = 0, text_y = 0;
 	
 	/* skip the text that is scrolled over */
-	for (i = 0; i < app_reader->feedback.len; i += 1) {
-		if (text_x >= term_x_last || '\n' == app_reader->feedback.str[i]) {
+	for (i = 0; i < ardr->feedback.len; i += 1) {
+		if (text_x >= term_x_last || '\n' == ardr->feedback.str[i]) {
 			text_x = 0;
 			text_y += 1;
 		}
 		
-		if (text_y >= app_reader->reader_scroll)
+		if (text_y >= ardr->reader_scroll)
 			break;
 		
 		text_x += 1;
 	}
 	
-	if ('\n' == app_reader->feedback.str[i])
+	if ('\n' == ardr->feedback.str[i])
 		i += 1;
 
 	/* print text */
-	for (i = i; i < app_reader->feedback.len; i += 1) {
-		if (text_x >= term_x_last || '\n' == app_reader->feedback.str[i]) {
+	for (i = i; i < ardr->feedback.len; i += 1) {
+		if (text_x >= term_x_last || '\n' == ardr->feedback.str[i]) {
 			putc('\n', stdout);
 			text_x = 0;
 			text_y += 1;
-			stdout_y += 1;
+			*stdout_y += 1;
 		} else {
-			putc(app_reader->feedback.str[i], stdout);
+			putc(ardr->feedback.str[i], stdout);
 			text_x += 1;
 		}
 		
-		if (stdout_y >= term_y_last)
+		if (*stdout_y >= term_y_last)
 			break;
 	}
-
-	draw_lower(cmdin, app_reader);
 }
 
+/* Draw the menu.
+ */
 void
-draw_menu(const char             *header,
-          const struct AppMenu   *app_menu,
-          const struct AppReader *app_reader,
+draw_menu(long unsigned          *stdout_y,
+          const struct AppMenu   *amnu,
           const char             *cmdin)
 {
-	long unsigned i = 0, available_rows, stdout_y;
-	stdout_y = draw_upper(header, app_menu->cur_menu->title);
+	long unsigned i = 0, available_rows;
 	
 	/* calc first entry to be drawn */
-	available_rows = term_y_last - stdout_y - 1;
-	if (app_menu->cursor > available_rows)
-		i = app_menu->cursor - available_rows;
+	available_rows = term_y_last - *stdout_y - 1;
+	if (amnu->cursor > available_rows)
+		i = amnu->cursor - available_rows;
 
 	/* draw */
-	for (i = i; app_menu->cur_menu->entries[i].type != ET_NONE; i++) {
-		if (stdout_y >= term_y_last)
+	for (i = i; amnu->cur_menu->entries[i].type != ET_NONE; i++) {
+		if (*stdout_y >= term_y_last)
 			break;
 			
-		if (app_menu->cursor == i) {
+		if (amnu->cursor == i) {
 			hprintf(ENTRY_HOVER_FG, ENTRY_HOVER_BG,
-			        "> %s\n", app_menu->cur_menu->entries[i].caption);
+			        "> %s\n", amnu->cur_menu->entries[i].caption);
 		}
 		else {
 			hprintf(ENTRY_FG, ENTRY_BG,
-			        "> %s\n", app_menu->cur_menu->entries[i].caption);
+			        "> %s\n", amnu->cur_menu->entries[i].caption);
 		}
 		
-		stdout_y += 1;
+		*stdout_y += 1;
 	}
-	
-	draw_lower(cmdin, app_reader);
 }
 
 /* Manipulates the runtime depending on given shell string.
  */
-void handle_sh(const char *sh, struct AppReader *app_reader)
+void handle_sh(const char *sh, struct AppReader *ardr)
 {
 	FILE *p;
 	char buf[STRING_BLOCK_SIZE];
 	long unsigned buf_len;
 	int read = 1;
 	
-	String_bleach(&app_reader->feedback);
+	String_bleach(&ardr->feedback);
 	
 	p = popen(sh, "r");
 	if (NULL == p) {
-		String_copy(&app_reader->feedback, "ERROR shell could not execute");
-		app_reader->feedback_lines = 1;
+		String_copy(&ardr->feedback, "ERROR shell could not execute");
+		ardr->feedback_lines = 1;
 		return;
 	}
 	
@@ -208,16 +196,16 @@ void handle_sh(const char *sh, struct AppReader *app_reader)
 		if (buf_len < STRING_BLOCK_SIZE)
 			read = 0;
 		
-		String_append(&app_reader->feedback, buf, buf_len);
+		String_append(&ardr->feedback, buf, buf_len);
 	}
 	pclose(p);
 	
-	String_rtrim(&app_reader->feedback);
-	app_reader->feedback_lines = str_lines(app_reader->feedback.str, term_x_last);
+	String_rtrim(&ardr->feedback);
+	ardr->feedback_lines = str_lines(ardr->feedback.str, term_x_last);
 	
-	if (0 == app_reader->feedback_lines) {
-		String_copy(&app_reader->feedback, "Executed without feedback");
-		app_reader->feedback_lines = 1;
+	if (0 == ardr->feedback_lines) {
+		String_copy(&ardr->feedback, "Executed without feedback");
+		ardr->feedback_lines = 1;
 	}
 }
 
@@ -227,8 +215,8 @@ void
 handle_command(const char       *cmd,
                int              *active,
                const char       *cmdin,
-               struct AppMenu   *app_menu,
-               struct AppReader *app_reader)
+               struct AppMenu   *amnu,
+               struct AppReader *ardr)
 {
 	int n;
 	long unsigned menu_len;
@@ -241,13 +229,13 @@ handle_command(const char       *cmd,
 		n = atoi(cmdin);
 		
 		if (n > 0) {
-			menu_len = count_menu_entries(app_menu->cur_menu);
+			menu_len = count_menu_entries(amnu->cur_menu);
 			if (n >= menu_len)
-				app_menu->cursor = menu_len - 1;
+				amnu->cursor = menu_len - 1;
 			else
-				app_menu->cursor = n - 1;
+				amnu->cursor = n - 1;
 		} else {
-			String_copy(&app_reader->feedback, "Command not recognised");
+			String_copy(&ardr->feedback, "Command not recognised");
 			return;
 		}
 	}
@@ -256,8 +244,8 @@ handle_command(const char       *cmd,
 void
 menu_handle_key(const char        key,
                 int              *active,
-                struct AppMenu   *app_menu,
-                struct AppReader *app_reader,
+                struct AppMenu   *amnu,
+                struct AppReader *ardr,
                 enum InputMode   *imode)
 {
 	switch (key) {
@@ -266,37 +254,37 @@ menu_handle_key(const char        key,
 		break;
 
 	case 'j':
-		if (app_menu->cur_menu->entries[app_menu->cursor + 1].type != ET_NONE)
-			app_menu->cursor += 1;
+		if (amnu->cur_menu->entries[amnu->cursor + 1].type != ET_NONE)
+			amnu->cursor += 1;
 		break;
 
 	case 'k':
-		if (app_menu->cursor > 0)
-			app_menu->cursor -= 1;
+		if (amnu->cursor > 0)
+			amnu->cursor -= 1;
 		break;
 
 	case 'l':
-		if (ET_SUBMENU == app_menu->cur_menu->entries[app_menu->cursor].type) {
-			app_menu->cur_menu = app_menu->cur_menu->entries[app_menu->cursor].submenu;
-			app_menu->menu_stack[app_menu->menu_stack_len] = app_menu->cur_menu;
-			app_menu->menu_stack_len += 1;
-			app_reader->feedback_lines = 0;
-			app_menu->cursor = 0;
+		if (ET_SUBMENU == amnu->cur_menu->entries[amnu->cursor].type) {
+			amnu->cur_menu = amnu->cur_menu->entries[amnu->cursor].submenu;
+			amnu->menu_stack[amnu->menu_stack_len] = amnu->cur_menu;
+			amnu->menu_stack_len += 1;
+			ardr->feedback_lines = 0;
+			amnu->cursor = 0;
 		}
 		break;
 
 	case 'h':
-		if (app_menu->menu_stack_len > 1) {
-			app_menu->menu_stack_len -= 1;
-			app_menu->cur_menu = app_menu->menu_stack[app_menu->menu_stack_len - 1];
-			app_reader->feedback_lines = 0;
-			app_menu->cursor = 0;
+		if (amnu->menu_stack_len > 1) {
+			amnu->menu_stack_len -= 1;
+			amnu->cur_menu = amnu->menu_stack[amnu->menu_stack_len - 1];
+			ardr->feedback_lines = 0;
+			amnu->cursor = 0;
 		}
 		break;
 	
 	case 'L':
-		if (ET_SHELL == app_menu->cur_menu->entries[app_menu->cursor].type) {
-			handle_sh(app_menu->cur_menu->entries[app_menu->cursor].shell, app_reader);
+		if (ET_SHELL == amnu->cur_menu->entries[amnu->cursor].type) {
+			handle_sh(amnu->cur_menu->entries[amnu->cursor].shell, ardr);
 		}
 		break;
 
@@ -314,7 +302,7 @@ menu_handle_key(const char        key,
 void
 reader_handle_key(const char        key,
                   int              *active,
-                  struct AppReader *app_reader,
+                  struct AppReader *ardr,
                   enum InputMode   *imode)
 {
 	switch (key) {
@@ -323,20 +311,20 @@ reader_handle_key(const char        key,
 		break;
 
 	case 'j':
-		if (app_reader->reader_scroll < (app_reader->feedback_lines - 1))
-			app_reader->reader_scroll += 1;
+		if (ardr->reader_scroll < (ardr->feedback_lines - 1))
+			ardr->reader_scroll += 1;
 		break;
 
 	case 'k':
-		if (app_reader->reader_scroll > 0)
-			app_reader->reader_scroll -= 1;
+		if (ardr->reader_scroll > 0)
+			ardr->reader_scroll -= 1;
 		break;
 	
 	case SIGINT:
 	case SIGTSTP:
 	case 'h':
-		app_reader->feedback_lines = 0;
-		app_reader->reader_scroll = 0;
+		ardr->feedback_lines = 0;
+		ardr->reader_scroll = 0;
 		break;
 
 	case ':':
@@ -352,13 +340,13 @@ handle_key(const char        key,
            int              *active,
            enum InputMode   *imode,
            char             *cmdin,
-           struct AppMenu   *app_menu,
-           struct AppReader *app_reader)
+           struct AppMenu   *amnu,
+           struct AppReader *ardr)
 {
 	if (IM_CMD == *imode) {
 		switch (key) {
 		case '\n':
-			handle_command(cmdin, active, cmdin, app_menu, app_reader);
+			handle_command(cmdin, active, cmdin, amnu, ardr);
 			
 		case SIGINT:
 		case SIGTSTP:
@@ -374,10 +362,10 @@ handle_key(const char        key,
 		return;
 	}
 
-	if (app_reader->feedback_lines > 1)
-		reader_handle_key(key, active, app_reader, imode);
+	if (ardr->feedback_lines > 1)
+		reader_handle_key(key, active, ardr, imode);
 	else
-		menu_handle_key(key, active, app_menu, app_reader, imode);
+		menu_handle_key(key, active, amnu, ardr, imode);
 }
 
 int main(const int argc, const char *argv[])
@@ -385,8 +373,9 @@ int main(const int argc, const char *argv[])
 	int              active = 1;	
 	enum InputMode   imode = IM_NORMAL;
 	char             cmdin[CMD_IN_LEN] = "\0";
-	struct AppMenu   app_menu = AppMenu_new();
-	struct AppReader app_reader = AppReader_new();
+	long unsigned    stdout_y;
+	struct AppMenu   amnu = AppMenu_new();
+	struct AppReader ardr = AppReader_new();
 	
 	struct winsize wsize;
 	struct termios orig, raw;
@@ -430,10 +419,21 @@ int main(const int argc, const char *argv[])
 
 	/* mainloop */
 	while (active) {
-		if (app_reader.feedback_lines > 1)
-			draw_reader(HEADER, &app_menu, &app_reader, cmdin);
+		/* clear */
+		hprintf(OVERALL_BG, OVERALL_BG, SEQ_CLEAR);
+		stdout_y = 0;
+		
+		/* draw upper */
+		draw_upper(&stdout_y, HEADER, amnu.cur_menu->title);
+
+		/* draw reader or menu */
+		if (ardr.feedback_lines > 1)
+			draw_reader(&stdout_y, &ardr, cmdin);
 		else
-			draw_menu(HEADER, &app_menu, &app_reader, cmdin);
+			draw_menu(&stdout_y, &amnu, cmdin);
+		
+		/* draw lower */
+		draw_lower(cmdin, &ardr);
 
 		if (IM_CMD == imode)
 			printf(SEQ_CRSR_SHOW);
@@ -441,7 +441,7 @@ int main(const int argc, const char *argv[])
 			printf(SEQ_CRSR_HIDE);
 
 		read(STDIN_FILENO, &c, 1);
-		handle_key(c, &active, &imode, cmdin, &app_menu, &app_reader);
+		handle_key(c, &active, &imode, cmdin, &amnu, &ardr);
 	}
 
 	/* restore original terminal settings */
@@ -450,7 +450,7 @@ int main(const int argc, const char *argv[])
 	printf(SEQ_FG_DEFAULT);
 	printf(SEQ_BG_DEFAULT);
 	
-	String_free(&app_reader.feedback);
+	String_free(&ardr.feedback);
 
 	return 0;
 }

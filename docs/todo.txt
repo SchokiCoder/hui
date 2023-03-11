@@ -39,11 +39,13 @@
 		 and continues beyond actual text
 		 (String_append had invalid src_len) 
 	
-	-remove draw_upper and draw_lower	.
+	-remove draw_upper and draw_lower	v
 	 from draw_reader and draw_menu
 	
-	-rename "app_menu" and "app_reader"	.
+	-rename "app_menu" and "app_reader"	v
 	 into "amnu" + "ardr" in hui.c
+	
+	-check for code fmt / line length	.
 	
 	-get stderr				.
 	 (fork and exec-family didn't help)
