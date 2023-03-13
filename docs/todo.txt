@@ -45,7 +45,7 @@
 	-rename "app_menu" and "app_reader"	v
 	 into "amnu" + "ardr" in hui.c
 	
-	-check for code fmt / line length	.
+	-check for code fmt / line length	v
 	
 	-get stderr				.
 	 (fork and exec-family didn't help)

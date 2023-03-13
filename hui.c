@@ -47,8 +47,8 @@ struct AppMenu AppMenu_new()
 		.menu_stack[0] = &MENU_MAIN,
 		.cursor = 0
 	};
-	
-	return ret;	
+
+	return ret;
 }
 
 struct AppReader AppReader_new()
@@ -58,7 +58,7 @@ struct AppReader AppReader_new()
 		.feedback = String_new(),
 		.feedback_lines = 0
 	};
-	
+
 	return ret;
 }
 
@@ -74,7 +74,7 @@ long unsigned count_menu_entries(const struct Menu *menu)
 /* Draw header and title.
  */
 void draw_upper(long unsigned *stdout_y, const char *header, const char *title)
-{	
+{
 	/* draw menu text, update stdout_y */
 	set_cursor(1, 1);
 	hprintf(HEADER_FG, HEADER_BG, header);
@@ -86,9 +86,7 @@ void draw_upper(long unsigned *stdout_y, const char *header, const char *title)
 
 /* Jump to last line and draw the command line.
  */
-void
-draw_lower(const char             *cmdin,
-           const struct AppReader *ardr)
+void draw_lower(const char *cmdin, const struct AppReader *ardr)
 {
 	set_cursor(1, term_y_last);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
@@ -107,20 +105,20 @@ draw_reader(long unsigned          *stdout_y,
             const char             *cmdin)
 {
 	long unsigned i, text_x = 0, text_y = 0;
-	
+
 	/* skip the text that is scrolled over */
 	for (i = 0; i < ardr->feedback.len; i += 1) {
 		if (text_x >= term_x_last || '\n' == ardr->feedback.str[i]) {
 			text_x = 0;
 			text_y += 1;
 		}
-		
+
 		if (text_y >= ardr->reader_scroll)
 			break;
-		
+
 		text_x += 1;
 	}
-	
+
 	if ('\n' == ardr->feedback.str[i])
 		i += 1;
 
@@ -135,7 +133,7 @@ draw_reader(long unsigned          *stdout_y,
 			putc(ardr->feedback.str[i], stdout);
 			text_x += 1;
 		}
-		
+
 		if (*stdout_y >= term_y_last)
 			break;
 	}
@@ -149,7 +147,7 @@ draw_menu(long unsigned          *stdout_y,
           const char             *cmdin)
 {
 	long unsigned i = 0, available_rows;
-	
+
 	/* calc first entry to be drawn */
 	available_rows = term_y_last - *stdout_y - 1;
 	if (amnu->cursor > available_rows)
@@ -159,16 +157,15 @@ draw_menu(long unsigned          *stdout_y,
 	for (i = i; amnu->cur_menu->entries[i].type != ET_NONE; i++) {
 		if (*stdout_y >= term_y_last)
 			break;
-			
+
 		if (amnu->cursor == i) {
 			hprintf(ENTRY_HOVER_FG, ENTRY_HOVER_BG,
-			        "> %s\n", amnu->cur_menu->entries[i].caption);
-		}
-		else {
+				"> %s\n", amnu->cur_menu->entries[i].caption);
+		} else {
 			hprintf(ENTRY_FG, ENTRY_BG,
-			        "> %s\n", amnu->cur_menu->entries[i].caption);
+				"> %s\n", amnu->cur_menu->entries[i].caption);
 		}
-		
+
 		*stdout_y += 1;
 	}
 }
@@ -181,28 +178,28 @@ void handle_sh(const char *sh, struct AppReader *ardr)
 	char buf[STRING_BLOCK_SIZE];
 	long unsigned buf_len;
 	int read = 1;
-	
+
 	String_bleach(&ardr->feedback);
-	
+
 	p = popen(sh, "r");
 	if (NULL == p) {
 		String_copy(&ardr->feedback, "ERROR shell could not execute");
 		ardr->feedback_lines = 1;
 		return;
 	}
-	
+
 	while (read) {
 		buf_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, p);
 		if (buf_len < STRING_BLOCK_SIZE)
 			read = 0;
-		
+
 		String_append(&ardr->feedback, buf, buf_len);
 	}
 	pclose(p);
-	
+
 	String_rtrim(&ardr->feedback);
 	ardr->feedback_lines = str_lines(ardr->feedback.str, term_x_last);
-	
+
 	if (0 == ardr->feedback_lines) {
 		String_copy(&ardr->feedback, "Executed without feedback");
 		ardr->feedback_lines = 1;
@@ -220,14 +217,14 @@ handle_command(const char       *cmd,
 {
 	int n;
 	long unsigned menu_len;
-	
+
 	if (strcmp(cmd, "q") == 0
 	    || strcmp(cmd, "quit") == 0
 	    || strcmp(cmd, "exit") == 0) {
 		*active = 0;
 	} else {
 		n = atoi(cmdin);
-		
+
 		if (n > 0) {
 			menu_len = count_menu_entries(amnu->cur_menu);
 			if (n >= menu_len)
@@ -265,7 +262,8 @@ menu_handle_key(const char        key,
 
 	case 'l':
 		if (ET_SUBMENU == amnu->cur_menu->entries[amnu->cursor].type) {
-			amnu->cur_menu = amnu->cur_menu->entries[amnu->cursor].submenu;
+			amnu->cur_menu =
+			    amnu->cur_menu->entries[amnu->cursor].submenu;
 			amnu->menu_stack[amnu->menu_stack_len] = amnu->cur_menu;
 			amnu->menu_stack_len += 1;
 			ardr->feedback_lines = 0;
@@ -276,15 +274,17 @@ menu_handle_key(const char        key,
 	case 'h':
 		if (amnu->menu_stack_len > 1) {
 			amnu->menu_stack_len -= 1;
-			amnu->cur_menu = amnu->menu_stack[amnu->menu_stack_len - 1];
+			amnu->cur_menu =
+			    amnu->menu_stack[amnu->menu_stack_len - 1];
 			ardr->feedback_lines = 0;
 			amnu->cursor = 0;
 		}
 		break;
-	
+
 	case 'L':
 		if (ET_SHELL == amnu->cur_menu->entries[amnu->cursor].type) {
-			handle_sh(amnu->cur_menu->entries[amnu->cursor].shell, ardr);
+			handle_sh(amnu->cur_menu->entries[amnu->cursor].shell,
+				  ardr);
 		}
 		break;
 
@@ -319,7 +319,7 @@ reader_handle_key(const char        key,
 		if (ardr->reader_scroll > 0)
 			ardr->reader_scroll -= 1;
 		break;
-	
+
 	case SIGINT:
 	case SIGTSTP:
 	case 'h':
@@ -347,7 +347,7 @@ handle_key(const char        key,
 		switch (key) {
 		case '\n':
 			handle_command(cmdin, active, cmdin, amnu, ardr);
-			
+
 		case SIGINT:
 		case SIGTSTP:
 			strn_bleach(cmdin, CMD_IN_LEN);
@@ -370,18 +370,18 @@ handle_key(const char        key,
 
 int main(const int argc, const char *argv[])
 {
-	int              active = 1;	
-	enum InputMode   imode = IM_NORMAL;
-	char             cmdin[CMD_IN_LEN] = "\0";
-	long unsigned    stdout_y;
-	struct AppMenu   amnu = AppMenu_new();
+	int active = 1;
+	enum InputMode imode = IM_NORMAL;
+	char cmdin[CMD_IN_LEN] = "\0";
+	long unsigned stdout_y;
+	struct AppMenu amnu = AppMenu_new();
 	struct AppReader ardr = AppReader_new();
-	
+
 	struct winsize wsize;
 	struct termios orig, raw;
 	char c;
 	const long unsigned prepend_len = strlen(CMD_PREPEND);
-	
+
 	/* parse opts */
 	if (2 == argc) {
 		switch (argv[1][1]) {
@@ -389,13 +389,14 @@ int main(const int argc, const char *argv[])
 			printf("hui: version " VERSION "\n");
 			return 0;
 			break;
-		
+
 		case 'a':
-			printf("\"House User Interface\" aka hui %s is licensed "
-			       "under the BSD-3-Clause license.\n"
+			printf("\"House User Interface\" aka hui %s is "
+			       "licensed under the BSD-3-Clause license.\n"
 			       "You should have received a copy of the license "
 			       "along with this program.\n\n"
-			       "The source code of this program is available at:"
+			       "The source code of this program is available "
+			       "at:"
 			       "\nhttps://github.com/SchokiCoder/hui\n\n"
 			       "Copyright 2022 - 2023 Andy Frank Schoknecht\n",
 			       VERSION);
@@ -403,7 +404,7 @@ int main(const int argc, const char *argv[])
 			break;
 		}
 	}
-	
+
 	/* get term size */
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
 	term_x_last = wsize.ws_col;
@@ -414,7 +415,7 @@ int main(const int argc, const char *argv[])
 	tcgetattr(STDIN_FILENO, &orig);
 	raw = orig;
 	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);	
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	printf(SEQ_CRSR_HIDE);
 
 	/* mainloop */
@@ -422,7 +423,7 @@ int main(const int argc, const char *argv[])
 		/* clear */
 		hprintf(OVERALL_BG, OVERALL_BG, SEQ_CLEAR);
 		stdout_y = 0;
-		
+
 		/* draw upper */
 		draw_upper(&stdout_y, HEADER, amnu.cur_menu->title);
 
@@ -431,7 +432,7 @@ int main(const int argc, const char *argv[])
 			draw_reader(&stdout_y, &ardr, cmdin);
 		else
 			draw_menu(&stdout_y, &amnu, cmdin);
-		
+
 		/* draw lower */
 		draw_lower(cmdin, &ardr);
 
@@ -449,7 +450,7 @@ int main(const int argc, const char *argv[])
 	printf(SEQ_CRSR_SHOW);
 	printf(SEQ_FG_DEFAULT);
 	printf(SEQ_BG_DEFAULT);
-	
+
 	String_free(&ardr.feedback);
 
 	return 0;
