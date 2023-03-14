@@ -87,17 +87,14 @@ that it had been untouched.
 There are optional features which can only be implemented after the final
 release state (aka version 1.0.0) has been reached.  
 The features or their implementation can not contradict any non-optional goal,
-if it does it can not be released.
+if it does it can not be released.  
+Provide as patches when not that necessary.  
 
 # Optional Roadmap
 
-## v1.1.0 Header: configurable align
+## Configurable basics
 
-## v1.2.0 GNU-style command line operands
-
-Add GNU-style options as aliases to the POSIX ones.
-
-## v1.3.0 Configurable keys
+Keys:  
 
 - command key (key that needs to be pressed and that will be displayed as first
 in the command line)
@@ -108,24 +105,34 @@ in the command line)
 - execute
 - steal / force
 
-## v1.4.0 Multiline feedback: configurable (align, left and right margin)
-
-## v1.5.0 Title: configurable (align, left and right margin)
-
-## v1.6.0 Configurable menu entry prepend
-
+Entry prepend:  
 By default a menu's entry looks like this:  
 > Menu entry  
   
 Make the prepend "> " configurable.  
 
-## 1.7.0 Advanced sub-app execution
+## C function interface in config
+
+Each entry can have a function pointer to a function defined in the cfg_script.h.  
+A user function has output string pointer for feedback and int return.  
+
+## configurable aligns (Patch)
+
+- Header
+- Multiline feedback
+
+## configurable margins (Patch)
+
+- Header
+- Multiline feedback
+
+## Advanced sub-app execution
 
 Allows for applications with their own keyboard-input and a mainloop to run.  
 However, since their keybinds could collide with my keybinds, the house_ui will
 steal keybinds for now.  
 
-## v1.8.0 Full sub-app execution
+## Full sub-app execution
 
 If this point is reached, it means house_ui will no longer steal keybinds and
 instead expect a special modifier key to be pressed.  
@@ -134,9 +141,7 @@ The modifier key is of course only necessary when there is currently another
 application open within house_ui but it will also not refuse to work if
 modifier is given unnecessarily.  
 
-## Later
-
-After all other things had been done, these are next:  
+## Later (low priority)
 
 - various commands, keybinds and cmdline options
-
+- GNU-style options as aliases to the POSIX ones.
