@@ -1,17 +1,24 @@
 { optional features
-	-runtime menu creation		?
-	-function pointer as entry cmd	?
+	-runtime menu creation			?
+	-function pointer as entry cmd		?
 	 (as an addition to the
 	  shell string)
 	
-	-keybinds			.
-		-number + key sys		.
-		-bind display			.
+	-keybinds				.
+		-number + key sys			.
+		-bind display				.
 		 (display characters,
 		  that do not yet match a bind)
-		-"gg" goto 1st entry		.
-		-'g' goto entry			.
-		-'G' goto last entry		.
+		-"gg" goto 1st entry			.
+		-'g' goto entry				.
+		-'G' goto last entry			.
+
+	-get stderr				.
+	 https://stackoverflow.com/questions/30259086/how-to-use-popen
+	 (fork and exec-family didn't help,
+	  system() only gives return code)
+	 
+		->print feedback accordingly		.
 }
 
 {
@@ -45,19 +52,39 @@
 	-rename "app_menu" and "app_reader"	v
 	 into "amnu" + "ardr" in hui.c
 	
-	-check for code fmt / line length	v
+	-check for code fmt / line length	
 	
-	-get stderr				.
-	 (fork and exec-family didn't help)
-		->print feedback accordingly		.
-	 if ^this doesn't work, omit
-	
-	-return values				.
-	-print message consistency		.
+	-return values				x
+	 there are none :p
+	 
+	-print message consistency		v
 	 (format, stdout vs stderr)
-	-std config				.
+	 fix feedback on wrong cmdin
+	 
+	-std config				v
 	 (with compiler warning when untouched)
+	
+	-line-break causes 1 character to	v
+	 disappear
+	 
+	-scrolling over a broken line pushes	v
+	 1 character into the next visible
+	 line
+	
+	-scrolling over the first visible line	.
+	 of a broken line pushes 1 character
+	 into the second visible line
+
+	-reader feedback use background color	.
+	 cfg: reader_bg, reader_fg
+	 
 	-manpage				.
+	
+	-build and run tests			.
+		-linux					.
+		-freebsd				.
+		-openbsd				.
+		-windows... pffft as if lolololololololol
 	
 	-v 1.0.0				.
 }

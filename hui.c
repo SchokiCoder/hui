@@ -62,6 +62,12 @@ struct AppReader AppReader_new()
 	return ret;
 }
 
+void AppReader_set_feedback(struct AppReader *ardr, const char *str)
+{
+	String_copy(&ardr->feedback, str);
+	ardr->feedback_lines = str_lines(str, term_y_last);
+}
+
 long unsigned count_menu_entries(const struct Menu *menu)
 {
 	long unsigned i;
@@ -108,15 +114,18 @@ draw_reader(long unsigned          *stdout_y,
 
 	/* skip the text that is scrolled over */
 	for (i = 0; i < ardr->feedback.len; i += 1) {
+		if (text_x >= term_x_last)
+			i -= 1;
+			
 		if (text_x >= term_x_last || '\n' == ardr->feedback.str[i]) {
 			text_x = 0;
 			text_y += 1;
+		} else {
+			text_x += 1;
 		}
 
 		if (text_y >= ardr->reader_scroll)
 			break;
-
-		text_x += 1;
 	}
 
 	if ('\n' == ardr->feedback.str[i])
@@ -124,13 +133,16 @@ draw_reader(long unsigned          *stdout_y,
 
 	/* print text */
 	for (i = i; i < ardr->feedback.len; i += 1) {
+		if (text_x >= term_x_last)
+			i -= 1;
+			
 		if (text_x >= term_x_last || '\n' == ardr->feedback.str[i]) {
-			putc('\n', stdout);
+			fputc('\n', stdout);
 			text_x = 0;
 			text_y += 1;
 			*stdout_y += 1;
 		} else {
-			putc(ardr->feedback.str[i], stdout);
+			fputc(ardr->feedback.str[i], stdout);
 			text_x += 1;
 		}
 
@@ -183,8 +195,7 @@ void handle_sh(const char *sh, struct AppReader *ardr)
 
 	p = popen(sh, "r");
 	if (NULL == p) {
-		String_copy(&ardr->feedback, "ERROR shell could not execute");
-		ardr->feedback_lines = 1;
+		AppReader_set_feedback(ardr, "ERROR shell could not execute");
 		return;
 	}
 
@@ -201,8 +212,8 @@ void handle_sh(const char *sh, struct AppReader *ardr)
 	ardr->feedback_lines = str_lines(ardr->feedback.str, term_x_last);
 
 	if (0 == ardr->feedback_lines) {
-		String_copy(&ardr->feedback, "Executed without feedback");
-		ardr->feedback_lines = 1;
+		AppReader_set_feedback(ardr, "Executed without feedback");
+		return;
 	}
 }
 
@@ -232,7 +243,7 @@ handle_command(const char       *cmd,
 			else
 				amnu->cursor = n - 1;
 		} else {
-			String_copy(&ardr->feedback, "Command not recognised");
+			AppReader_set_feedback(ardr, "Command not recognised");
 			return;
 		}
 	}

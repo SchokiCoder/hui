@@ -1,13 +1,10 @@
-/* Copyright (C) 2022 - 2023 Andy Frank Schoknecht
- * Use of this source code is governed by the BSD-3-Clause
- * license, that can be found in the LICENSE file.
- */
-
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
 #include "color.h"
 #include "menu.h"
+
+#warning Config not touched, remove this line and set your stuff up, champ!
 
 #define CMD_IN_LEN 64
 
@@ -15,30 +12,30 @@
 
 static const struct Color HEADER_FG = {
 	.active = -1,
-	.r = 255,
+	.r = 205,
 	.g = 255,
-	.b = 255
+	.b = 205
 };
 
 static const struct Color HEADER_BG = {
 	.active = 0,
-	.r = 0,
-	.g = 0,
-	.b = 0
+	.r = 30,
+	.g = 30,
+	.b = 30
 };
 
 static const struct Color TITLE_FG = {
 	.active = -1,
-	.r = 255,
+	.r = 205,
 	.g = 255,
-	.b = 255
+	.b = 205
 };
 
 static const struct Color TITLE_BG = {
 	.active = 0,
-	.r = 0,
-	.g = 0,
-	.b = 0
+	.r = 30,
+	.g = 30,
+	.b = 30
 };
 
 static const struct Color ENTRY_FG = {
@@ -50,9 +47,9 @@ static const struct Color ENTRY_FG = {
 
 static const struct Color ENTRY_BG = {
 	.active = 0,
-	.r = 0,
-	.g = 0,
-	.b = 0
+	.r = 30,
+	.g = 30,
+	.b = 30
 };
 
 static const struct Color ENTRY_HOVER_FG = {
@@ -78,9 +75,9 @@ static const struct Color FEEDBACK_FG = {
 
 static const struct Color FEEDBACK_BG = {
 	.active = 0,
-	.r = 0,
-	.g = 0,
-	.b = 0
+	.r = 30,
+	.g = 30,
+	.b = 30
 };
 
 static const struct Color CMDLINE_FG = {
@@ -92,147 +89,36 @@ static const struct Color CMDLINE_FG = {
 
 static const struct Color CMDLINE_BG = {
 	.active = 0,
-	.r = 0,
-	.g = 0,
-	.b = 0
+	.r = 30,
+	.g = 30,
+	.b = 30
 };
 
 static const struct Color OVERALL_BG = {
 	.active = 0,
-	.r = 0,
-	.g = 20,
-	.b = 0
+	.r = 30,
+	.g = 30,
+	.b = 30
 };
 
-static const char *HEADER =      "Maintenance tools\n" "\n";
+static const char *HEADER =      "- House User Interface -\n\n";
 static const char *CMD_PREPEND = ":";
 
-static const struct Menu MENU_FILES = {
-	.title = "Files menu\n"
-	         "——————————",
+static const struct Menu MENU_INFO = {
+	.title = "Info\n"
+	         "————",
 	.entries = {
 		[0] = {
-			.caption = "List home files",
+			.caption = "Who am i",
 			.type = ET_SHELL,
-			.shell = "ls -la \"$HOME\""
+			.shell = "echo \"$USER\""
 		},
+		
 		[1] = {
-			.caption = "List bin files",
+			.caption = "Hardware",
 			.type = ET_SHELL,
-			.shell = "ls -ls /usr/bin"
-		}
-	}
-};
-
-static const struct Menu MENU_LONG = {
-	.title = "Long menu\n"
-	         "—————————",
-	.entries = {
-		[0] = {
-			.caption = "print SOURCE",
-			.type = ET_SHELL,
-			.shell = "cat hui.c"
+			.shell = "lshw"
 		},
-		[1] = {
-			.caption = "print LICENSE",
-			.type = ET_SHELL,
-			.shell = "cat LICENSE"
-		},
-		[2] = {
-			.caption = "3",
-			.type = ET_SHELL,
-			.shell = "echo '3'"
-		},
-		[3] = {
-			.caption = "4",
-			.type = ET_SHELL,
-			.shell = "echo '4'"
-		},
-		[4] = {
-			.caption = "5",
-			.type = ET_SHELL,
-			.shell = "echo '5'"
-		},
-		[5] = {
-			.caption = "6",
-			.type = ET_SHELL,
-			.shell = "echo '6'"
-		},
-		[6] = {
-			.caption = "7",
-			.type = ET_SHELL,
-			.shell = "echo '7'"
-		},
-		[7] = {
-			.caption = "8",
-			.type = ET_SHELL,
-			.shell = "echo '8'"
-		},
-		[8] = {
-			.caption = "9",
-			.type = ET_SHELL,
-			.shell = "echo '9'"
-		},
-		[9] = {
-			.caption = "10",
-			.type = ET_SHELL,
-			.shell = "echo '10'"
-		},
-		[10] = {
-			.caption = "11",
-			.type = ET_SHELL,
-			.shell = "echo '11'"
-		},
-		[11] = {
-			.caption = "12",
-			.type = ET_SHELL,
-			.shell = "echo '12'"
-		},
-		[12] = {
-			.caption = "13",
-			.type = ET_SHELL,
-			.shell = "echo '13'"
-		},
-		[13] = {
-			.caption = "14",
-			.type = ET_SHELL,
-			.shell = "echo '14'"
-		},
-		[14] = {
-			.caption = "15",
-			.type = ET_SHELL,
-			.shell = "echo '15'"
-		},
-		[15] = {
-			.caption = "16",
-			.type = ET_SHELL,
-			.shell = "echo '16'"
-		},
-		[16] = {
-			.caption = "17",
-			.type = ET_SHELL,
-			.shell = "echo '17'"
-		},
-		[17] = {
-			.caption = "18",
-			.type = ET_SHELL,
-			.shell = "echo '18'"
-		},
-		[18] = {
-			.caption = "19",
-			.type = ET_SHELL,
-			.shell = "echo '19'"
-		},
-		[19] = {
-			.caption = "20",
-			.type = ET_SHELL,
-			.shell = "echo '20'"
-		},
-		[20] = {
-			.caption = "21",
-			.type = ET_SHELL,
-			.shell = "echo '21'"
-		}
 	}
 };
 
@@ -241,24 +127,17 @@ static const struct Menu MENU_MAIN = {
 	         "—————————",
 	.entries = {
 		[0] = {
-			.caption = "Files menu",
+			.caption = "[Info menu]",
 			.type = ET_SUBMENU,
-			.submenu = &MENU_FILES
+			.submenu = &MENU_INFO
 		},
 		
 		[1] = {
-			.caption = "Long menu",
-			.type = ET_SUBMENU,
-			.submenu = &MENU_LONG
-		},
-		
-		[2] = {
-			.caption = "Show current user",
+			.caption = "Power off",
 			.type = ET_SHELL,
-			.shell = "echo \"$USER\""
+			.shell = "poweroff"
 		}
 	}
 };
 
 #endif /* _CONFIG_H */
-
