@@ -66,6 +66,20 @@ static const struct Color ENTRY_HOVER_BG = {
 	.b = 255
 };
 
+static const struct Color READER_FG = {
+	.active = -1,
+	.r = 255,
+	.g = 255,
+	.b = 255
+};
+
+static const struct Color READER_BG = {
+	.active = 0,
+	.r = 30,
+	.g = 30,
+	.b = 30
+};
+
 static const struct Color FEEDBACK_FG = {
 	.active = -1,
 	.r = 175,

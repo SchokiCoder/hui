@@ -19,8 +19,6 @@ enum InputMode {
 	IM_CMD =    1
 };
 
-#define VERSION "0.3.0"
-
 #define SIGINT  '\003'
 #define SIGTSTP '\032'
 
@@ -34,9 +32,9 @@ struct AppMenu {
 };
 
 struct AppReader {
-	struct String feedback;
-	long unsigned feedback_lines;
-	long unsigned reader_scroll;
+	struct String text;
+	long unsigned text_lines;
+	long unsigned scroll;
 };
 
 struct AppMenu AppMenu_new()
@@ -54,9 +52,9 @@ struct AppMenu AppMenu_new()
 struct AppReader AppReader_new()
 {
 	struct AppReader ret = {
-		.reader_scroll = 0,
-		.feedback = String_new(),
-		.feedback_lines = 0
+		.scroll = 0,
+		.text = String_new(),
+		.text_lines = 0
 	};
 
 	return ret;
@@ -64,8 +62,8 @@ struct AppReader AppReader_new()
 
 void AppReader_set_feedback(struct AppReader *ardr, const char *str)
 {
-	String_copy(&ardr->feedback, str);
-	ardr->feedback_lines = str_lines(str, term_y_last);
+	String_copy(&ardr->text, str);
+	ardr->text_lines = str_lines(str, term_y_last);
 }
 
 long unsigned count_menu_entries(const struct Menu *menu)
@@ -99,8 +97,8 @@ void draw_lower(const char *cmdin, const struct AppReader *ardr)
 
 	if (cmdin != NULL && strlen(cmdin) > 0)
 		hprintf(CMDLINE_FG, CMDLINE_BG, cmdin);
-	else if (1 == ardr->feedback_lines)
-		hprintf(FEEDBACK_FG, FEEDBACK_BG, ardr->feedback.str);
+	else if (1 == ardr->text_lines)
+		hprintf(FEEDBACK_FG, FEEDBACK_BG, ardr->text.str);
 }
 
 /* Draw the environment in which multi-line feedback is displayed.
@@ -113,36 +111,39 @@ draw_reader(long unsigned          *stdout_y,
 	long unsigned i, text_x = 0, text_y = 0;
 
 	/* skip the text that is scrolled over */
-	for (i = 0; i < ardr->feedback.len; i += 1) {
+	for (i = 0; i < ardr->text.len; i += 1) {
 		if (text_x >= term_x_last)
 			i -= 1;
-			
-		if (text_x >= term_x_last || '\n' == ardr->feedback.str[i]) {
+
+		if (text_x >= term_x_last || '\n' == ardr->text.str[i]) {
 			text_x = 0;
 			text_y += 1;
 		} else {
 			text_x += 1;
 		}
 
-		if (text_y >= ardr->reader_scroll)
+		if (text_y >= ardr->scroll)
 			break;
 	}
 
-	if ('\n' == ardr->feedback.str[i])
+	if (ardr->scroll > 0)
 		i += 1;
 
 	/* print text */
-	for (i = i; i < ardr->feedback.len; i += 1) {
+	set_fg(READER_FG);
+	set_bg(READER_BG);
+	
+	for (i = i; i < ardr->text.len; i += 1) {
 		if (text_x >= term_x_last)
 			i -= 1;
-			
-		if (text_x >= term_x_last || '\n' == ardr->feedback.str[i]) {
+
+		if (text_x >= term_x_last || '\n' == ardr->text.str[i]) {
 			fputc('\n', stdout);
 			text_x = 0;
 			text_y += 1;
 			*stdout_y += 1;
 		} else {
-			fputc(ardr->feedback.str[i], stdout);
+			fputc(ardr->text.str[i], stdout);
 			text_x += 1;
 		}
 
@@ -191,7 +192,7 @@ void handle_sh(const char *sh, struct AppReader *ardr)
 	long unsigned buf_len;
 	int read = 1;
 
-	String_bleach(&ardr->feedback);
+	String_bleach(&ardr->text);
 
 	p = popen(sh, "r");
 	if (NULL == p) {
@@ -204,14 +205,14 @@ void handle_sh(const char *sh, struct AppReader *ardr)
 		if (buf_len < STRING_BLOCK_SIZE)
 			read = 0;
 
-		String_append(&ardr->feedback, buf, buf_len);
+		String_append(&ardr->text, buf, buf_len);
 	}
 	pclose(p);
 
-	String_rtrim(&ardr->feedback);
-	ardr->feedback_lines = str_lines(ardr->feedback.str, term_x_last);
+	String_rtrim(&ardr->text);
+	ardr->text_lines = str_lines(ardr->text.str, term_x_last);
 
-	if (0 == ardr->feedback_lines) {
+	if (0 == ardr->text_lines) {
 		AppReader_set_feedback(ardr, "Executed without feedback");
 		return;
 	}
@@ -277,7 +278,7 @@ menu_handle_key(const char        key,
 			    amnu->cur_menu->entries[amnu->cursor].submenu;
 			amnu->menu_stack[amnu->menu_stack_len] = amnu->cur_menu;
 			amnu->menu_stack_len += 1;
-			ardr->feedback_lines = 0;
+			ardr->text_lines = 0;
 			amnu->cursor = 0;
 		}
 		break;
@@ -287,7 +288,7 @@ menu_handle_key(const char        key,
 			amnu->menu_stack_len -= 1;
 			amnu->cur_menu =
 			    amnu->menu_stack[amnu->menu_stack_len - 1];
-			ardr->feedback_lines = 0;
+			ardr->text_lines = 0;
 			amnu->cursor = 0;
 		}
 		break;
@@ -322,20 +323,20 @@ reader_handle_key(const char        key,
 		break;
 
 	case 'j':
-		if (ardr->reader_scroll < (ardr->feedback_lines - 1))
-			ardr->reader_scroll += 1;
+		if (ardr->scroll < (ardr->text_lines - 1))
+			ardr->scroll += 1;
 		break;
 
 	case 'k':
-		if (ardr->reader_scroll > 0)
-			ardr->reader_scroll -= 1;
+		if (ardr->scroll > 0)
+			ardr->scroll -= 1;
 		break;
 
 	case SIGINT:
 	case SIGTSTP:
 	case 'h':
-		ardr->feedback_lines = 0;
-		ardr->reader_scroll = 0;
+		ardr->text_lines = 0;
+		ardr->scroll = 0;
 		break;
 
 	case ':':
@@ -373,7 +374,7 @@ handle_key(const char        key,
 		return;
 	}
 
-	if (ardr->feedback_lines > 1)
+	if (ardr->text_lines > 1)
 		reader_handle_key(key, active, ardr, imode);
 	else
 		menu_handle_key(key, active, amnu, ardr, imode);
@@ -439,7 +440,7 @@ int main(const int argc, const char *argv[])
 		draw_upper(&stdout_y, HEADER, amnu.cur_menu->title);
 
 		/* draw reader or menu */
-		if (ardr.feedback_lines > 1)
+		if (ardr.text_lines > 1)
 			draw_reader(&stdout_y, &ardr, cmdin);
 		else
 			draw_menu(&stdout_y, &amnu, cmdin);
@@ -462,7 +463,7 @@ int main(const int argc, const char *argv[])
 	printf(SEQ_FG_DEFAULT);
 	printf(SEQ_BG_DEFAULT);
 
-	String_free(&ardr.feedback);
+	String_free(&ardr.text);
 
 	return 0;
 }

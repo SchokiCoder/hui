@@ -71,14 +71,16 @@
 	 1 character into the next visible
 	 line
 	
-	-scrolling over the first visible line	.
+	-scrolling over the first visible line	v
 	 of a broken line pushes 1 character
 	 into the second visible line
 
-	-reader feedback use background color	.
+	-reader feedback use background color	v
 	 cfg: reader_bg, reader_fg
 	 
-	-manpage				.
+	-manpage				v
+	
+	-make: proper install			v
 	
 	-build and run tests			.
 		-linux					.
