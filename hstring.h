@@ -6,6 +6,8 @@
 #ifndef _HSTRING_H
 #define _HSTRING_H
 
+#include "color.h"
+
 #define STRING_BLOCK_SIZE 2048
 
 struct String {

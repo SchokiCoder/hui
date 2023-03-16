@@ -82,11 +82,26 @@
 	
 	-make: proper install			v
 	
+	-fix missing color.h include		v
+	 in hstring.h for gcc and clang
+	
+	-remove unused parameters and variables	v
+	
+	-fix implicit popen and pclose		v
+	 declaration
+	
 	-build and run tests			.
-		-linux					.
+		-linux					v
+		
+		-openbsd				v
+		 remove openbsd incompatible characters from config.h
+		 add different manprefix for openbsd
+		
 		-freebsd				.
-		-openbsd				.
-		-windows... pffft as if lolololololololol
+		 tcc compile err:
+		 /usr/include/sys/_types.h:107": error: ',' expected (got "__aligned")
+		 
+		-windows... pffft as if 		lololol
 	
 	-v 1.0.0				.
 }

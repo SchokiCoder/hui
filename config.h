@@ -120,7 +120,7 @@ static const char *CMD_PREPEND = ":";
 
 static const struct Menu MENU_INFO = {
 	.title = "Info\n"
-	         "————",
+	         "----",
 	.entries = {
 		[0] = {
 			.caption = "Who am i",
@@ -138,7 +138,7 @@ static const struct Menu MENU_INFO = {
 
 static const struct Menu MENU_MAIN = {
 	.title = "Main menu\n"
-	         "—————————",
+	         "---------",
 	.entries = {
 		[0] = {
 			.caption = "[Info menu]",
@@ -149,7 +149,7 @@ static const struct Menu MENU_MAIN = {
 		[1] = {
 			.caption = "Power off",
 			.type = ET_SHELL,
-			.shell = "poweroff"
+			.shell = "shutdown now"
 		}
 	}
 };

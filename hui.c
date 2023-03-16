@@ -103,10 +103,7 @@ void draw_lower(const char *cmdin, const struct AppReader *ardr)
 
 /* Draw the environment in which multi-line feedback is displayed.
  */
-void
-draw_reader(long unsigned          *stdout_y,
-            const struct AppReader *ardr,
-            const char             *cmdin)
+void draw_reader(long unsigned *stdout_y, const struct AppReader *ardr)
 {
 	long unsigned i, text_x = 0, text_y = 0;
 
@@ -154,10 +151,7 @@ draw_reader(long unsigned          *stdout_y,
 
 /* Draw the menu.
  */
-void
-draw_menu(long unsigned          *stdout_y,
-          const struct AppMenu   *amnu,
-          const char             *cmdin)
+void draw_menu(long unsigned *stdout_y, const struct AppMenu *amnu)
 {
 	long unsigned i = 0, available_rows;
 
@@ -392,7 +386,6 @@ int main(const int argc, const char *argv[])
 	struct winsize wsize;
 	struct termios orig, raw;
 	char c;
-	const long unsigned prepend_len = strlen(CMD_PREPEND);
 
 	/* parse opts */
 	if (2 == argc) {
@@ -441,9 +434,9 @@ int main(const int argc, const char *argv[])
 
 		/* draw reader or menu */
 		if (ardr.text_lines > 1)
-			draw_reader(&stdout_y, &ardr, cmdin);
+			draw_reader(&stdout_y, &ardr);
 		else
-			draw_menu(&stdout_y, &amnu, cmdin);
+			draw_menu(&stdout_y, &amnu);
 
 		/* draw lower */
 		draw_lower(cmdin, &ardr);
