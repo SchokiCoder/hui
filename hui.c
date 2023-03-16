@@ -10,6 +10,7 @@
 #include <string.h>
 #include <termios.h>
 
+#include "license.h"
 #include "sequences.h"
 #include "hstring.h"
 #include "config.h"
@@ -280,8 +281,8 @@ menu_handle_key(const char        key,
 	case 'h':
 		if (amnu->menu_stack_len > 1) {
 			amnu->menu_stack_len -= 1;
-			amnu->cur_menu =
-			    amnu->menu_stack[amnu->menu_stack_len - 1];
+			amnu->cur_menu = 
+				amnu->menu_stack[amnu->menu_stack_len - 1];
 			ardr->text_lines = 0;
 			amnu->cursor = 0;
 		}
@@ -403,8 +404,11 @@ int main(const int argc, const char *argv[])
 			       "The source code of this program is available "
 			       "at:"
 			       "\nhttps://github.com/SchokiCoder/hui\n\n"
-			       "Copyright 2022 - 2023 Andy Frank Schoknecht\n",
-			       VERSION);
+			       "If you did not receive a copy of the license, "
+			       "see below:\n\n"
+			       "%s\n\n%s\n\n%s\n",
+			       VERSION,
+			       MSG_COPYRIGHT, MSG_CLAUSES, MSG_WARRANTY);
 			return 0;
 			break;
 		}

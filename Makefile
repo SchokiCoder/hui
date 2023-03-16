@@ -1,5 +1,5 @@
 SRC = hui.c color.c hstring.c sequences.c
-VERSION = 0.3.0
+VERSION = 1.0.0
 DEFINES = -D _DEFAULT_SOURCE -D _BSD_SOURCE -D _POSIX_C_SOURCE=200809L
 
 include config.mk

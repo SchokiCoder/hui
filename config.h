@@ -149,7 +149,7 @@ static const struct Menu MENU_MAIN = {
 		[1] = {
 			.caption = "Power off",
 			.type = ET_SHELL,
-			.shell = "shutdown now"
+			.shell = "poweroff"
 		}
 	}
 };

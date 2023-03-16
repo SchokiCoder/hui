@@ -21,6 +21,8 @@
 		->print feedback accordingly		.
 }
 
+--- Done ---
+
 {
 	-arg a (print version, license, repo)	v
 	
@@ -90,23 +92,23 @@
 	-fix implicit popen and pclose		v
 	 declaration
 	
-	-build and run tests			.
+	-build and run tests			v
 		-linux					v
 		
 		-openbsd				v
-		 remove openbsd incompatible characters from config.h
+		 remove openbsd incompatible characters
+		 from config.h
 		 add different manprefix for openbsd
 		
-		-freebsd				.
+		-freebsd				v
 		 tcc compile err:
-		 /usr/include/sys/_types.h:107": error: ',' expected (got "__aligned")
+		 /usr/include/sys/_types.h:107":
+		 error: ',' expected (got "__aligned")
 		 
 		-windows... pffft as if 		lololol
 	
-	-v 1.0.0				.
+	-v 1.0.0				v
 }
-
---- Done ---
 
 {
 	-multiline feedback			v
