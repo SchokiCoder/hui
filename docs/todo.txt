@@ -1,4 +1,15 @@
-{ experimental stuff
+{ canceled
+	-primary goal keybinds			.
+		-number + key sys			.
+		-bind display				.
+		 (display characters,
+		  that do not yet match a bind)
+		-"gg" goto 1st entry			.
+		-'g' goto entry				.
+		-'G' goto last entry			.
+}
+
+{ experimental
 	-runtime menu creation			?
 	
 	-function pointer as entry cmd		?
@@ -13,28 +24,19 @@
 	  system() only gives return code)
 	 
 		->print feedback accordingly		.
-
-	-keybinds LOW PRIORITY			.
-		-number + key sys			.
-		-bind display				.
-		 (display characters,
-		  that do not yet match a bind)
-		-"gg" goto 1st entry			.
-		-'g' goto entry				.
-		-'G' goto last entry			.
 }
 
 {
-	-configurable key binds			.
-	-configurable menu entry prepend	.
+	-configurable key binds				.
+	-configurable menu entry prepend		.
 
-	-rename license.h -> license_text.h	.
+	-rename license.h -> license_str.h		.
 	 cus github is weird about it
 
-	-change license baked into binary	.
-	 via the make obsoleting license_str.h
+	-change license text being baked into		.
+	 binary via make obsoleting license_str.h
 	
-	-set version to 1.1.0			.
+	-set version to 1.1.0				.
 }
 
 --- Done ---
