@@ -1,14 +1,27 @@
-# Goals
+# Explanation: Limitations and goals 
 
-The higher a goal in the list, the higher the priority.  
-A goal __can__ be ignored for fulfilling a higher goal.  
-However the program can only be considered as done and reach the final release
-state, once **all non-optional goals** have been fulfilled and there are
-**no conflicts** between them.  
-As such ignorance of any goal can be seen as a temporary solution, which needs
-fixing asap and fixing this issue should become the next short-term goal.  
+There are limitations, primary goals and secondary goals.  
 
-Long-term non-optional goal-list:  
+Limitations describe what is __not allowed__ in the project/program.
+Examples for that could be:  
+
+- max. 3000 sloc
+- C99, Linux code style
+- libc only allowed dependency
+- no incompatibility with FreeBSD, OpenBSD or Linux 
+
+All __primary goals__ are to be implemented __before the final release__, unless
+the implementation of a single goal proves to be too difficult or would come
+with a too high cost such as a high increase of the sloc count.
+The update implementing the last primary goal, becomes the final release update,
+which in semantic versioning would be 1.0.0.  
+Optimally the primary goals are documented as a roadmap.  
+
+All __secondary goals__ are to be assigned __after the final release__.  
+Optimally the secondary goals are documented as a roadmap,
+starting where the primary goal-roadmap ended.  
+
+# Limitations
 
 - C99, suckless code style
 - configuration via C source code header
@@ -16,16 +29,8 @@ Long-term non-optional goal-list:
 - max. 200 sloc for build system (eg. make)
 - strictly POSIX compatible
 - no dependcies on libraries other than libc
-- wether it's Linux, FreeBSD, OpenBSD or NetBSD, building is as simple as
-editing the config.h and running ONE command in the root dir of the pkg
-- implement all features of Roadmap and no more
-
-As soon as all the goals have been fulfilled, the project reaches version 1.0.0
-and is now only maintained for bugfixes.  
-No more feature-implementations... or rewrites ;)  
-except the only goal of that rewrite (wether partially or fully) is to shorten
-the code and use less lines or increase portability.  
-A rewrite in another language or language standard is never allowed.  
+- building the package by editing config.h and config.mk and running make  
+- provide secondary goal updates as patches when not that necessary  
 
 # Roadmap
 
@@ -82,16 +87,6 @@ That includes:
 Provide sane, generalist standard configuration but with a compiler warning,
 that it had been untouched.
 
-# Optional goals
-
-There are optional features which can only be implemented after the final
-release state (aka version 1.0.0) has been reached.  
-The features or their implementation can not contradict any non-optional goal,
-if it does it can not be released.  
-Provide as patches when not that necessary.  
-
-# Optional Roadmap
-
 ## Configurable basics
 
 Keys:  
@@ -111,9 +106,9 @@ By default a menu's entry looks like this:
   
 Make the prepend "> " configurable.  
 
-## C function interface in config
+## C function interface in config (Experimental)
 
-Each entry can have a function pointer to a function defined in the cfg_script.h.  
+Each entry can have a function pointer to a function defined in the scripts.h.  
 A user function has output string pointer for feedback and int return.  
 
 ## configurable aligns (Patch)
@@ -141,7 +136,7 @@ The modifier key is of course only necessary when there is currently another
 application open within house_ui but it will also not refuse to work if
 modifier is given unnecessarily.  
 
-## Later (low priority)
+## Later if at all
 
 - various commands, keybinds and cmdline options
 - GNU-style options as aliases to the POSIX ones.

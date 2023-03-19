@@ -1,10 +1,20 @@
-{ optional features
+{ experimental stuff
 	-runtime menu creation			?
+	
 	-function pointer as entry cmd		?
 	 (as an addition to the
 	  shell string)
-	
-	-keybinds				.
+}
+
+{ missing primary goals
+	-get stderr				.
+	 https://stackoverflow.com/questions/30259086/how-to-use-popen
+	 (fork and exec-family didn't help,
+	  system() only gives return code)
+	 
+		->print feedback accordingly		.
+
+	-keybinds LOW PRIORITY			.
 		-number + key sys			.
 		-bind display				.
 		 (display characters,
@@ -12,13 +22,19 @@
 		-"gg" goto 1st entry			.
 		-'g' goto entry				.
 		-'G' goto last entry			.
+}
 
-	-get stderr				.
-	 https://stackoverflow.com/questions/30259086/how-to-use-popen
-	 (fork and exec-family didn't help,
-	  system() only gives return code)
-	 
-		->print feedback accordingly		.
+{
+	-configurable key binds			.
+	-configurable menu entry prepend	.
+
+	-rename license.h -> license_text.h	.
+	 cus github is weird about it
+
+	-change license baked into binary	.
+	 via the make obsoleting license_str.h
+	
+	-set version to 1.1.0			.
 }
 
 --- Done ---
