@@ -98,7 +98,6 @@ in the command line)
 - back
 - into
 - execute
-- steal / force
 
 Entry prepend:  
 By default a menu's entry looks like this:  

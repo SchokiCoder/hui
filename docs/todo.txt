@@ -9,12 +9,11 @@
 		-'G' goto last entry			.
 }
 
-{ experimental
-	-runtime menu creation			?
-	
+{ experimental	
 	-function pointer as entry cmd		?
 	 (as an addition to the
 	  shell string)
+		->runtime menu creation			?
 }
 
 { missing primary goals
@@ -26,20 +25,24 @@
 		->print feedback accordingly		.
 }
 
-{
-	-configurable key binds				.
-	-configurable menu entry prepend		.
-
-	-rename license.h -> license_str.h		.
-	 cus github is weird about it
-
+{ dev goodies
 	-change license text being baked into		.
 	 binary via make obsoleting license_str.h
-	
-	-set version to 1.1.0				.
+	 -D LICENSE_TEXT=\"$(cat LICENSE)\"
+	 missing terminating " character
 }
 
 --- Done ---
+
+{
+	-configurable key binds				v
+	-configurable menu entry prepend		v
+
+	-rename license.h -> license_str.h		v
+	 cus github is weird about it
+	
+	-set version to 1.1.0				v
+}
 
 {
 	-arg a (print version, license, repo)	v

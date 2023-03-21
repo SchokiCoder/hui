@@ -10,7 +10,7 @@
 #include <string.h>
 #include <termios.h>
 
-#include "license.h"
+#include "license_str.h"
 #include "sequences.h"
 #include "hstring.h"
 #include "config.h"
@@ -168,10 +168,12 @@ void draw_menu(long unsigned *stdout_y, const struct AppMenu *amnu)
 
 		if (amnu->cursor == i) {
 			hprintf(ENTRY_HOVER_FG, ENTRY_HOVER_BG,
-				"> %s\n", amnu->cur_menu->entries[i].caption);
+				"%s%s\n", ENTRY_PREPEND,
+				amnu->cur_menu->entries[i].caption);
 		} else {
 			hprintf(ENTRY_FG, ENTRY_BG,
-				"> %s\n", amnu->cur_menu->entries[i].caption);
+				"%s%s\n", ENTRY_PREPEND,
+				amnu->cur_menu->entries[i].caption);
 		}
 
 		*stdout_y += 1;
@@ -253,21 +255,21 @@ menu_handle_key(const char        key,
                 enum InputMode   *imode)
 {
 	switch (key) {
-	case 'q':
+	case KEY_QUIT:
 		*active = 0;
 		break;
 
-	case 'j':
+	case KEY_DOWN:
 		if (amnu->cur_menu->entries[amnu->cursor + 1].type != ET_NONE)
 			amnu->cursor += 1;
 		break;
 
-	case 'k':
+	case KEY_UP:
 		if (amnu->cursor > 0)
 			amnu->cursor -= 1;
 		break;
 
-	case 'l':
+	case KEY_RIGHT:
 		if (ET_SUBMENU == amnu->cur_menu->entries[amnu->cursor].type) {
 			amnu->cur_menu =
 			    amnu->cur_menu->entries[amnu->cursor].submenu;
@@ -278,7 +280,7 @@ menu_handle_key(const char        key,
 		}
 		break;
 
-	case 'h':
+	case KEY_LEFT:
 		if (amnu->menu_stack_len > 1) {
 			amnu->menu_stack_len -= 1;
 			amnu->cur_menu = 
@@ -288,14 +290,14 @@ menu_handle_key(const char        key,
 		}
 		break;
 
-	case 'L':
+	case KEY_EXEC:
 		if (ET_SHELL == amnu->cur_menu->entries[amnu->cursor].type) {
 			handle_sh(amnu->cur_menu->entries[amnu->cursor].shell,
 				  ardr);
 		}
 		break;
 
-	case ':':
+	case KEY_CMD:
 		*imode = IM_CMD;
 		break;
 
@@ -313,28 +315,28 @@ reader_handle_key(const char        key,
                   enum InputMode   *imode)
 {
 	switch (key) {
-	case 'q':
+	case KEY_QUIT:
 		*active = 0;
 		break;
 
-	case 'j':
+	case KEY_DOWN:
 		if (ardr->scroll < (ardr->text_lines - 1))
 			ardr->scroll += 1;
 		break;
 
-	case 'k':
+	case KEY_UP:
 		if (ardr->scroll > 0)
 			ardr->scroll -= 1;
 		break;
 
 	case SIGINT:
 	case SIGTSTP:
-	case 'h':
+	case KEY_LEFT:
 		ardr->text_lines = 0;
 		ardr->scroll = 0;
 		break;
 
-	case ':':
+	case KEY_CMD:
 		*imode = IM_CMD;
 		break;
 	}

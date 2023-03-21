@@ -6,10 +6,20 @@
 
 #warning Config not touched, remove this line and set your stuff up, champ!
 
+/* array sizes */
 #define CMD_IN_LEN 64
-
 #define MENU_STACK_SIZE 64
 
+/* key binds */
+#define KEY_UP    'k'
+#define KEY_DOWN  'j'
+#define KEY_LEFT  'h'
+#define KEY_RIGHT 'l'
+#define KEY_EXEC  'L'
+#define KEY_QUIT  'q'
+#define KEY_CMD   ':'
+
+/* colors */
 static const struct Color HEADER_FG = {
 	.active = -1,
 	.r = 205,
@@ -115,7 +125,9 @@ static const struct Color OVERALL_BG = {
 	.b = 30
 };
 
+/* texts and menus */
 static const char *HEADER =      "- House User Interface -\n\n";
+static const char *ENTRY_PREPEND = "> ";
 static const char *CMD_PREPEND = ":";
 
 static const struct Menu MENU_INFO = {
