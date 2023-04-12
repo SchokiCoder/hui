@@ -121,17 +121,10 @@ static const struct Color CMDLINE_BG = {
 	.b = 0
 };
 
-static const struct Color OVERALL_BG = {
-	.active = 0,
-	.r = 0,
-	.g = 20,
-	.b = 0
-};
-
 /* texts and menus */
-static const char *HEADER =      "Test config\n" "\n";
+static const char *HEADER =        "Test config\n" "\n";
 static const char *ENTRY_PREPEND = "> ";
-static const char *CMD_PREPEND = ":";
+static const char *CMD_PREPEND =   ":";
 
 static const struct Menu MENU_FILES = {
 	.title = "Files menu\n"
@@ -142,6 +135,7 @@ static const struct Menu MENU_FILES = {
 			.type = ET_SHELL,
 			.shell = "ls -la \"$HOME\""
 		},
+		
 		[1] = {
 			.caption = "List bin files",
 			.type = ET_SHELL,

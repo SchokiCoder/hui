@@ -1,4 +1,4 @@
-{ canceled
+canceled {
 	-primary goal keybinds			.
 		-number + key sys			.
 		-bind display				.
@@ -9,14 +9,7 @@
 		-'G' goto last entry			.
 }
 
-{ experimental	
-	-function pointer as entry cmd		?
-	 (as an addition to the
-	  shell string)
-		->runtime menu creation			?
-}
-
-{ missing primary goals
+missing primary goals {
 	-get stderr				.
 	 https://stackoverflow.com/questions/30259086/how-to-use-popen
 	 (fork and exec-family didn't help,
@@ -25,14 +18,39 @@
 		->print feedback accordingly		.
 }
 
-{ dev goodies
+dev goodies {
 	-change license text being baked into		.
 	 binary via make obsoleting license_str.h
 	 -D LICENSE_TEXT=\"$(cat LICENSE)\"
 	 missing terminating " character
 }
 
+{
+	-function pointer as entry cmd			?
+	 (as an addition to the
+	  shell string)
+		->runtime menu creation				?
+	
+	-make sure real std cfg is used			.
+	-set version 1.2.0 					.
+}
+
 --- Done ---
+
+{	
+	-menu.h remove unnecessary config include	v
+	-fix handle command: int size difference	v
+	-remove feedback on cmd line enter		v
+	
+	-remove overall bg color			v
+	 this was a weird hack anyways,
+	 a real implementation would be much harder
+	 and it is not worth it
+	 
+	-make remove implicit fallthrough warnings	v
+	
+	-set version to 1.1.1				v
+}
 
 {
 	-configurable key binds				v

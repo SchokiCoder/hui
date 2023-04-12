@@ -6,8 +6,6 @@
 #ifndef _MENU_H
 #define _MENU_H
 
-#include "config.h"
-
 #define MENU_MAX_ENTRIES 128
 
 struct Entry;

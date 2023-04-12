@@ -1,3 +1,8 @@
+/* Copyright (C) 2022 - 2023 Andy Frank Schoknecht
+ * Use of this source code is governed by the BSD-3-Clause
+ * license, that can be found in the LICENSE file.
+ */
+
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
@@ -118,17 +123,10 @@ static const struct Color CMDLINE_BG = {
 	.b = 30
 };
 
-static const struct Color OVERALL_BG = {
-	.active = 0,
-	.r = 30,
-	.g = 30,
-	.b = 30
-};
-
 /* texts and menus */
-static const char *HEADER =      "- House User Interface -\n\n";
+static const char *HEADER =        "- House User Interface -\n\n";
 static const char *ENTRY_PREPEND = "> ";
-static const char *CMD_PREPEND = ":";
+static const char *CMD_PREPEND =   ":";
 
 static const struct Menu MENU_INFO = {
 	.title = "Info\n"

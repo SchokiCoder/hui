@@ -1,5 +1,5 @@
 SRC = hui.c color.c hstring.c sequences.c
-VERSION = 1.1.0
+VERSION = 1.1.1
 DEFINES = -D _DEFAULT_SOURCE -D _BSD_SOURCE -D _POSIX_C_SOURCE=200809L
 
 include config.mk
@@ -8,7 +8,8 @@ hui: clean
 	$(CC) ${COPTS} -Os -o $@ ${SRC} -D VERSION=\"${VERSION}\" ${DEFINES}
 
 debug: clean
-	$(CC) ${COPTS} -g -o hui ${SRC} -Wall -Wextra -D VERSION=\"${VERSION}-DEBUG\" ${DEFINES}
+	$(CC) ${COPTS} -g -o hui ${SRC} -Wall -Wextra -Wimplicit-fallthrough=0 \
+	-D VERSION=\"${VERSION}-DEBUG\" ${DEFINES}
 
 clean:
 	rm -f hui

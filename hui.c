@@ -91,12 +91,15 @@ void draw_upper(long unsigned *stdout_y, const char *header, const char *title)
 
 /* Jump to last line and draw the command line.
  */
-void draw_lower(const char *cmdin, const struct AppReader *ardr)
+void
+draw_lower(const char             *cmdin,
+           const enum InputMode    imode,
+           const struct AppReader *ardr)
 {
 	set_cursor(1, term_y_last);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
 
-	if (cmdin != NULL && strlen(cmdin) > 0)
+	if (IM_CMD == imode)
 		hprintf(CMDLINE_FG, CMDLINE_BG, cmdin);
 	else if (1 == ardr->text_lines)
 		hprintf(FEEDBACK_FG, FEEDBACK_BG, ardr->text.str);
@@ -224,7 +227,7 @@ handle_command(const char       *cmd,
                struct AppMenu   *amnu,
                struct AppReader *ardr)
 {
-	int n;
+	long long n;
 	long unsigned menu_len;
 
 	if (strcmp(cmd, "q") == 0
@@ -232,11 +235,11 @@ handle_command(const char       *cmd,
 	    || strcmp(cmd, "exit") == 0) {
 		*active = 0;
 	} else {
-		n = atoi(cmdin);
+		n = atoll(cmdin);
 
 		if (n > 0) {
 			menu_len = count_menu_entries(amnu->cur_menu);
-			if (n >= menu_len)
+			if ((unsigned long) n >= menu_len)
 				amnu->cursor = menu_len - 1;
 			else
 				amnu->cursor = n - 1;
@@ -432,7 +435,7 @@ int main(const int argc, const char *argv[])
 	/* mainloop */
 	while (active) {
 		/* clear */
-		hprintf(OVERALL_BG, OVERALL_BG, SEQ_CLEAR);
+		printf(SEQ_CLEAR);
 		stdout_y = 0;
 
 		/* draw upper */
@@ -445,7 +448,7 @@ int main(const int argc, const char *argv[])
 			draw_menu(&stdout_y, &amnu);
 
 		/* draw lower */
-		draw_lower(cmdin, &ardr);
+		draw_lower(cmdin, imode, &ardr);
 
 		if (IM_CMD == imode)
 			printf(SEQ_CRSR_SHOW);
