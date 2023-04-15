@@ -67,6 +67,17 @@ void AppReader_set_feedback(struct AppReader *ardr, const char *str)
 	ardr->text_lines = str_lines(str, term_y_last);
 }
 
+/* Usually called after a script ran (shell or c), to update the text state.
+ */
+void AppReader_handle_text(struct AppReader *ardr)
+{
+	String_rtrim(&ardr->text);
+	ardr->text_lines = str_lines(ardr->text.str, term_x_last);
+	
+	if (0 == ardr->text_lines)
+		AppReader_set_feedback(ardr, "Executed without feedback");
+}
+
 long unsigned count_menu_entries(const struct Menu *menu)
 {
 	long unsigned i;
@@ -189,14 +200,11 @@ void handle_c(void (*c) (struct String *), struct AppReader *ardr)
 {
 	struct String feedback = String_new();
 	
-	c(&feedback);
-	
 	String_bleach(&ardr->text);
 	
-	if (0 == feedback.len)
-		AppReader_set_feedback(ardr, "Executed without feedback");
-	else
-		AppReader_set_feedback(ardr, feedback.str);
+	c(&feedback);
+	
+	String_append(&ardr->text, feedback.str, feedback.len);
 	
 	String_free(&feedback);
 }
@@ -226,14 +234,6 @@ void handle_sh(const char *sh, struct AppReader *ardr)
 		String_append(&ardr->text, buf, buf_len);
 	}
 	pclose(p);
-
-	String_rtrim(&ardr->text);
-	ardr->text_lines = str_lines(ardr->text.str, term_x_last);
-
-	if (0 == ardr->text_lines) {
-		AppReader_set_feedback(ardr, "Executed without feedback");
-		return;
-	}
 }
 
 /* Manipulates the runtime depending on given command.
@@ -317,7 +317,10 @@ menu_handle_key(const char        key,
 				  ardr);
 		} else if (ET_C == amnu->cur_menu->entries[amnu->cursor].type) {
 			handle_c(amnu->cur_menu->entries[amnu->cursor].c, ardr);
+		} else {
+			return;
 		}
+		AppReader_handle_text(ardr);
 		break;
 
 	case KEY_CMD:
@@ -379,7 +382,7 @@ handle_key(const char        key,
 		switch (key) {
 		case '\n':
 			handle_command(cmdin, active, cmdin, amnu, ardr);
-
+			/* fall through */
 		case SIGINT:
 		case SIGTSTP:
 			strn_bleach(cmdin, CMD_IN_LEN);

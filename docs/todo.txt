@@ -25,6 +25,8 @@ dev goodies {
 	 missing terminating " character
 }
 
+--- Done ---
+
 {
 	-fix manpage typo				v
 	
@@ -35,24 +37,19 @@ dev goodies {
 		  this had literally NO implementation cost
 		  :)
 	
-	-sanitize std cfg				.
+	-add dirs for cfg targets to build sys		v
 	
-	-Makefile changes				.
-		-add option "-Wvla" to debug			.
-		-remove "-Wimplicit-fallthrough=0" from debug	.
-		-add "/* fall through */" to switch cases	.
+	-Makefile changes				v
+		-add option "-Wvla" to debug			v
+		-remove "-Wimplicit-fallthrough=0" from debug	v
+		-add "/* fall through */" to switch cases	v
 		 that fall through
-		-fsanitize, default vs other			?
 	
-	
-	-add scripting info to manpage			.
-	
-	-update manpage date				.
-	-make sure real std cfg is used			.
-	-set version 1.2.0 				.
+	-add scripting info to manpage			v
+	-fix c feedback clear				v
+	-fix c feedback only single line		v
+	-set version 1.2.0 				v
 }
-
---- Done ---
 
 {
 	-menu.h remove unnecessary config include	v

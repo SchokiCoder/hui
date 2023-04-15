@@ -11,8 +11,8 @@
  * The fun part is in "scripts.h". 
  */
 
-#include "color.h"
-#include "menu.h"
+#include "../color.h"
+#include "../menu.h"
 #include "scripts.h"
 
 #warning Config not touched, remove this line and set your stuff up, champ!

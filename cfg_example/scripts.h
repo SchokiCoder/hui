@@ -3,12 +3,13 @@
  * license, that can be found in the LICENSE file.
  */
 
-#ifndef _TEST_SCRIPTS_H
-#define _TEST_SCRIPTS_H
+#ifndef _SCRIPTS_H
+#define _SCRIPTS_H
 
-#include "hstring.h"
+#include "../hstring.h"
 
 void c_test(struct String *feedback);
+void c_lucky(struct String *feedback);
 
 static struct Menu menu_chaos = {
 	.title = "Chaos menu\n"
@@ -24,6 +25,7 @@ static struct Menu menu_chaos = {
 };
 
 static long unsigned counter = 0;
+static int lucky = 0;
 
 void c_test(struct String *feedback)
 {
@@ -35,14 +37,18 @@ void c_test(struct String *feedback)
 	switch (counter) {
 	case 7:
 		menu_chaos.entries[1].caption = "i feel lucky";
-		menu_chaos.entries[1].type = ET_SHELL;
-		menu_chaos.entries[1].shell = "echo 'you are dumb'";
+		menu_chaos.entries[1].type = ET_C;
+		menu_chaos.entries[1].c = c_lucky;
 		break;
 	
 	case 8:
 		menu_chaos.entries[1].caption = NULL;
 		menu_chaos.entries[1].type = ET_NONE;
 		menu_chaos.entries[1].shell = NULL;
+		if (lucky)
+			String_append(feedback, "jk :D", 5);
+			
+		return;
 		break;
 	
 	case 665:
@@ -61,4 +67,13 @@ void c_test(struct String *feedback)
 	String_append(feedback, welcome, welcome_len);
 }
 
-#endif /* _TEST_SCRIPTS_H */
+void c_lucky(struct String *feedback)
+{
+	const char *str = "you are dumb,\nidiot";
+	const long unsigned str_len = strlen(str);
+	
+	lucky = 1;
+	String_append(feedback, str, str_len);
+}
+
+#endif /* _SCRIPTS_H */

@@ -3,12 +3,12 @@
  * license, that can be found in the LICENSE file.
  */
 
-#ifndef _TEST_CFG_H
-#define _TEST_CFG_H
+#ifndef _CONFIG_H
+#define _CONFIG_H
 
-#include "color.h"
-#include "menu.h"
-#include "test_scripts.h"
+#include "../color.h"
+#include "../menu.h"
+#include "scripts.h"
 
 /* array sizes */
 #define CMD_IN_LEN 64
@@ -123,7 +123,7 @@ static const struct Color CMDLINE_BG = {
 };
 
 /* texts and menus */
-static const char *HEADER =        "Test config\n" "\n";
+static const char *HEADER =        "Example config\n" "\n";
 static const char *ENTRY_PREPEND = "> ";
 static const char *CMD_PREPEND =   ":";
 
@@ -262,7 +262,7 @@ static const struct Menu MENU_MAIN = {
 	         "—————————",
 	.entries = {
 		[0] = {
-			.caption = "[Chaos World]",
+			.caption = "[Chaos menu]",
 			.type = ET_SUBMENU,
 			.submenu = &menu_chaos
 		},
@@ -287,5 +287,5 @@ static const struct Menu MENU_MAIN = {
 	}
 };
 
-#endif /* _TEST_CFG_H */
+#endif /* _CONFIG_H */
 

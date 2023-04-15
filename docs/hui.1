@@ -1,4 +1,4 @@
-.TH "HUI" "1" "12 April 2023" "hui VERSION" ""
+.TH "HUI" "1" "15 April 2023" "hui VERSION" ""
 .hy
 
 .SH NAME
@@ -15,7 +15,11 @@ Customizable terminal based user-interface for common tasks and personal tastes,
 inspired by suckless software.
 The user can create and customize menus with submenus and commands in the
 config header file.
-The config header file already carries examples for submenus and commands.
+In the source code directory "cfg_example" there are elaborate examples for both
+the "config.h" and "scripts.h".
+These files are also used in the debug build.
+So by running 'make debug' and starting './hui' you can quickly get a feeling
+for what is possible with the config and scripting system.
 
 .SH OPTIONS
 
@@ -27,7 +31,7 @@ prints version information then exits
 .B \-a
 prints program name, version, license and repository information then exits
 
-.SH USAGE
+.SH DEFAULT USAGE
 
 .B q
 quit the program
