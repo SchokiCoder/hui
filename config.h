@@ -6,8 +6,14 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+/* This here is were stuff goes, that cannot be changed during runtime.
+ * Just edit the static constants.
+ * The fun part is in "scripts.h". 
+ */
+
 #include "color.h"
 #include "menu.h"
+#include "scripts.h"
 
 #warning Config not touched, remove this line and set your stuff up, champ!
 

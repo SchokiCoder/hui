@@ -26,18 +26,35 @@ dev goodies {
 }
 
 {
-	-function pointer as entry cmd			?
+	-fix manpage typo				v
+	
+	-function pointer as entry cmd			v
 	 (as an addition to the
 	  shell string)
-		->runtime menu creation				?
+		->runtime menu creation				v
+		  this had literally NO implementation cost
+		  :)
 	
+	-sanitize std cfg				.
+	
+	-Makefile changes				.
+		-add option "-Wvla" to debug			.
+		-remove "-Wimplicit-fallthrough=0" from debug	.
+		-add "/* fall through */" to switch cases	.
+		 that fall through
+		-fsanitize, default vs other			?
+	
+	
+	-add scripting info to manpage			.
+	
+	-update manpage date				.
 	-make sure real std cfg is used			.
-	-set version 1.2.0 					.
+	-set version 1.2.0 				.
 }
 
 --- Done ---
 
-{	
+{
 	-menu.h remove unnecessary config include	v
 	-fix handle command: int size difference	v
 	-remove feedback on cmd line enter		v

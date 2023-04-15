@@ -10,19 +10,21 @@
 
 struct Entry;
 struct Menu;
+struct String;
 
 enum EntryType {
-	ET_NONE = 0,
+	ET_NONE =    0,
 	ET_SUBMENU = 1,
-	ET_SHELL = 2
+	ET_SHELL =   2,
+	ET_C =       3
 };
 
 struct Entry {
-	char *caption;
-	
-	enum EntryType type;
+	char              *caption;
+	enum EntryType     type;
 	const struct Menu *submenu;
-	char *shell;
+	char              *shell;
+	void              (*c) (struct String *);
 };
 
 struct Menu {

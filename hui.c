@@ -183,6 +183,24 @@ void draw_menu(long unsigned *stdout_y, const struct AppMenu *amnu)
 	}
 }
 
+/* Manipulates the runtime depending on given c function pointer.
+ */
+void handle_c(void (*c) (struct String *), struct AppReader *ardr)
+{
+	struct String feedback = String_new();
+	
+	c(&feedback);
+	
+	String_bleach(&ardr->text);
+	
+	if (0 == feedback.len)
+		AppReader_set_feedback(ardr, "Executed without feedback");
+	else
+		AppReader_set_feedback(ardr, feedback.str);
+	
+	String_free(&feedback);
+}
+
 /* Manipulates the runtime depending on given shell string.
  */
 void handle_sh(const char *sh, struct AppReader *ardr)
@@ -297,6 +315,8 @@ menu_handle_key(const char        key,
 		if (ET_SHELL == amnu->cur_menu->entries[amnu->cursor].type) {
 			handle_sh(amnu->cur_menu->entries[amnu->cursor].shell,
 				  ardr);
+		} else if (ET_C == amnu->cur_menu->entries[amnu->cursor].type) {
+			handle_c(amnu->cur_menu->entries[amnu->cursor].c, ardr);
 		}
 		break;
 

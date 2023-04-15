@@ -8,6 +8,7 @@
 
 #include "color.h"
 #include "menu.h"
+#include "test_scripts.h"
 
 /* array sizes */
 #define CMD_IN_LEN 64
@@ -261,18 +262,24 @@ static const struct Menu MENU_MAIN = {
 	         "—————————",
 	.entries = {
 		[0] = {
+			.caption = "[Chaos World]",
+			.type = ET_SUBMENU,
+			.submenu = &menu_chaos
+		},
+		
+		[1] = {
 			.caption = "[Files menu]",
 			.type = ET_SUBMENU,
 			.submenu = &MENU_FILES
 		},
 		
-		[1] = {
+		[2] = {
 			.caption = "[Long menu]",
 			.type = ET_SUBMENU,
 			.submenu = &MENU_LONG
 		},
 		
-		[2] = {
+		[3] = {
 			.caption = "Show current user",
 			.type = ET_SHELL,
 			.shell = "echo \"$USER\""

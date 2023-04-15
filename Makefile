@@ -20,7 +20,7 @@ install: hui
 	chmod 755 ${DESTDIR}${PREFIX}/bin/hui
 	
 	mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	sed "s/VERSION/${VERSION}/g" < hui.1 > ${DESTDIR}${MANPREFIX}/man1/hui.1
+	sed "s/VERSION/${VERSION}/g" < docs/hui.1 > ${DESTDIR}${MANPREFIX}/man1/hui.1
 	chmod 644 ${DESTDIR}${MANPREFIX}/man1/hui.1
 
 uninstall:
