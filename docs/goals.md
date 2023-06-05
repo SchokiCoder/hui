@@ -29,8 +29,10 @@ starting where the primary goal-roadmap ended.
 - max. 200 sloc for build system (eg. make)
 - strictly POSIX compatible
 - no dependcies on libraries other than libc
-- building the package by editing config.h and config.mk and running make  
-- provide secondary goal updates as patches when not that necessary  
+- building the package by editing config.h and config.mk and running make
+- provide secondary goal updates as patches when not that necessary
+- this project can only implement new features if there are no new ones in it's
+  sibling [rshui](https://github.com/SchokiCoder/rshui)
 
 # Roadmap
 
@@ -101,7 +103,7 @@ in the command line)
 
 Entry prepend:  
 By default a menu's entry looks like this:  
-> Menu entry  
+\> Menu entry  
   
 Make the prepend "> " configurable.  
 
