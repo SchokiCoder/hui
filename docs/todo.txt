@@ -19,10 +19,12 @@ missing primary goals {
 }
 
 dev goodies {
-	-change license text being baked into		.
-	 binary via make obsoleting license_str.h
-	 -D LICENSE_TEXT=\"$(cat LICENSE)\"
-	 missing terminating " character
+	-Makefile uses -Wvla, add comment why i		v
+	 use that or remove -Wvla
+
+	-change license being compiled into binary	.
+
+	-add config interface for custom commands	?
 }
 
 --- Done ---
