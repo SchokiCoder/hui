@@ -34,7 +34,7 @@ starting where the primary goal-roadmap ended.
 - this project can only implement new features if there are no new ones in it's
   sibling [rshui](https://github.com/SchokiCoder/rshui)
 
-# Roadmap
+# Roadmap (done)
 
 ## v0.1.0 User menu
 
@@ -89,7 +89,7 @@ That includes:
 Provide sane, generalist standard configuration but with a compiler warning,
 that it had been untouched.
 
-## Configurable basics
+## v1.1.0 Configurable basics
 
 Keys:  
 
@@ -107,10 +107,22 @@ By default a menu's entry looks like this:
   
 Make the prepend "> " configurable.  
 
-## C function interface in config (Experimental)
+## v1.2.0 C function interface in config
 
 Each entry can have a function pointer to a function defined in the scripts.h.  
 A user function has output string pointer for feedback and int return.  
+At first experimental but proven to be fun and working.  
+
+# Roadmap (planned)
+
+## v1.3.0 Child application execution
+
+Originally intended to run parallel with parent, see <goal_omissions.md>.  
+Upon having to run a user's shell command, stop hui and spawn a child process.  
+Once it's done, resume as normal.  
+This also aims to decouple the previous implemented "reader" system that is
+basically a hard-wired self-made pager for child stdout feedback that spans over
+mutliple lines.  
 
 ## configurable aligns (Patch)
 
@@ -121,21 +133,6 @@ A user function has output string pointer for feedback and int return.
 
 - Header
 - Multiline feedback
-
-## Advanced sub-app execution
-
-Allows for applications with their own keyboard-input and a mainloop to run.  
-However, since their keybinds could collide with my keybinds, the house_ui will
-steal keybinds for now.  
-
-## Full sub-app execution
-
-If this point is reached, it means house_ui will no longer steal keybinds and
-instead expect a special modifier key to be pressed.  
-This will explicitly steal keybinds.  
-The modifier key is of course only necessary when there is currently another
-application open within house_ui but it will also not refuse to work if
-modifier is given unnecessarily.  
 
 ## Later if at all
 

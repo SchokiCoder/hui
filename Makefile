@@ -1,5 +1,5 @@
-C_FILES=hui.c color.c hstring.c sequences.c
-H_FILES=menu.h color.h hstring.h sequences.h
+C_FILES=hui.c common.c color.c hstring.c sequences.c
+H_FILES=menu.h common.h color.h hstring.h sequences.h
 VERSION=1.2.0
 DEFINES=-D _DEFAULT_SOURCE -D _BSD_SOURCE -D _POSIX_C_SOURCE=200809L
 
@@ -10,7 +10,7 @@ hui: $(H_FILES) $(C_FILES)
 		-D VERSION=\"$(VERSION)\" $(DEFINES)
 
 d_hui: $(H_FILES) $(C_FILES)
-	$(CC) $(COPTS) -g -o $@ $(C_FILES) -I cfg_example \
+	$(D_CC) $(COPTS) -g -o $@ $(C_FILES) -I cfg_example \
 		-D VERSION=\"$(VERSION)-DEBUG\" $(DEFINES) \
 		-Wall -Wextra -Wvla
 		# no vla's (bigger binary and unnecessary)

@@ -1,3 +1,14 @@
+# Advanced / Full sub-app execution (parallel to hui)
+
+Originally child and parent were supposed to run parallel to each other.  
+Instead just stop hui while child runs.  
+I don't know why i actually wanted it to be parallel in the first place.  
+This would have been needlessly harder to implement and probably **very** prone
+to failures and bugs of all kind.  
+Plus this way i can probably replace my half-assed pager with a call to whatever
+pager the user likes.  
+Less code, more akin to unix philosophy.  
+
 # non-optional goals
 
 So right now 1.0.0 is out and it doesn't fulfill all goals.  
