@@ -1,4 +1,6 @@
 hui
 d_hui
+courier
+d_courier
 *.o
 prebake_license.h

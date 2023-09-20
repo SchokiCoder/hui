@@ -1,23 +1,33 @@
-C_FILES=hui.c common.c color.c hstring.c sequences.c
-H_FILES=menu.h common.h color.h hstring.h sequences.h
+SHARED_CFILES=common.c color.c hstring.c sequences.c
+SHARED_HFILES=common.h color.h hstring.h menu.h sequences.h
 VERSION=1.2.0
 DEFINES=-D _DEFAULT_SOURCE -D _BSD_SOURCE -D _POSIX_C_SOURCE=200809L
 
 include config.mk
 
-hui: $(H_FILES) $(C_FILES)
-	$(CC) $(COPTS) -Os -o $@ $(C_FILES) -I cfg \
+hui: hui.c $(SHARED_CFILES) $(SHARED_HFILES)
+	$(CC) $(COPTS) -Os -o $@ $< $(SHARED_CFILES) -I cfg \
 		-D VERSION=\"$(VERSION)\" $(DEFINES)
 
-d_hui: $(H_FILES) $(C_FILES)
-	$(D_CC) $(COPTS) -g -o $@ $(C_FILES) -I cfg_example \
+d_hui: hui.c $(SHARED_CFILES) $(SHARED_HFILES)
+	$(D_CC) $(COPTS) -g -o $@ $< $(SHARED_CFILES) -I cfg_example \
 		-D VERSION=\"$(VERSION)-DEBUG\" $(DEFINES) \
 		-Wall -Wextra -Wvla
 		# no vla's (bigger binary and unnecessary)
 
+courier: courier.c $(SHARED_CFILES) $(SHARED_HFILES)
+	$(CC) $(COPTS) -Os -o $@ $< $(SHARED_CFILES) -I cfg \
+		-D VERSION=\"$(VERSION)\" $(DEFINES)
+
+d_courier: courier.c $(SHARED_CFILES) $(SHARED_HFILES)
+	$(CC) $(COPTS) -Os -o $@ $< $(SHARED_CFILES) -I cfg_example \
+		-D VERSION=\"$(VERSION)\" $(DEFINES)
+
 clean:
 	rm -f hui
 	rm -f d_hui
+	rm -f courier
+	rm -f d_courier
 	rm -f *.o
 
 install: hui
@@ -32,4 +42,3 @@ install: hui
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/hui\
 		$(DESTDIR)$(MANPREFIX)/man1/hui.1
-

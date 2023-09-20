@@ -27,6 +27,13 @@ dev goodies {
 	-add config interface for custom commands	?
 }
 
+{
+- decouple reader from main hui				.
+- add "-fsanitize=address,undefined" to debug `cc` call	.
+- other stuff look at goals
+- set version to 1.?
+}
+
 --- Done ---
 
 {
