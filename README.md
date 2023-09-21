@@ -27,7 +27,7 @@ To install follow these steps:
 The hui comes with it's own pager "courier".  
 It is used by hui for textual feedback by default.  
 Edit the variable "PAGER" in
-[cfg/config.h](https://github.com/SchokiCoder/hui/blob/main/cfg/config.h)to use
+[cfg/config.h](https://github.com/SchokiCoder/hui/blob/main/cfg/config.h) to use
 something else instead.  
 To prevent `make install` from compiling and installing courier, remove the
 "courier" dependency from the "install" branch in the makefile:  

@@ -117,7 +117,8 @@ At first experimental but proven to be fun and working.
 
 ## v1.3.0 Child application execution
 
-Originally intended to run parallel with parent, see <goal_omissions.md>.  
+Originally intended to run parallel with parent, see
+[goal_omissions.md](https://github.com/SchokiCoder/hui/blob/main/docs/goal_omissions.md).  
 Upon having to run a user's shell command, stop hui and spawn a child process.  
 Once it's done, resume as normal.  
 This also aims to decouple the previous implemented "reader" system that is
