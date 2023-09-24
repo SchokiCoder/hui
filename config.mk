@@ -1,7 +1,7 @@
 # Compilation customizations
 
 # compiler and compiler flags
-D_CC = zig cc
+D_CC = cc
 CC = cc
 COPTS = -std=c99 -pedantic
 

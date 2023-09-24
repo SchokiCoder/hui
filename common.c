@@ -3,7 +3,10 @@
  * license, that can be found in the LICENSE file.
  */
 
+#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/ioctl.h>
 
 #include "common.h"
 #include "config.h"
@@ -35,26 +38,36 @@ void draw_upper(long unsigned *stdout_y, const char *header, const char *title)
 	*stdout_y += str_lines(title, term_x_last);
 }
 
-void handle_key_cmdline(const char key)
+void
+handle_cmd(const char        *cmdin,
+           int               *active,
+           const struct Menu *cur_menu,
+	   long unsigned     *cursor,
+           struct String     *feedback,
+	   unsigned long     *feedback_lines)
 {
-	switch (key) {
-		case '\n':
-			handle_command(cmd,
-			               active,
-				       cur_menu,
-				       cursor,
-				       feedback,
-				       feedback_lines);
-			/* fall through */
-		case SIGINT:
-		case SIGTSTP:
-			strn_bleach(cmd, CMD_IN_LEN);
-			*imode = IM_NORMAL;
-			break;
+	long long n;
+	long unsigned menu_len;
 
-		default:
-			str_add_char(cmd, key);
-			break;
+	if (strcmp(cmdin, "q") == 0
+	    || strcmp(cmdin, "quit") == 0
+	    || strcmp(cmdin, "exit") == 0) {
+		*active = 0;
+	} else {
+		n = atoll(cmdin);
+
+		if (n > 0) {
+			menu_len = count_menu_entries(cur_menu);
+			if ((unsigned long) n >= menu_len)
+				*cursor = menu_len - 1;
+			else
+				*cursor = n - 1;
+		} else {
+			set_feedback(feedback,
+                                     feedback_lines,
+				     "Command not recognised");
+			return;
+		}
 	}
 }
 
@@ -87,7 +100,42 @@ handle_cmdline_opts(int          argc,
 			       MSG_COPYRIGHT, MSG_CLAUSES, MSG_WARRANTY);
 			return 1;
 			break;
+		
+		default:
+			return 0;
 		}
+	}
+	
+	return 0;
+}
+
+void handle_key_cmdline(const char         key,
+			char              *cmdin,
+			int               *active,
+			enum InputMode     *imode,
+			const struct Menu *cur_menu,
+			long unsigned     *cursor,
+			struct String     *feedback,
+			unsigned long     *feedback_lines)
+{
+	switch (key) {
+		case '\n':
+			handle_cmd(cmdin,
+			           active,
+				   cur_menu,
+				   cursor,
+				   feedback,
+				   feedback_lines);
+			/* fall through */
+		case SIGINT:
+		case SIGTSTP:
+			strn_bleach(cmdin, CMD_IN_LEN);
+			*imode = IM_NORMAL;
+			break;
+
+		default:
+			str_add_char(cmdin, key);
+			break;
 	}
 }
 
@@ -102,6 +150,8 @@ set_feedback(struct String *feedback,
 
 void term_get_size()
 {
+	struct winsize wsize;
+	
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
 	term_x_last = wsize.ws_col;
 	term_y_last = wsize.ws_row;
@@ -126,4 +176,3 @@ void term_restore()
 	printf(SEQ_FG_DEFAULT);
 	printf(SEQ_BG_DEFAULT);
 }
-

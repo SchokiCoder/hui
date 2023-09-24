@@ -11,6 +11,7 @@
 
 #include <termios.h>
 
+struct Menu;
 struct String;
 
 #define SIGINT  '\003'
@@ -33,12 +34,29 @@ draw_lower(const char           *cmdin,
 
 void draw_upper(long unsigned *stdout_y, const char *header, const char *title);
 
+void
+handle_cmd(const char        *cmdin,
+           int               *active,
+           const struct Menu *cur_menu,
+	   long unsigned     *cursor,
+           struct String     *feedback,
+	   unsigned long     *feedback_lines);
+
 int
 handle_cmdline_opts(int          argc,
 		    const char **argv,
 		    const char  *app_name,
 		    const char  *app_shortname,
 		    const char  *app_version);
+
+void handle_key_cmdline(const char         key,
+			char              *cmdin,
+			int               *active,
+			enum InputMode     *imode,
+			const struct Menu *cur_menu,
+			long unsigned     *cursor,
+			struct String     *feedback,
+			unsigned long     *feedback_lines);
 
 void
 set_feedback(struct String *feedback,

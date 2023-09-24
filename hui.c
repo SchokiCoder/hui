@@ -6,8 +6,9 @@
 /* This is the hui main file.
  */
 
+#define _SCRIPTS_H_IMPL
+
 #include <unistd.h>
-#include <sys/ioctl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -104,42 +105,10 @@ handle_sh(const char    *sh,
 }
 
 void
-handle_command(const char        *cmdin,
-               int               *active,
-               const struct Menu *cur_menu,
-	       long unsigned     *cursor,
-               struct String     *feedback,
-	       unsigned long     *feedback_lines)
-{
-	long long n;
-	long unsigned menu_len;
-
-	if (strcmp(cmdin, "q") == 0
-	    || strcmp(cmdin, "quit") == 0
-	    || strcmp(cmdin, "exit") == 0) {
-		*active = 0;
-	} else {
-		n = atoll(cmdin);
-
-		if (n > 0) {
-			menu_len = count_menu_entries(cur_menu);
-			if ((unsigned long) n >= menu_len)
-				*cursor = menu_len - 1;
-			else
-				*cursor = n - 1;
-		} else {
-			set_feedback(feedback,
-                                     feedback_lines,
-				     "Command not recognised");
-			return;
-		}
-	}
-}
-
-void
 handle_key(const char          key,
            int                *active,
 	   enum InputMode     *imode,
+	   char               *cmdin,
            const struct Menu **cur_menu,
 	   long unsigned      *cursor,
 	   long unsigned      *menu_stack_len,
@@ -148,7 +117,14 @@ handle_key(const char          key,
 	   long unsigned      *feedback_lines)
 {
 	if (IM_CMD == *imode) {
-		handle_key_cmdline(key);
+		handle_key_cmdline(key,
+				   cmdin,
+				   active,
+				   imode,
+				   *cur_menu,
+				   cursor,
+				   feedback,
+				   feedback_lines);
 		return;
 	}
 	
@@ -261,6 +237,7 @@ int main(const int argc, const char **argv)
 		handle_key(c,
 			   &active,
 			   &imode,
+			   cmdin,
 			   &cur_menu,
 			   &cursor,
 			   &menu_stack_len,

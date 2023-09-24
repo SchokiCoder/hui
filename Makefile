@@ -9,11 +9,11 @@ hui: hui.c $(SHARED_CFILES) $(SHARED_HFILES)
 	$(CC) $(COPTS) -Os -o $@ $< $(SHARED_CFILES) -I cfg \
 		-D VERSION=\"$(VERSION)\" $(DEFINES)
 
+# no vla's (bigger binary and unnecessary)
 d_hui: hui.c $(SHARED_CFILES) $(SHARED_HFILES)
 	$(D_CC) $(COPTS) -g -o $@ $< $(SHARED_CFILES) -I cfg_example \
 		-D VERSION=\"$(VERSION)-DEBUG\" $(DEFINES) \
 		-Wall -Wextra -Wvla
-		# no vla's (bigger binary and unnecessary)
 
 courier: courier.c $(SHARED_CFILES) $(SHARED_HFILES)
 	$(CC) $(COPTS) -Os -o $@ $< $(SHARED_CFILES) -I cfg \

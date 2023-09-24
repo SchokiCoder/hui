@@ -6,6 +6,8 @@
 #ifndef _SCRIPTS_H
 #define _SCRIPTS_H
 
+#include <string.h>
+
 #include "../hstring.h"
 
 void c_test(struct String *feedback);
@@ -26,6 +28,8 @@ static struct Menu menu_chaos = {
 
 static long unsigned counter = 0;
 static int lucky = 0;
+
+#ifndef _SCRIPTS_H_IMPL
 
 void c_test(struct String *feedback)
 {
@@ -75,5 +79,7 @@ void c_lucky(struct String *feedback)
 	lucky = 1;
 	String_append(feedback, str, str_len);
 }
+
+#endif /* _SCRIPTS_H_IMPL */
 
 #endif /* _SCRIPTS_H */
