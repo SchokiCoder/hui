@@ -52,9 +52,9 @@ handle_cmdline_opts(int          argc,
 void handle_key_cmdline(const char         key,
 			char              *cmdin,
 			int               *active,
-			enum InputMode     *imode,
-			const struct Menu *cur_menu,
 			long unsigned     *cursor,
+			const struct Menu *cur_menu,
+			enum InputMode    *imode,
 			struct String     *feedback,
 			unsigned long     *feedback_lines);
 

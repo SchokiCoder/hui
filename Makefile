@@ -2,6 +2,7 @@ SHARED_CFILES=common.c color.c hstring.c sequences.c
 SHARED_HFILES=common.h color.h hstring.h menu.h sequences.h
 VERSION=1.2.0
 DEFINES=-D _DEFAULT_SOURCE -D _BSD_SOURCE -D _POSIX_C_SOURCE=200809L
+D_COPTS=-Wall -Wextra -Wvla -Wno-unused
 
 include config.mk
 
@@ -12,8 +13,7 @@ hui: hui.c $(SHARED_CFILES) $(SHARED_HFILES)
 # no vla's (bigger binary and unnecessary)
 d_hui: hui.c $(SHARED_CFILES) $(SHARED_HFILES)
 	$(D_CC) $(COPTS) -g -o $@ $< $(SHARED_CFILES) -I cfg_example \
-		-D VERSION=\"$(VERSION)-DEBUG\" $(DEFINES) \
-		-Wall -Wextra -Wvla
+		-D VERSION=\"$(VERSION)-DEBUG\" $(DEFINES) $(D_COPTS)
 
 courier: courier.c $(SHARED_CFILES) $(SHARED_HFILES)
 	$(CC) $(COPTS) -Os -o $@ $< $(SHARED_CFILES) -I cfg \
@@ -21,7 +21,7 @@ courier: courier.c $(SHARED_CFILES) $(SHARED_HFILES)
 
 d_courier: courier.c $(SHARED_CFILES) $(SHARED_HFILES)
 	$(CC) $(COPTS) -Os -o $@ $< $(SHARED_CFILES) -I cfg_example \
-		-D VERSION=\"$(VERSION)\" $(DEFINES)
+		-D VERSION=\"$(VERSION)\" $(DEFINES) $(D_COPTS)
 
 clean:
 	rm -f hui
@@ -30,7 +30,7 @@ clean:
 	rm -f d_courier
 	rm -f *.o
 
-install: hui
+install: hui courier
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f hui $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/hui

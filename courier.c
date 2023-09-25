@@ -6,6 +6,9 @@
 /* This is the main file of the hui pager, called "courier".
  */
 
+#include <stdio.h>
+
+#include "common.h"
 #include "config.h"
 
 void
@@ -60,14 +63,26 @@ draw(long unsigned *stdout_y,
 }
 
 void
-handle_key(const char      key,
-           int            *active,
-	   enum InputMode *imode,
-	   long unsigned  *text_lines,
-           long unsigned  *scroll)
+handle_key(const char         key,
+           int               *active,
+           char              *cmdin,
+           long unsigned     *cursor,
+           const struct Menu *cur_menu,
+           struct String     *feedback,
+	   unsigned long     *feedback_lines,
+	   enum InputMode    *imode,
+           long unsigned     *scroll,
+	   long unsigned     *text_lines)
 {
 	if (IM_CMD == *imode) {
-		handle_key_cmdline();
+		handle_key_cmdline(key,
+				   cmdin,
+				   active,
+				   cursor,
+				   cur_menu,
+				   imode,
+				   feedback,
+				   feedback_lines);
 		return;
 	}
 	

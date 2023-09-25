@@ -35,11 +35,26 @@ prebake_license.h:
 
 # 1.3.0
 
-- decouple reader "courier" from main hui
+- decouple reader "courier" from main hui (compiles)
+	+ hui
+	- courier
+
+- decouple aftermath
+	- hui: menu entries are not drawn (can still enter submenus)
+
 - when `handle_sh()`, hand over stdout and wait for child...
   don't we do that already?
   test with an editor called from within hui
 - add "-fsanitize=address,undefined" to debug `cc` call
+
+- manpages
+	- new for courier
+	- update hui's
+	- "see also" section mention courier/hui
+
+- make sure install works
+  (mind what README.md says about courier being optional)
+- compat test
 - set version 
 
 
