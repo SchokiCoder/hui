@@ -22,48 +22,45 @@ enum InputMode {
 	IM_CMD =    1
 };
 
-static long unsigned term_x_last,
-                     term_y_last;
-
 static struct termios previous_terminal_settings;
 
 void
 draw_lower(const char           *cmdin,
-           const enum InputMode  imode,
-           const struct String  *feedback);
+	   const struct String  *feedback,
+	   const enum InputMode  imode,
+	   const long unsigned   term_y_len);
 
-void draw_upper(long unsigned *stdout_y, const char *header, const char *title);
-
-void
-handle_cmd(const char        *cmdin,
-           int               *active,
-           const struct Menu *cur_menu,
-	   long unsigned     *cursor,
-           struct String     *feedback,
-	   unsigned long     *feedback_lines);
-
-int
-handle_cmdline_opts(int          argc,
-		    const char **argv,
-		    const char  *app_name,
-		    const char  *app_shortname,
-		    const char  *app_version);
-
-void handle_key_cmdline(const char         key,
-			char              *cmdin,
-			int               *active,
-			long unsigned     *cursor,
-			const struct Menu *cur_menu,
-			enum InputMode    *imode,
-			struct String     *feedback,
-			unsigned long     *feedback_lines);
+void draw_upper(const char          *header,
+		long unsigned       *stdout_y,
+		const char          *title,
+		const long unsigned  term_y_len);
 
 void
-set_feedback(struct String *feedback,
-             long unsigned *feedback_lines,
-	     const char    *str);
+handle_cmd(const char          *cmdin,
+	   int                 *active,
+	   const struct Menu   *cur_menu,
+	   long unsigned       *cursor,
+	   struct String       *feedback,
+	   unsigned long       *feedback_lines,
+	   const long unsigned  term_y_len);
 
-void term_get_size();
+void handle_key_cmdline(const char           key,
+			char                *cmdin,
+			int                 *active,
+			long unsigned       *cursor,
+			const struct Menu   *cur_menu,
+			enum InputMode      *imode,
+			struct String       *feedback,
+			unsigned long       *feedback_lines,
+			const long unsigned  term_y_len);
+
+void
+set_feedback(struct String       *feedback,
+             long unsigned       *feedback_lines,
+	     const char          *str,
+	     const long unsigned  term_y_len);
+
+void term_get_size(long unsigned *x, long unsigned *y);
 
 void term_set_raw();
 

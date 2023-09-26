@@ -40,12 +40,17 @@ prebake_license.h:
 	- courier
 
 - decouple aftermath
-	- hui: menu entries are not drawn (can still enter submenus)
+	+ hui: menu entries are not drawn (can still enter submenus)
+	- test hui
+	- test courier
+
+- general bugs
+	- hui, draw_lower, hprintf: heap-buffer-overflow
 
 - when `handle_sh()`, hand over stdout and wait for child...
   don't we do that already?
   test with an editor called from within hui
-- add "-fsanitize=address,undefined" to debug `cc` call
++ add "-fsanitize=address,undefined" to debug `cc` call
 
 - manpages
 	- new for courier

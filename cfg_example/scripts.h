@@ -29,7 +29,8 @@ static struct Menu menu_chaos = {
 static long unsigned counter = 0;
 static int lucky = 0;
 
-#ifndef _SCRIPTS_H_IMPL
+/* DEAR USER: DON'T TOUCH THE NEXT LINE... please */
+#ifdef _SCRIPTS_H_IMPL
 
 void c_test(struct String *feedback)
 {

@@ -11,15 +11,15 @@
 #include "common.h"
 #include "config.h"
 #include "hstring.h"
-#include "license_str.h"
 #include "sequences.h"
 
 void
 draw_lower(const char           *cmdin,
-           const enum InputMode  imode,
-           const struct String  *feedback)
+	   const struct String  *feedback,
+	   const enum InputMode  imode,
+	   const long unsigned   term_y_len)
 {
-	set_cursor(1, term_y_last);
+	set_cursor(1, term_y_len);
 	hprintf(CMDLINE_FG, CMDLINE_BG, CMD_PREPEND);
 
 	if (IM_CMD == imode)
@@ -28,23 +28,27 @@ draw_lower(const char           *cmdin,
 		hprintf(FEEDBACK_FG, FEEDBACK_BG, feedback->str);
 }
 
-void draw_upper(long unsigned *stdout_y, const char *header, const char *title)
+void draw_upper(const char          *header,
+		long unsigned       *stdout_y,
+		const char          *title,
+		const long unsigned  term_x_len)
 {
 	set_cursor(1, 1);
 	hprintf(HEADER_FG, HEADER_BG, header);
 	hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
 
-	*stdout_y += str_lines(header, term_x_last);
-	*stdout_y += str_lines(title, term_x_last);
+	*stdout_y += str_lines(header, term_x_len);
+	*stdout_y += str_lines(title, term_x_len);
 }
 
 void
-handle_cmd(const char        *cmdin,
-           int               *active,
-           const struct Menu *cur_menu,
-	   long unsigned     *cursor,
-           struct String     *feedback,
-	   unsigned long     *feedback_lines)
+handle_cmd(const char          *cmdin,
+	   int                 *active,
+	   const struct Menu   *cur_menu,
+	   long unsigned       *cursor,
+	   struct String       *feedback,
+	   unsigned long       *feedback_lines,
+	   const long unsigned  term_y_len)
 {
 	long long n;
 	long unsigned menu_len;
@@ -65,58 +69,22 @@ handle_cmd(const char        *cmdin,
 		} else {
 			set_feedback(feedback,
                                      feedback_lines,
-				     "Command not recognised");
+				     "Command not recognised",
+				     term_y_len);
 			return;
 		}
 	}
 }
 
-int
-handle_cmdline_opts(int          argc,
-		    const char **argv,
-		    const char  *app_name,
-		    const char  *app_shortname,
-		    const char  *app_version)
-{
-	if (2 == argc) {
-		switch (argv[1][1]) {
-		case 'v':
-			printf("%s: version %s\n", app_shortname, app_version);
-			return 1;
-			break;
-
-		case 'a':
-			printf("\"%s\" aka %s %s is "
-			       "licensed under the BSD-3-Clause license.\n"
-			       "You should have received a copy of the license "
-			       "along with this program.\n\n"
-			       "The source code of this program is available "
-			       "at:"
-			       "\nhttps://github.com/SchokiCoder/hui\n\n"
-			       "If you did not receive a copy of the license, "
-			       "see below:\n\n"
-			       "%s\n\n%s\n\n%s\n",
-			       app_name, app_shortname, app_version,
-			       MSG_COPYRIGHT, MSG_CLAUSES, MSG_WARRANTY);
-			return 1;
-			break;
-		
-		default:
-			return 0;
-		}
-	}
-	
-	return 0;
-}
-
-void handle_key_cmdline(const char         key,
-			char              *cmdin,
-			int               *active,
-			enum InputMode     *imode,
-			const struct Menu *cur_menu,
-			long unsigned     *cursor,
-			struct String     *feedback,
-			unsigned long     *feedback_lines)
+void handle_key_cmdline(const char           key,
+			char                *cmdin,
+			int                 *active,
+			long unsigned       *cursor,
+			const struct Menu   *cur_menu,
+			enum InputMode      *imode,
+			struct String       *feedback,
+			unsigned long       *feedback_lines,
+			const long unsigned  term_y_len)
 {
 	switch (key) {
 		case '\n':
@@ -125,7 +93,8 @@ void handle_key_cmdline(const char         key,
 				   cur_menu,
 				   cursor,
 				   feedback,
-				   feedback_lines);
+				   feedback_lines,
+				   term_y_len);
 			/* fall through */
 		case SIGINT:
 		case SIGTSTP:
@@ -140,21 +109,22 @@ void handle_key_cmdline(const char         key,
 }
 
 void
-set_feedback(struct String *feedback,
-             long unsigned *feedback_lines,
-	     const char    *str)
+set_feedback(struct String       *feedback,
+             long unsigned       *feedback_lines,
+	     const char          *str,
+	     const long unsigned  term_y_len)
 {
 	String_copy(feedback, str);
-	*feedback_lines = str_lines(str, term_y_last);
+	*feedback_lines = str_lines(str, term_y_len);
 }
 
-void term_get_size()
+void term_get_size(long unsigned *x, long unsigned *y)
 {
 	struct winsize wsize;
 	
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
-	term_x_last = wsize.ws_col;
-	term_y_last = wsize.ws_row;
+	*x = wsize.ws_col;
+	*y = wsize.ws_row;
 }
 
 void term_set_raw()

@@ -2,7 +2,7 @@ SHARED_CFILES=common.c color.c hstring.c sequences.c
 SHARED_HFILES=common.h color.h hstring.h menu.h sequences.h
 VERSION=1.2.0
 DEFINES=-D _DEFAULT_SOURCE -D _BSD_SOURCE -D _POSIX_C_SOURCE=200809L
-D_COPTS=-Wall -Wextra -Wvla -Wno-unused
+D_COPTS=-Wall -Wextra -Wvla -Wno-unused -fsanitize=address,undefined
 
 include config.mk
 

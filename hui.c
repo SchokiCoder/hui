@@ -17,8 +17,12 @@
 #include "common.h"
 #include "config.h"
 #include "hstring.h"
+#include "license_str.h"
 #include "menu.h"
 #include "sequences.h"
+
+long unsigned term_x_len,
+	      term_y_len;
 
 long unsigned count_menu_entries(const struct Menu *menu)
 {
@@ -34,17 +38,17 @@ draw_menu(long unsigned       *stdout_y,
           const long unsigned  cursor,
 	  const struct Menu   *cur_menu)
 {
-	long unsigned i,
+	long unsigned i = 0,
 	              available_rows;
 
 	/* calc first entry to be drawn */
-	available_rows = term_y_last - *stdout_y - 1;
+	available_rows = term_y_len - *stdout_y - 1;
 	if (cursor > available_rows)
 		i = cursor - available_rows;
 
 	/* draw */
-	for (i = 0; cur_menu->entries[i].type != ET_NONE; i++) {
-		if (*stdout_y >= term_y_last)
+	for (; cur_menu->entries[i].type != ET_NONE; i++) {
+		if (*stdout_y >= term_y_len)
 			break;
 
 		if (cursor == i) {
@@ -90,7 +94,8 @@ handle_sh(const char    *sh,
 	if (NULL == p) {
 		set_feedback(feedback,
 		             feedback_lines,
-			     "ERROR shell could not execute");
+			     "ERROR shell could not execute",
+			     term_y_len);
 		return;
 	}
 
@@ -120,11 +125,12 @@ handle_key(const char          key,
 		handle_key_cmdline(key,
 				   cmdin,
 				   active,
-				   imode,
-				   *cur_menu,
 				   cursor,
+				   *cur_menu,
+				   imode,
 				   feedback,
-				   feedback_lines);
+				   feedback_lines,
+				   term_y_len);
 		return;
 	}
 	
@@ -173,12 +179,13 @@ handle_key(const char          key,
 			return;
 		}
 		String_rtrim(feedback);
-		*feedback_lines = str_lines(feedback->str, term_x_last);
+		*feedback_lines = str_lines(feedback->str, term_x_len);
 		
 		if (0 == feedback_lines) {
 			set_feedback(feedback,
 		                     feedback_lines,
-				     "Executed without feedback");
+				     "Executed without feedback",
+				     term_y_len);
 		}
 		break;
 
@@ -191,6 +198,40 @@ handle_key(const char          key,
 		*active = 0;
 		break;
 	}
+}
+
+int
+handle_cmdline_opts(const int argc, const char **argv)
+{
+	if (2 == argc) {
+		switch (argv[1][1]) {
+		case 'v':
+			printf("%s: version %s\n", "hui", VERSION);
+			return 1;
+			break;
+
+		case 'a':
+			printf("\"%s\" aka %s %s is "
+			       "licensed under the BSD-3-Clause license.\n"
+			       "You should have received a copy of the license "
+			       "along with this program.\n\n"
+			       "The source code of this program is available "
+			       "at:"
+			       "\nhttps://github.com/SchokiCoder/hui\n\n"
+			       "If you did not receive a copy of the license, "
+			       "see below:\n\n"
+			       "%s\n\n%s\n\n%s\n",
+			       "House User Interface", "hui", VERSION,
+			       MSG_COPYRIGHT, MSG_CLAUSES, MSG_WARRANTY);
+			return 1;
+			break;
+		
+		default:
+			return 0;
+		}
+	}
+	
+	return 0;
 }
 
 int main(const int argc, const char **argv)
@@ -207,14 +248,10 @@ int main(const int argc, const char **argv)
 	long unsigned      menu_stack_len = 1;
 	long unsigned      stdout_y;
 
-	if (handle_cmdline_opts(argc,
-				argv,
-				"House User Interface",
-				"hui",
-				VERSION) != 0)
+	if (handle_cmdline_opts(argc, argv) != 0)
 		return 0;
 	
-	term_get_size();
+	term_get_size(&term_x_len, &term_y_len);
 	term_set_raw();
 
 	while (active) {
@@ -224,9 +261,9 @@ int main(const int argc, const char **argv)
 		if (feedback_lines > 1)
 			system(/*PAGER + " " + */ feedback.str); // TODO
 
-		draw_upper(&stdout_y, HEADER, cur_menu->title);
+		draw_upper(HEADER, &stdout_y, cur_menu->title, term_x_len);
 		draw_menu(&stdout_y, cursor, cur_menu);
-		draw_lower(cmdin, imode, &feedback);
+		draw_lower(cmdin, &feedback, imode, term_y_len);
 
 		if (IM_CMD == imode)
 			printf(SEQ_CRSR_SHOW);
