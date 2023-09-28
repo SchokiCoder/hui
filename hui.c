@@ -24,6 +24,52 @@
 long unsigned term_x_len,
 	      term_y_len;
 
+long unsigned count_menu_entries(const struct Menu *menu);
+
+void
+draw_menu(long unsigned       *stdout_y,
+          const long unsigned  cursor,
+	  const struct Menu   *cur_menu);
+
+void handle_c(void (*c) (struct String *), struct String *feedback);
+
+void
+handle_cmd(const char          *cmdin,
+	   int                 *active,
+	   const struct Menu   *cur_menu,
+	   long unsigned       *cursor,
+	   struct String       *feedback,
+	   unsigned long       *feedback_lines);
+
+int handle_cmdline_opts(const int argc, const char **argv);
+
+void
+handle_key(const char          key,
+           int                *active,
+	   enum InputMode     *imode,
+	   char               *cmdin,
+           const struct Menu **cur_menu,
+	   long unsigned      *cursor,
+	   long unsigned      *menu_stack_len,
+	   const struct Menu **menu_stack,
+           struct String      *feedback,
+	   long unsigned      *feedback_lines);
+
+void
+handle_key_cmdline(const char           key,
+		   char                *cmdin,
+		   int                 *active,
+		   long unsigned       *cursor,
+		   const struct Menu   *cur_menu,
+		   enum InputMode      *imode,
+		   struct String       *feedback,
+		   unsigned long       *feedback_lines);
+
+void
+handle_sh(const char    *sh,
+          struct String *feedback,
+	  unsigned long *feedback_lines);
+
 long unsigned count_menu_entries(const struct Menu *menu)
 {
 	long unsigned i;
@@ -79,34 +125,101 @@ void handle_c(void (*c) (struct String *), struct String *feedback)
 }
 
 void
-handle_sh(const char    *sh,
-          struct String *feedback,
-	  unsigned long *feedback_lines)
+handle_cmd(const char          *cmdin,
+	   int                 *active,
+	   const struct Menu   *cur_menu,
+	   long unsigned       *cursor,
+	   struct String       *feedback,
+	   unsigned long       *feedback_lines)
 {
-	FILE *p;
-	char buf[STRING_BLOCK_SIZE];
-	long unsigned buf_len;
-	int read = 1;
+	long long n;
+	long unsigned menu_len;
 
-	String_bleach(feedback);
+	if (strcmp(cmdin, "q") == 0
+	    || strcmp(cmdin, "quit") == 0
+	    || strcmp(cmdin, "exit") == 0) {
+		*active = 0;
+	} else {
+		n = atoll(cmdin);
 
-	p = popen(sh, "r");
-	if (NULL == p) {
-		set_feedback(feedback,
-		             feedback_lines,
-			     "ERROR shell could not execute",
-			     term_y_len);
-		return;
+		if (n > 0) {
+			menu_len = count_menu_entries(cur_menu);
+			if ((long unsigned) n >= menu_len)
+				*cursor = menu_len - 1;
+			else
+				*cursor = n - 1;
+		} else {
+			set_feedback(feedback,
+                                     feedback_lines,
+				     "Command not recognised",
+				     term_y_len);
+			return;
+		}
 	}
+}
 
-	while (read) {
-		buf_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, p);
-		if (buf_len < STRING_BLOCK_SIZE)
-			read = 0;
+int handle_cmdline_opts(const int argc, const char **argv)
+{
+	if (2 == argc) {
+		switch (argv[1][1]) {
+		case 'v':
+			printf("%s: version %s\n", "hui", VERSION);
+			return 1;
+			break;
 
-		String_append(feedback, buf, buf_len);
+		case 'a':
+			printf("\"%s\" aka %s %s is "
+			       "licensed under the BSD-3-Clause license.\n"
+			       "You should have received a copy of the license "
+			       "along with this program.\n\n"
+			       "The source code of this program is available "
+			       "at:"
+			       "\nhttps://github.com/SchokiCoder/hui\n\n"
+			       "If you did not receive a copy of the license, "
+			       "see below:\n\n"
+			       "%s\n\n%s\n\n%s\n",
+			       "House User Interface", "hui", VERSION,
+			       MSG_COPYRIGHT, MSG_CLAUSES, MSG_WARRANTY);
+			return 1;
+			break;
+		
+		default:
+			return 0;
+		}
 	}
-	pclose(p);
+	
+	return 0;
+}
+
+void
+handle_key_cmdline(const char           key,
+		   char                *cmdin,
+		   int                 *active,
+		   long unsigned       *cursor,
+		   const struct Menu   *cur_menu,
+		   enum InputMode      *imode,
+		   struct String       *feedback,
+		   unsigned long       *feedback_lines)
+{
+	switch (key) {
+		case '\n':
+			handle_cmd(cmdin,
+			           active,
+				   cur_menu,
+				   cursor,
+				   feedback,
+				   feedback_lines);
+			/* fall through */
+		case SIGINT:
+		case SIGTSTP:
+			strn_bleach(cmdin, CMD_IN_LEN);
+			*imode = IM_NORMAL;
+			break;
+
+		default:
+			str_add_char(cmdin, key);
+			break;
+	}
 }
 
 void
@@ -129,8 +242,7 @@ handle_key(const char          key,
 				   *cur_menu,
 				   imode,
 				   feedback,
-				   feedback_lines,
-				   term_y_len);
+				   feedback_lines);
 		return;
 	}
 	
@@ -200,38 +312,35 @@ handle_key(const char          key,
 	}
 }
 
-int
-handle_cmdline_opts(const int argc, const char **argv)
+void
+handle_sh(const char    *sh,
+          struct String *feedback,
+	  unsigned long *feedback_lines)
 {
-	if (2 == argc) {
-		switch (argv[1][1]) {
-		case 'v':
-			printf("%s: version %s\n", "hui", VERSION);
-			return 1;
-			break;
+	FILE *p;
+	char buf[STRING_BLOCK_SIZE];
+	long unsigned buf_len;
+	int read = 1;
 
-		case 'a':
-			printf("\"%s\" aka %s %s is "
-			       "licensed under the BSD-3-Clause license.\n"
-			       "You should have received a copy of the license "
-			       "along with this program.\n\n"
-			       "The source code of this program is available "
-			       "at:"
-			       "\nhttps://github.com/SchokiCoder/hui\n\n"
-			       "If you did not receive a copy of the license, "
-			       "see below:\n\n"
-			       "%s\n\n%s\n\n%s\n",
-			       "House User Interface", "hui", VERSION,
-			       MSG_COPYRIGHT, MSG_CLAUSES, MSG_WARRANTY);
-			return 1;
-			break;
-		
-		default:
-			return 0;
-		}
+	String_bleach(feedback);
+
+	p = popen(sh, "r");
+	if (NULL == p) {
+		set_feedback(feedback,
+		             feedback_lines,
+			     "ERROR shell could not execute",
+			     term_y_len);
+		return;
 	}
-	
-	return 0;
+
+	while (read) {
+		buf_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, p);
+		if (buf_len < STRING_BLOCK_SIZE)
+			read = 0;
+
+		String_append(feedback, buf, buf_len);
+	}
+	pclose(p);
 }
 
 int main(const int argc, const char **argv)
@@ -270,17 +379,18 @@ int main(const int argc, const char **argv)
 		else
 			printf(SEQ_CRSR_HIDE);
 
-		read(STDIN_FILENO, &c, 1);
-		handle_key(c,
-			   &active,
-			   &imode,
-			   cmdin,
-			   &cur_menu,
-			   &cursor,
-			   &menu_stack_len,
-			   menu_stack,
-			   &feedback,
-			   &feedback_lines);
+		if (read(STDIN_FILENO, &c, 1) > 0) {
+			handle_key(c,
+				   &active,
+				   &imode,
+				   cmdin,
+				   &cur_menu,
+				   &cursor,
+				   &menu_stack_len,
+				   menu_stack,
+				   &feedback,
+				   &feedback_lines);
+		}
 	}
 
 	term_restore();

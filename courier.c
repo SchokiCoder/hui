@@ -6,16 +6,64 @@
 /* This is the main file of the hui pager, called "courier".
  */
 
+#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "config.h"
 #include "license_str.h"
 
+long unsigned term_x_len,
+	      term_y_len;
+
 void
-draw_text(long unsigned *stdout_y,
-          const struct String *text,
-          const long unsigned *scroll)
+draw_text(long unsigned       *stdout_y,
+	  const struct String *text,
+	  const long unsigned *scroll);
+
+void
+handle_cmd(const char          *cmdin,
+	   int                 *active,
+	   struct String       *feedback,
+	   unsigned long       *feedback_lines,
+	   long unsigned       *scroll,
+	   const long unsigned  text_lines);
+
+int
+handle_cmdline_opts(const int argc, const char **argv, struct String *title);
+
+void
+handle_key(const char         key,
+           int               *active,
+           char              *cmdin,
+           struct String     *feedback,
+	   unsigned long     *feedback_lines,
+	   enum InputMode    *imode,
+           long unsigned     *scroll,
+	   long unsigned     *text_lines);
+
+void
+handle_key_cmdline(const char           key,
+		   char                *cmdin,
+		   int                 *active,
+		   struct String       *feedback,
+		   unsigned long       *feedback_lines,
+		   enum InputMode      *imode,
+		   long unsigned       *scroll,
+		   const long unsigned  text_lines);
+
+/* First argument from argv not starting with a dash is used as path,
+ * except when a "-t" is given before that.
+ */
+FILE* open_target_file(const int argc, const char **argv);
+
+void read_target_file(FILE *file, struct String *text);
+
+void
+draw_text(long unsigned       *stdout_y,
+	  const struct String *text,
+	  const long unsigned *scroll)
 {
 	long unsigned i,
 	              text_x = 0,
@@ -23,10 +71,10 @@ draw_text(long unsigned *stdout_y,
 
 	/* skip the text that is scrolled over */
 	for (i = 0; i < text->len; i += 1) {
-		if (text_x >= term_x_last)
+		if (text_x >= term_x_len)
 			i -= 1;
 
-		if (text_x >= term_x_last || '\n' == text->str[i]) {
+		if (text_x >= term_x_len || '\n' == text->str[i]) {
 			text_x = 0;
 			text_y += 1;
 		} else {
@@ -45,10 +93,10 @@ draw_text(long unsigned *stdout_y,
 	set_bg(READER_BG);
 	
 	for (i = i; i < text->len; i += 1) {
-		if (text_x >= term_x_last)
+		if (text_x >= term_x_len)
 			i -= 1;
 
-		if (text_x >= term_x_last || '\n' == text->str[i]) {
+		if (text_x >= term_x_len || '\n' == text->str[i]) {
 			fputc('\n', stdout);
 			text_x = 0;
 			text_y += 1;
@@ -58,9 +106,43 @@ draw_text(long unsigned *stdout_y,
 			text_x += 1;
 		}
 
-		if (*stdout_y >= term_y_last)
+		if (*stdout_y >= term_y_len)
 			break;
 	}
+}
+
+void
+handle_cmd(const char          *cmdin,
+	   int                 *active,
+	   struct String       *feedback,
+	   unsigned long       *feedback_lines,
+	   long unsigned       *scroll,
+	   const long unsigned  text_lines)
+{
+	long long n;
+
+	if (strcmp(cmdin, "q") == 0
+	    || strcmp(cmdin, "quit") == 0
+	    || strcmp(cmdin, "exit") == 0) {
+		*active = 0;
+		return;
+	}
+
+	n = atoll(cmdin);
+
+	if (n > 0) {
+		if ((long unsigned) n >= text_lines) {
+			*scroll = text_lines - 1;
+		} else {
+			*scroll = n - 1;
+		}
+		return;
+	}
+	
+	set_feedback(feedback,
+		     feedback_lines,
+		     "Command not recognised",
+		     term_y_len);
 }
 
 int
@@ -106,21 +188,21 @@ void
 handle_key(const char         key,
            int               *active,
            char              *cmdin,
-           const struct Menu *cur_menu,
            struct String     *feedback,
 	   unsigned long     *feedback_lines,
 	   enum InputMode    *imode,
            long unsigned     *scroll,
 	   long unsigned     *text_lines)
 {
-	if (IM_CMD == *imode) {
+	if (IM_CMD == *imode) {		   
 		handle_key_cmdline(key,
 				   cmdin,
 				   active,
-				   cur_menu,
-				   imode,
 				   feedback,
-				   feedback_lines);
+				   feedback_lines,
+				   imode,
+				   scroll,
+				   *text_lines);
 		return;
 	}
 	
@@ -148,6 +230,51 @@ handle_key(const char         key,
 	}
 }
 
+void
+handle_key_cmdline(const char           key,
+		   char                *cmdin,
+		   int                 *active,
+		   struct String       *feedback,
+		   unsigned long       *feedback_lines,
+		   enum InputMode      *imode,
+		   long unsigned       *scroll,
+		   const long unsigned  text_lines)
+{
+	switch (key) {
+		case '\n':
+			handle_cmd(cmdin,
+			           active,
+				   feedback,
+				   feedback_lines,
+				   scroll,
+				   text_lines);
+			/* fall through */
+		case SIGINT:
+		case SIGTSTP:
+			strn_bleach(cmdin, CMD_IN_LEN);
+			*imode = IM_NORMAL;
+			break;
+
+		default:
+			str_add_char(cmdin, key);
+			break;
+	}
+}
+
+FILE* open_target_file(const int argc, const char **argv)
+{
+	int i;
+	
+	for (i = 1; i < argc; i++) {
+		if (argv[i][0] != '-')
+			break;
+		else if (argv[i][1] == 't')
+			i++;
+	}
+	
+	return fopen(argv[i], "r");
+}
+
 void read_target_file(FILE *file, struct String *text)
 {
 	char          buf[STRING_BLOCK_SIZE];
@@ -163,24 +290,7 @@ void read_target_file(FILE *file, struct String *text)
 	}
 }
 
-/* First argument not starting with a dash, is used as path,
- * except a -t is given before that.
- */
-FILE* open_target_file(const int argc, const char **argv)
-{
-	long unsigned i;
-	
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] != '-')
-			break;
-		else if (argv[i][1] == 't')
-			i++;
-	}
-	
-	return fopen(argv[i], "r");
-}
-
-int main(int argc, char **argv)
+int main(const int argc, const char **argv)
 {
 	int             active = 1;
 	char            c;
@@ -207,18 +317,26 @@ int main(int argc, char **argv)
 	read_target_file(target_file, &text);
 	fclose(target_file);
 	
-	term_get_size();
+	term_get_size(&term_x_len, &term_y_len);
 	term_set_raw();
 	
-	text_lines = str_lines(text.str, term_y_last);
+	text_lines = str_lines(text.str, term_y_len);
 	
 	while (active) {		
-		draw_upper(&stdout_y, HEADER, title.str);
+		draw_upper(HEADER, &stdout_y, title.str, term_y_len);
 		draw_text(&stdout_y, &text, &scroll);
-		draw_lower(cmdin, imode, &feedback);
+		draw_lower(cmdin, &feedback, imode, term_y_len);
 	
-		read(STDIN_FILENO, &c, 1);
-		handle_key(c, &active, cmdin, &imode, &text_lines, &scroll);
+		if (read(STDIN_FILENO, &c, 1) > 0) {
+			handle_key(c,
+				   &active,
+				   cmdin,
+				   &feedback,
+				   &feedback_lines,
+				   &imode,
+				   &scroll,
+				   &text_lines);
+		}
 	}
 	
 	term_restore();

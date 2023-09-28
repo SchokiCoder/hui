@@ -35,16 +35,14 @@ prebake_license.h:
 
 # 1.3.0
 
-- decouple reader "courier" from main hui (compiles)
++ decouple reader "courier" from main hui (compiles)
 	+ hui
-	- courier
+	+ courier
 
-- decouple aftermath
-	+ hui: menu entries are not drawn (can still enter submenus)
+- bugs
 	- test hui
 	- test courier
-
-- general bugs
+	+ hui: menu entries are not drawn (can still enter submenus)
 	- hui, draw_lower, hprintf: heap-buffer-overflow
 
 - when `handle_sh()`, hand over stdout and wait for child...

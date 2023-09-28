@@ -36,25 +36,6 @@ void draw_upper(const char          *header,
 		const long unsigned  term_y_len);
 
 void
-handle_cmd(const char          *cmdin,
-	   int                 *active,
-	   const struct Menu   *cur_menu,
-	   long unsigned       *cursor,
-	   struct String       *feedback,
-	   unsigned long       *feedback_lines,
-	   const long unsigned  term_y_len);
-
-void handle_key_cmdline(const char           key,
-			char                *cmdin,
-			int                 *active,
-			long unsigned       *cursor,
-			const struct Menu   *cur_menu,
-			enum InputMode      *imode,
-			struct String       *feedback,
-			unsigned long       *feedback_lines,
-			const long unsigned  term_y_len);
-
-void
 set_feedback(struct String       *feedback,
              long unsigned       *feedback_lines,
 	     const char          *str,
