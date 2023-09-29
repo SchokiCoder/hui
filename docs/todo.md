@@ -43,7 +43,8 @@ prebake_license.h:
 	- test hui
 	- test courier
 	+ hui: menu entries are not drawn (can still enter submenus)
-	- hui, draw_lower, hprintf: heap-buffer-overflow
+	+ hui, draw_lower, hprintf: heap-buffer-overflow
+	- hui:383, hui:293, hstring:56, hstring:147; heap-buffer-overflow
 
 - when `handle_sh()`, hand over stdout and wait for child...
   don't we do that already?

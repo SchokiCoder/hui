@@ -19,6 +19,8 @@ struct String String_new()
 		.str = malloc(STRING_BLOCK_SIZE)
 	};
 	
+	ret.str[0] = '\0';
+	
 	return ret;
 }
 
