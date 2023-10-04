@@ -16,7 +16,9 @@ struct String String_new()
 	struct String ret = {
 		.size = STRING_BLOCK_SIZE,
 		.len = 0,
+#ifndef STRING_NOT_ON_HEAP
 		.str = malloc(STRING_BLOCK_SIZE)
+#endif
 	};
 	
 	ret.str[0] = '\0';
@@ -30,6 +32,10 @@ void String_copy(struct String *string, const char *src)
 	
 	while (src_len > string->size) {
 		String_grow(string);
+
+#ifdef STRING_NOT_ON_HEAP
+		break;
+#endif
 	}
 	
 	strncpy(string->str, src, src_len);
@@ -45,6 +51,10 @@ String_append(struct String       *string,
 	
 	while (new_len > string->size) {
 		String_grow(string);
+
+#ifdef STRING_NOT_ON_HEAP
+		break;
+#endif
 	}
 	
 	strncpy(&string->str[string->len], src, src_len);
@@ -58,8 +68,12 @@ void String_rtrim(struct String *string)
 
 void String_grow(struct String *string)
 {
+#ifdef STRING_NOT_ON_HEAP
+	fprintf(stderr, "hstring: Strings not on heap, can't grow.\n");
+#else
 	string->size += STRING_BLOCK_SIZE;
 	string->str = realloc(string->str, string->size);
+#endif
 }
 
 void String_bleach(struct String *string)
@@ -70,7 +84,11 @@ void String_bleach(struct String *string)
 
 void String_free(struct String *string)
 {
+#ifdef STRING_NOT_ON_HEAP
+	fprintf(stderr, "hstring: Strings not on heap, can't free.\n");
+#else
 	free(string->str);
+#endif
 }
 
 void strn_bleach(char *str, const long unsigned len)
@@ -157,4 +175,3 @@ long unsigned str_rtrim(char *str)
 	
 	return pos;
 }
-

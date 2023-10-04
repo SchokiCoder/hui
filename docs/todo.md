@@ -39,6 +39,8 @@ prebake_license.h:
 	+ hui
 	+ courier
 
++ add support for heap-free strings (spontaneous idea)
+
 - bugs
 	- test hui
 	- test courier

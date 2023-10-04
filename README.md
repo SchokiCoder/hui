@@ -26,7 +26,7 @@ The hui comes with it's own pager "courier".
 It is used by hui for textual feedback by default.  
 Edit the variable "PAGER" in [cfg/config.h][config.h] to use something else instead.  
 To prevent `make install` from compiling and installing courier, remove the
-"courier" dependency from the "install" branch in the makefile:  
+"courier" dependency from the "install" branch in the [Makefile][Makefile]:  
 
 ```Makefile
 install: hui courier
@@ -54,5 +54,6 @@ If you found something, make a fork, make your changes and open a pull request.
 [config.h]: <https://github.com/SchokiCoder/hui/blob/main/cfg/config.h>
 [config.mk]: <https://github.com/SchokiCoder/hui/blob/main/config.mk>
 [goals.md]: <https://github.com/SchokiCoder/hui/blob/main/docs/goals.md>
+[Makefile]: <https://github.com/SchokiCoder/hui/blob/main/Makefile>
 [scripts.h]: <https://github.com/SchokiCoder/hui/blob/main/cfg/scripts.h>
 [todo.md]: <https://github.com/SchokiCoder/hui/blob/main/docs/todo.md>

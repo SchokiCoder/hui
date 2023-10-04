@@ -395,7 +395,9 @@ int main(const int argc, const char **argv)
 
 	term_restore();
 
+#ifndef STRING_NOT_ON_HEAP
 	String_free(&feedback);
+#endif
 
 	return 0;
 }

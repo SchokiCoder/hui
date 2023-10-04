@@ -11,9 +11,19 @@
 #define STRING_BLOCK_SIZE 2048
 
 struct String {
+#ifdef STRING_NOT_ON_HEAP
+	const long unsigned size;
+#else
 	long unsigned size;
+#endif
+
 	long unsigned len;
+
+#ifdef STRING_NOT_ON_HEAP
+	char str[STRING_BLOCK_SIZE];
+#else
 	char *str;
+#endif
 };
 
 struct String String_new();

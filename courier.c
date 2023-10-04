@@ -338,6 +338,12 @@ int main(const int argc, const char **argv)
 				   &text_lines);
 		}
 	}
+
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&feedback);
+	String_free(&text);
+	String_free(&title);
+#endif
 	
 	term_restore();
 	return 0;
