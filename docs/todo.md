@@ -46,7 +46,12 @@ prebake_license.h:
 	- test courier
 	+ hui: menu entries are not drawn (can still enter submenus)
 	+ hui, draw_lower, hprintf: heap-buffer-overflow
-	- hui:383, hui:293, hstring:56, hstring:147; heap-buffer-overflow
+	- "Long menu" > "print License":
+	  hui:383, hui:293, hstring:66, hstring:165; heap-buffer-overflow
+	- "Chaos menu" > "i feel lucky": shows some funny stuff
+
+- cfg_example/config.h: make the "pager LICENSE" entry actually call the pager
+  directly
 
 - when `handle_sh()`, hand over stdout and wait for child...
   don't we do that already?

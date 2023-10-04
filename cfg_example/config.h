@@ -150,12 +150,12 @@ static const struct Menu MENU_LONG = {
 	         "—————————",
 	.entries = {
 		[0] = {
-			.caption = "print SOURCE",
+			.caption = "cat SOURCE",
 			.type = ET_SHELL,
 			.shell = "cat hui.c"
 		},
 		[1] = {
-			.caption = "print LICENSE",
+			.caption = "pager LICENSE",
 			.type = ET_SHELL,
 			.shell = "cat LICENSE"
 		},
