@@ -47,6 +47,13 @@ void String_free(struct String *string);
  */
 void strn_bleach(char *str, const long unsigned len);
 
+/* Removes spaces, tabs and newlines from end of the string.
+ * str:  string
+ * size: size of given string
+ * Returns the new length of the string or the size if no null-byte was found.
+ */
+long unsigned strn_rtrim(char *str, const long unsigned size);
+
 /* append char to string
  */
 void str_add_char(char *str, const char c);
@@ -64,11 +71,5 @@ hprintf(const struct Color  fg,
         const struct Color  bg,
         const char         *fmt,
         ...);
-
-/* Removes spaces, tabs and newlines from end of the string.
- * Returns the new length of the string.
- */
-long unsigned str_rtrim(char *str);
-
 
 #endif /* _HSTRING_H */

@@ -30,7 +30,7 @@ void String_copy(struct String *string, const char *src)
 {
 	const long unsigned src_len = strlen(src);
 	
-	while (src_len > string->size) {
+	while ((src_len + 1) > string->size) {
 		String_grow(string);
 
 #ifdef STRING_NOT_ON_HEAP
@@ -49,7 +49,7 @@ String_append(struct String       *string,
 {
 	const long unsigned new_len = src_len + string->len;
 	
-	while (new_len > string->size) {
+	while ((new_len + 1) > string->size) {
 		String_grow(string);
 
 #ifdef STRING_NOT_ON_HEAP
@@ -63,7 +63,7 @@ String_append(struct String       *string,
 
 void String_rtrim(struct String *string)
 {
-	string->len = str_rtrim(string->str); 
+	string->len = strn_rtrim(string->str, string->len);
 }
 
 void String_grow(struct String *string)
@@ -88,7 +88,11 @@ void String_free(struct String *string)
 	fprintf(stderr, "hstring: Strings not on heap, can't free.\n");
 #else
 	free(string->str);
+	string->str = NULL;
+	string->size = 0;
 #endif
+
+	string->len = 0;
 }
 
 void strn_bleach(char *str, const long unsigned len)
@@ -98,6 +102,27 @@ void strn_bleach(char *str, const long unsigned len)
 	for (i = 0; i < len; i++) {
 		str[i] = '\0';
 	}
+}
+
+long unsigned strn_rtrim(char *str, const long unsigned size)
+{
+	long unsigned pos;
+	
+	for (pos = 0; str[pos] != '\0'; pos++) {
+		if (pos >= size) {
+			return pos;
+		}
+	}
+
+	do
+		pos -= 1;
+	while (' ' == str[pos] || '\t' == str[pos] || '\n' == str[pos]);
+	
+	pos += 1;
+	
+	str[pos] = '\0';
+	
+	return pos;
 }
 
 void str_add_char(char *str, const char c)
@@ -156,22 +181,4 @@ hprintf(const struct Color  fg,
 	vfprintf(stdout, fmt, valist);
 	
 	va_end(valist);
-}
-
-long unsigned str_rtrim(char *str)
-{
-	long unsigned pos = 0;
-	
-	while (str[pos] != '\0')
-		pos += 1;
-
-	do
-		pos -= 1;
-	while (' ' == str[pos] || '\t' == str[pos] || '\n' == str[pos]);
-	
-	pos += 1;
-	
-	str[pos] = '\0';
-	
-	return pos;
 }

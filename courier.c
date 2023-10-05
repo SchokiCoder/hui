@@ -9,9 +9,11 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "common.h"
 #include "config.h"
+#include "hstring.h"
 #include "license_str.h"
 
 long unsigned term_x_len,

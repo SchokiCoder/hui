@@ -41,14 +41,24 @@ prebake_license.h:
 
 + add support for heap-free strings (spontaneous idea)
 
+- String reinforcement
+	+ add null-byte appendage to `String_append` and `String_copy`
+	+ add len-check to `str_rtrim` -> `strn_rtrim`
+	+ add t_hstring.c and fix till test passes
+	+ test with stack-strings
+	+ add tests to .gitignore and makefile:clean
+
 - bugs
 	- test hui
 	- test courier
 	+ hui: menu entries are not drawn (can still enter submenus)
 	+ hui, draw_lower, hprintf: heap-buffer-overflow
-	- "Long menu" > "print License":
+	+ "Long menu" > "print License":
 	  hui:383, hui:293, hstring:66, hstring:165; heap-buffer-overflow
 	- "Chaos menu" > "i feel lucky": shows some funny stuff
+
+- courier linker err when not using -Os, -O1 or -O2:
+  "undefined reference to `c_test'"
 
 - cfg_example/config.h: make the "pager LICENSE" entry actually call the pager
   directly
