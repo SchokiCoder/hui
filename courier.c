@@ -12,7 +12,8 @@
 #include <string.h>
 
 #include "common.h"
-#include "config.h"
+#include "cfg_common.h"
+#include "cfg_courier.h"
 #include "hstring.h"
 #include "license_str.h"
 
@@ -91,8 +92,8 @@ draw_text(long unsigned       *stdout_y,
 		i += 1;
 
 	/* print text */
-	set_fg(READER_FG);
-	set_bg(READER_BG);
+	set_fg(CONTENT_FG);
+	set_bg(CONTENT_BG);
 	
 	for (i = i; i < text->len; i += 1) {
 		if (text_x >= term_x_len)
@@ -174,7 +175,7 @@ handle_cmdline_opts(const int argc, const char **argv, struct String *title)
 			break;
 		
 		case 't':
-			String_copy(title, argv[2]);
+			String_copy(title, argv[2], strlen(argv[2]));
 			return 0;
 			break;
 		
@@ -223,7 +224,7 @@ handle_key(const char         key,
 	case SIGTSTP:
 	case KEY_QUIT:
 	case KEY_LEFT:
-		active = 0;
+		*active = 0;
 		break;
 
 	case KEY_CMD:
@@ -294,18 +295,19 @@ void read_target_file(FILE *file, struct String *text)
 
 int main(const int argc, const char **argv)
 {
-	int             active = 1;
-	char            c;
-	char            cmdin[CMD_IN_LEN] = "\0";
-	FILE           *target_file;
-	struct String   feedback = String_new();
-	long unsigned   feedback_lines = 0;
-	enum InputMode  imode = IM_NORMAL;
-	long unsigned   scroll = 0;
-	long unsigned   stdout_y;
-	struct String   text = String_new();
-	long unsigned   text_lines = 0;
-	struct String   title;
+	int                 active = 1;
+	char                c;
+	char                cmdin[CMD_IN_LEN] = "\0";
+	struct String       feedback = String_new();
+	long unsigned       feedback_lines = 0;
+	const long unsigned header_size = strlen(HEADER);
+	enum InputMode      imode = IM_NORMAL;
+	long unsigned       scroll = 0;
+	long unsigned       stdout_y;
+	FILE               *target_file;
+	struct String       text = String_new();
+	long unsigned       text_lines = 0;
+	struct String       title;
 
 	if (handle_cmdline_opts(argc, argv, &title) != 0)
 		return 0;
@@ -322,12 +324,17 @@ int main(const int argc, const char **argv)
 	term_get_size(&term_x_len, &term_y_len);
 	term_set_raw();
 	
-	text_lines = str_lines(text.str, term_y_len);
+	text_lines = strn_lines(text.str, text.size, term_y_len);
 	
 	while (active) {		
-		draw_upper(HEADER, &stdout_y, title.str, term_y_len);
+		draw_upper(HEADER,
+			   header_size,
+			   &stdout_y,
+			   title.str,
+			   title.len,
+			   term_y_len);
 		draw_text(&stdout_y, &text, &scroll);
-		draw_lower(cmdin, &feedback, imode, term_y_len);
+		draw_lower(cmdin, &feedback, feedback_lines, imode, term_y_len);
 	
 		if (read(STDIN_FILENO, &c, 1) > 0) {
 			handle_key(c,

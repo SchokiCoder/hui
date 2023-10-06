@@ -6,10 +6,11 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 
 #include "common.h"
-#include "config.h"
+#include "cfg_common.h"
 #include "hstring.h"
 #include "sequences.h"
 

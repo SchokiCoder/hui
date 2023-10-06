@@ -22,7 +22,7 @@ courier: courier.c $(SHARED_CFILES) $(SHARED_HFILES)
 		-D VERSION=\"$(VERSION)\" $(DEFINES)
 
 d_courier: courier.c $(SHARED_CFILES) $(SHARED_HFILES)
-	$(D_CC) $(COPTS) -Os -g -o $@ $< $(SHARED_CFILES) -I cfg_example \
+	$(D_CC) $(COPTS) -g -o $@ $< $(SHARED_CFILES) -I cfg_example \
 		-D VERSION=\"$(VERSION)-DEBUG\" $(DEFINES) $(D_COPTS)
 
 t_hstring: t_hstring.c hstring.c color.c

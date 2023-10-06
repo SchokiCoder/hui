@@ -3,62 +3,25 @@
  * license, that can be found in the LICENSE file.
  */
 
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#ifndef _CFG_HUI_H
+#define _CFG_HUI_H
 
 /* This here is were stuff goes, that cannot be changed during runtime.
  * Just edit the static constants.
  * The fun part is in "scripts.h". 
  */
 
+#include "scripts.h"
 #include "../color.h"
 #include "../menu.h"
-#include "scripts.h"
-
-#warning Config not touched, remove this line and set your stuff up, champ!
 
 /* array sizes */
-#define CMD_IN_LEN 64
 #define MENU_STACK_SIZE 64
 
 /* key binds */
-#define KEY_UP    'k'
-#define KEY_DOWN  'j'
-#define KEY_LEFT  'h'
-#define KEY_RIGHT 'l'
 #define KEY_EXEC  'L'
-#define KEY_QUIT  'q'
-#define KEY_CMD   ':'
 
 /* colors */
-static const struct Color HEADER_FG = {
-	.active = -1,
-	.r = 205,
-	.g = 255,
-	.b = 205
-};
-
-static const struct Color HEADER_BG = {
-	.active = 0,
-	.r = 30,
-	.g = 30,
-	.b = 30
-};
-
-static const struct Color TITLE_FG = {
-	.active = -1,
-	.r = 205,
-	.g = 255,
-	.b = 205
-};
-
-static const struct Color TITLE_BG = {
-	.active = 0,
-	.r = 30,
-	.g = 30,
-	.b = 30
-};
-
 static const struct Color ENTRY_FG = {
 	.active = -1,
 	.r = 255,
@@ -87,52 +50,9 @@ static const struct Color ENTRY_HOVER_BG = {
 	.b = 255
 };
 
-static const struct Color READER_FG = {
-	.active = -1,
-	.r = 255,
-	.g = 255,
-	.b = 255
-};
-
-static const struct Color READER_BG = {
-	.active = 0,
-	.r = 30,
-	.g = 30,
-	.b = 30
-};
-
-static const struct Color FEEDBACK_FG = {
-	.active = -1,
-	.r = 175,
-	.g = 175,
-	.b = 175
-};
-
-static const struct Color FEEDBACK_BG = {
-	.active = 0,
-	.r = 30,
-	.g = 30,
-	.b = 30
-};
-
-static const struct Color CMDLINE_FG = {
-	.active = -1,
-	.r = 240,
-	.g = 255,
-	.b = 240
-};
-
-static const struct Color CMDLINE_BG = {
-	.active = 0,
-	.r = 30,
-	.g = 30,
-	.b = 30
-};
-
 /* texts and menus */
 static const char *HEADER =        "- House User Interface -\n\n";
 static const char *ENTRY_PREPEND = "> ";
-static const char *CMD_PREPEND =   ":";
 
 static const struct Menu MENU_INFO = {
 	.title = "Info\n"
@@ -170,4 +90,4 @@ static const struct Menu MENU_MAIN = {
 	}
 };
 
-#endif /* _CONFIG_H */
+#endif /* _CFG_HUI_H */

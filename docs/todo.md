@@ -33,7 +33,7 @@ prebake_license.h:
 - add config interface for custom commands ?
 
 
-# 1.3.0
+# 1.3.0 The big string update
 
 + decouple reader "courier" from main hui (compiles)
 	+ hui
@@ -63,14 +63,19 @@ prebake_license.h:
 + "Chaos menu" > "i feel lucky": shows some funny stuff
   fix strn_lines incorrect break condition
   fix draw_lower not checking wether or not to draw feedback
++ test hui
 
-- test hui
++ quit key binds don't work
+  fix incorrect quit key bind value assignment
++ courier: linker err when not using -Os, -O1 or -O2:
+  "undefined reference to `c_test` (`cfg_example/scripts.h`)"
+  split `config.h` into `cfg_common.h` and `cfg_hui.h` etc
++ also do release cfgs
+
+- outputs `(null)` instead of file content
 - test courier
 
 - t_hstring: add char* function tests
-
-- courier linker err when not using -Os, -O1 or -O2:
-  "undefined reference to `c_test` (`cfg_example/scripts.h`)"
 
 - cfg_example/config.h: make the "pager LICENSE" entry actually call the pager
   directly
