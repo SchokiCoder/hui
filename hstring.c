@@ -106,6 +106,9 @@ long unsigned strn_rtrim(char *str, const long unsigned size)
 			return pos;
 		}
 	}
+	
+	if (0 == pos)
+		return pos;
 
 	do
 		pos -= 1;

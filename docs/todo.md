@@ -58,6 +58,8 @@ prebake_license.h:
 	+ `String_copy` get `src_len` via param and make it actually just a
 	  wrapper around String_append by just resetting the string first
 	+ add null-byte appendage to `String_append` and `String_copy` for real
++ `heap_buffer_overflow`: "count welcome procedures" past 7th, in strn_rtrim
+  (fix strn_trim integer underflow (by adding a null check before decrementing))
 
 - "Chaos menu" > "i feel lucky": shows some funny stuff
 - test hui
