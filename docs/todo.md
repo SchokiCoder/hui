@@ -60,8 +60,10 @@ prebake_license.h:
 	+ add null-byte appendage to `String_append` and `String_copy` for real
 + `heap_buffer_overflow`: "count welcome procedures" past 7th, in strn_rtrim
   (fix strn_trim integer underflow (by adding a null check before decrementing))
++ "Chaos menu" > "i feel lucky": shows some funny stuff
+  fix strn_lines incorrect break condition
+  fix draw_lower not checking wether or not to draw feedback
 
-- "Chaos menu" > "i feel lucky": shows some funny stuff
 - test hui
 - test courier
 

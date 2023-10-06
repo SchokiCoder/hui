@@ -367,7 +367,7 @@ int main(const int argc, const char **argv)
 		stdout_y = 0;
 
 		if (feedback_lines > 1)
-			system(/*PAGER + " " + */ feedback.str); // TODO
+			system(/*PAGER + " < " + */ feedback.str); // TODO
 
 		draw_upper(HEADER,
 			   header_size,
@@ -376,7 +376,7 @@ int main(const int argc, const char **argv)
 			   strlen(cur_menu->title),
 			   term_x_len);
 		draw_menu(&stdout_y, cursor, cur_menu);
-		draw_lower(cmdin, &feedback, imode, term_y_len);
+		draw_lower(cmdin, &feedback, feedback_lines, imode, term_y_len);
 
 		if (IM_CMD == imode)
 			printf(SEQ_CRSR_SHOW);

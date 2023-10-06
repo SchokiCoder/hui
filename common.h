@@ -27,6 +27,7 @@ static struct termios previous_terminal_settings;
 void
 draw_lower(const char           *cmdin,
 	   const struct String  *feedback,
+	   const long unsigned   feedback_lines,
 	   const enum InputMode  imode,
 	   const long unsigned   term_y_len);
 

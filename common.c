@@ -16,6 +16,7 @@
 void
 draw_lower(const char           *cmdin,
 	   const struct String  *feedback,
+	   const long unsigned   feedback_lines,
 	   const enum InputMode  imode,
 	   const long unsigned   term_y_len)
 {
@@ -24,7 +25,7 @@ draw_lower(const char           *cmdin,
 
 	if (IM_CMD == imode)
 		hprintf(CMDLINE_FG, CMDLINE_BG, cmdin);
-	else
+	else if (feedback_lines == 1)
 		hprintf(FEEDBACK_FG, FEEDBACK_BG, feedback->str);
 }
 
