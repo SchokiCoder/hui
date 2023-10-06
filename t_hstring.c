@@ -23,7 +23,7 @@ int main()
 	assert(0 == s.len);
 	assert('\0' == s.str[s.len - 1]);
 	
-	String_copy(&s, "Foo");
+	String_copy(&s, "Foo", strlen("Foo"));
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(3 == s.len);
 	assert('\0' == s.str[s.len]);
@@ -36,6 +36,12 @@ int main()
 	String_rtrim(&s);
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(6 == s.len);
+	assert('\0' == s.str[s.len]);
+	
+	sprintf(block_fill, "Times strings screwed me over: %i", 666);
+	String_append(&s, block_fill, strlen(block_fill));
+	assert(STRING_BLOCK_SIZE == s.size);
+	assert(40 == s.len);
 	assert('\0' == s.str[s.len]);
 	
 	String_bleach(&s);
@@ -57,7 +63,7 @@ int main()
 	assert(STRING_BLOCK_SIZE == s.len);
 	assert(BLOCK_FILL_LETTER == s.str[s.len]);
 #else
-	String_copy(&s, block_fill);
+	String_copy(&s, block_fill, STRING_BLOCK_SIZE);
 	assert((STRING_BLOCK_SIZE * 2) == s.size);
 	assert(STRING_BLOCK_SIZE == s.len);
 	assert('\0' == s.str[s.len]);

@@ -26,20 +26,12 @@ struct String String_new()
 	return ret;
 }
 
-void String_copy(struct String *string, const char *src)
+void String_copy(struct String       *string,
+		 const char          *src,
+		 const long unsigned  src_len)
 {
-	const long unsigned src_len = strlen(src);
-	
-	while ((src_len + 1) > string->size) {
-		String_grow(string);
-
-#ifdef STRING_NOT_ON_HEAP
-		break;
-#endif
-	}
-	
-	strncpy(string->str, src, src_len);
-	string->len = src_len;
+	string->len = 0;
+	String_append(string, src, src_len);
 }
 
 void
@@ -59,6 +51,7 @@ String_append(struct String       *string,
 	
 	strncpy(&string->str[string->len], src, src_len);
 	string->len = new_len;
+	string->str[string->len] = '\0';
 }
 
 void String_rtrim(struct String *string)
@@ -133,15 +126,23 @@ void str_add_char(char *str, const char c)
 	str[len + 1] = '\0';
 }
 
-long unsigned str_lines(const char *str, long unsigned line_len)
+long unsigned
+strn_lines(const char          *str,
+	   const long unsigned  size,
+	   const long unsigned  line_size)
 {
-	long unsigned i = 0, x = 0, ret = 1;
+	long unsigned i,
+		      x = 0,
+		      ret = 1;
 	
 	if (NULL == str || '\0' == str[0])
 		return 0;
 
-	while (str[i] != '\0') {
-		if (x > line_len) {
+	for (i = 0; i < size; i++) {
+		if (str[i] != '\0')
+			break;
+		
+		if (x > line_size) {
 			ret += 1;
 			x = 0;
 		}
@@ -160,8 +161,6 @@ long unsigned str_lines(const char *str, long unsigned line_len)
 			x += 1;
 			break;
 		}
-		
-		i += 1;
 	}
 	
 	return ret;

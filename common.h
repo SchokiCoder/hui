@@ -31,9 +31,11 @@ draw_lower(const char           *cmdin,
 	   const long unsigned   term_y_len);
 
 void draw_upper(const char          *header,
+		const long unsigned  header_size,
 		long unsigned       *stdout_y,
 		const char          *title,
-		const long unsigned  term_y_len);
+		const long unsigned  title_size,
+		const long unsigned  term_x_len);
 
 void
 set_feedback(struct String       *feedback,

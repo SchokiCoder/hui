@@ -29,16 +29,18 @@ draw_lower(const char           *cmdin,
 }
 
 void draw_upper(const char          *header,
+		const long unsigned  header_size,
 		long unsigned       *stdout_y,
 		const char          *title,
+		const long unsigned  title_size,
 		const long unsigned  term_x_len)
 {
 	set_cursor(1, 1);
 	hprintf(HEADER_FG, HEADER_BG, header);
 	hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
 
-	*stdout_y += str_lines(header, term_x_len);
-	*stdout_y += str_lines(title, term_x_len);
+	*stdout_y += strn_lines(header, header_size, term_x_len);
+	*stdout_y += strn_lines(title, title_size, term_x_len);
 }
 
 void
@@ -47,8 +49,8 @@ set_feedback(struct String       *feedback,
 	     const char          *str,
 	     const long unsigned  term_y_len)
 {
-	String_copy(feedback, str);
-	*feedback_lines = str_lines(str, term_y_len);
+	String_copy(feedback, str, strlen(str));
+	*feedback_lines = strn_lines(feedback->str, feedback->size, term_y_len);
 }
 
 void term_get_size(long unsigned *x, long unsigned *y)

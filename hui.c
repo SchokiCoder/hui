@@ -115,12 +115,8 @@ void handle_c(void (*c) (struct String *), struct String *feedback)
 {
 	struct String temp = String_new();
 	
-	String_bleach(feedback);
-	
 	c(&temp);
-	
-	String_append(feedback, temp.str, temp.len);
-	
+	String_copy(feedback, temp.str, temp.size);
 	String_free(&temp);
 }
 
@@ -291,7 +287,9 @@ handle_key(const char          key,
 			return;
 		}
 		String_rtrim(feedback);
-		*feedback_lines = str_lines(feedback->str, term_x_len);
+		*feedback_lines = strn_lines(feedback->str,
+					     feedback->size,
+					     term_x_len);
 		
 		if (0 == feedback_lines) {
 			set_feedback(feedback,
@@ -345,17 +343,18 @@ handle_sh(const char    *sh,
 
 int main(const int argc, const char **argv)
 {
-	int                active = 1;
-	char               c;
-	char               cmdin[CMD_IN_LEN] = "\0";
-	long unsigned      cursor = 0;
-	const struct Menu *cur_menu = &MENU_MAIN;
-	enum InputMode     imode = IM_NORMAL;
-	struct String      feedback = String_new();
-	long unsigned      feedback_lines = 0;
-	const struct Menu *menu_stack[MENU_STACK_SIZE] = {[0] = &MENU_MAIN};
-	long unsigned      menu_stack_len = 1;
-	long unsigned      stdout_y;
+	int                  active = 1;
+	char                 c;
+	char                 cmdin[CMD_IN_LEN] = "\0";
+	long unsigned        cursor = 0;
+	const struct Menu   *cur_menu = &MENU_MAIN;
+	const long unsigned  header_size = strlen(HEADER);
+	enum InputMode       imode = IM_NORMAL;
+	struct String        feedback = String_new();
+	long unsigned        feedback_lines = 0;
+	const struct Menu   *menu_stack[MENU_STACK_SIZE] = {[0] = &MENU_MAIN};
+	long unsigned        menu_stack_len = 1;
+	long unsigned        stdout_y;
 
 	if (handle_cmdline_opts(argc, argv) != 0)
 		return 0;
@@ -370,7 +369,12 @@ int main(const int argc, const char **argv)
 		if (feedback_lines > 1)
 			system(/*PAGER + " " + */ feedback.str); // TODO
 
-		draw_upper(HEADER, &stdout_y, cur_menu->title, term_x_len);
+		draw_upper(HEADER,
+			   header_size,
+			   &stdout_y,
+			   cur_menu->title,
+			   strlen(cur_menu->title),
+			   term_x_len);
 		draw_menu(&stdout_y, cursor, cur_menu);
 		draw_lower(cmdin, &feedback, imode, term_y_len);
 

@@ -28,7 +28,9 @@ struct String {
 
 struct String String_new();
 
-void String_copy(struct String *string, const char *src);
+void String_copy(struct String       *string,
+		 const char          *src,
+		 const long unsigned  src_len);
 
 void
 String_append(struct String       *string,
@@ -58,11 +60,16 @@ long unsigned strn_rtrim(char *str, const long unsigned size);
  */
 void str_add_char(char *str, const char c);
 
-/* Returns:
- * the amount of lines needed to display given string
- * 0 - if the string is not displayable
+/* Counts the amount of lines needed to display a string.
+ * str:       string
+ * size:      size of given string
+ * line_size: size that one line has
+ * Returns 0, if the string is not displayable otherwise the count.
  */
-long unsigned str_lines(const char *str, long unsigned line_len);
+long unsigned
+strn_lines(const char          *str,
+	   const long unsigned  size,
+	   const long unsigned  line_size);
 
 /* printf with color setting
  */

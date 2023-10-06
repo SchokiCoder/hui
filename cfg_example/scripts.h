@@ -35,7 +35,6 @@ static int lucky = 0;
 void c_test(struct String *feedback)
 {
 	char welcome[64];
-	long unsigned welcome_len = 0;
 	
 	counter += 1;
 	
@@ -68,8 +67,7 @@ void c_test(struct String *feedback)
 	}
 	
 	sprintf(welcome, "Welcome to c test no: %lu", counter);
-	welcome_len = strlen(welcome);
-	String_append(feedback, welcome, welcome_len);
+	String_append(feedback, welcome, strlen(welcome));
 }
 
 void c_lucky(struct String *feedback)
