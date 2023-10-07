@@ -78,12 +78,14 @@ prebake_license.h:
 + add missing terminal clear and stdout_y reset
 + overscroll possible
   (fix giving len of false dimension for counting lines needed for content)
-- title is not gathered from -t TITLE
-- test courier
++ title is not gathered from -t TITLE
+  (fix incorrect argc check in `handle_cmdline_opts`)
++ test courier
 
-- t_hstring: add char* function tests
++ t_hstring: add char* function tests
 
 - strn_lines may have redundant null-byte checks (3rd)
+- str_add_char -> strn_add_char (currently no size check! (mind null-byte))
 
 - cfg_example/config.h: make the "pager LICENSE" entry actually call the pager
   directly

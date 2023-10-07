@@ -152,7 +152,7 @@ handle_cmd(const char          *cmdin,
 int
 handle_cmdline_opts(const int argc, const char **argv, struct String *title)
 {
-	if (2 == argc) {
+	if (argc >= 2) {
 		switch (argv[1][1]) {
 		case 'v':
 			printf("%s: version %s\n", "courier", VERSION);

@@ -11,9 +11,45 @@
 #include <stdio.h>
 #include <string.h>
 
+#define TEST_CHARARR_SIZE 64
+#define LINE_SIZE 32
 #define BLOCK_FILL_LETTER 'a'
 
-int main()
+void test_stringfuncs()
+{
+	char s[TEST_CHARARR_SIZE];
+	
+	strn_bleach(s, TEST_CHARARR_SIZE);
+	assert('\0' == s[0]);
+	assert('\0' == s[TEST_CHARARR_SIZE / 2]);
+	assert('\0' == s[TEST_CHARARR_SIZE - 1]);
+	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 0);
+	
+	str_add_char(s, 'E');
+	assert('E' == s[0]);
+	assert('\0' == s[1]);
+	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 1);
+	
+	str_add_char(s, ' ');
+	str_add_char(s, '\t');
+	str_add_char(s, '\n');
+	assert('E' == s[0]);
+	assert(' ' == s[1]);
+	assert('\t' == s[2]);
+	assert('\n' == s[3]);
+	assert('\0' == s[4]);
+	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 2);
+
+	strn_rtrim(s, TEST_CHARARR_SIZE);
+	assert('E' == s[0]);
+	assert('\0' == s[1]);
+	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 1);
+	
+	strncpy(s, "I am veeeeeeeeeeeery loooooooooooooong", TEST_CHARARR_SIZE);
+	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 2);
+}
+
+void test_stringstruct()
 {
 	char          block_fill[STRING_BLOCK_SIZE + 1];
 	long unsigned i;
@@ -73,6 +109,12 @@ int main()
 	assert(0 == s.len);
 	assert(NULL == s.str);
 #endif
+}
+
+int main()
+{
+	test_stringfuncs();
+	test_stringstruct();
 	
 	return 0;
 }
