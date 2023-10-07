@@ -9,7 +9,7 @@
 #include "../color.h"
 
 /* array sizes */
-#define CMD_IN_LEN 64
+#define CMD_IN_SIZE 64
 
 /* key binds */
 #define KEY_UP    'k'

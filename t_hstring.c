@@ -17,7 +17,8 @@
 
 void test_stringfuncs()
 {
-	char s[TEST_CHARARR_SIZE];
+	long unsigned i;
+	char          s[TEST_CHARARR_SIZE];
 	
 	strn_bleach(s, TEST_CHARARR_SIZE);
 	assert('\0' == s[0]);
@@ -25,14 +26,14 @@ void test_stringfuncs()
 	assert('\0' == s[TEST_CHARARR_SIZE - 1]);
 	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 0);
 	
-	str_add_char(s, 'E');
+	assert(strn_add_char(s, 'E', strlen(s), TEST_CHARARR_SIZE) == 0);
 	assert('E' == s[0]);
 	assert('\0' == s[1]);
 	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 1);
 	
-	str_add_char(s, ' ');
-	str_add_char(s, '\t');
-	str_add_char(s, '\n');
+	assert(strn_add_char(s, ' ', strlen(s), TEST_CHARARR_SIZE) == 0);
+	assert(strn_add_char(s, '\t', strlen(s), TEST_CHARARR_SIZE) == 0);
+	assert(strn_add_char(s, '\n', strlen(s), TEST_CHARARR_SIZE) == 0);
 	assert('E' == s[0]);
 	assert(' ' == s[1]);
 	assert('\t' == s[2]);
@@ -47,6 +48,12 @@ void test_stringfuncs()
 	
 	strncpy(s, "I am veeeeeeeeeeeery loooooooooooooong", TEST_CHARARR_SIZE);
 	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 2);
+	
+	for (i = 0; i < (TEST_CHARARR_SIZE - 1); i++) {
+		s[i] = 'A';
+	}
+	s[TEST_CHARARR_SIZE - 1] = '\0';
+	assert(strn_add_char(s, 'N', strlen(s), TEST_CHARARR_SIZE) == 1);
 }
 
 void test_stringstruct()

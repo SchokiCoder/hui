@@ -121,12 +121,18 @@ long unsigned strn_rtrim(char *str, const long unsigned size)
 	return pos;
 }
 
-void str_add_char(char *str, const char c)
-{
-	long unsigned len = strlen(str);
+int
+strn_add_char(char                *str,
+	      const char           c,
+	      const long unsigned  str_len,
+	      const long unsigned  str_size)
+{	
+	if ((str_len + 1) >= str_size)
+		return 1;
 	
-	str[len] = c;
-	str[len + 1] = '\0';
+	str[str_len] = c;
+	str[str_len + 1] = '\0';
+	return 0;
 }
 
 long unsigned
@@ -154,10 +160,6 @@ strn_lines(const char          *str,
 		case '\n':
 			ret += 1;
 			x = 0;
-			break;
-			
-		case '\0':
-			return ret;
 			break;
 		
 		default:

@@ -255,12 +255,12 @@ handle_key_cmdline(const char           key,
 			/* fall through */
 		case SIGINT:
 		case SIGTSTP:
-			strn_bleach(cmdin, CMD_IN_LEN);
+			strn_bleach(cmdin, CMD_IN_SIZE);
 			*imode = IM_NORMAL;
 			break;
 
 		default:
-			str_add_char(cmdin, key);
+			strn_add_char(cmdin, key, strlen(cmdin), CMD_IN_SIZE);
 			break;
 	}
 }
@@ -298,7 +298,7 @@ int main(const int argc, const char **argv)
 {
 	int                 active = 1;
 	char                c;
-	char                cmdin[CMD_IN_LEN] = "\0";
+	char                cmdin[CMD_IN_SIZE] = "\0";
 	struct String       content = String_new();
 	long unsigned       content_lines = 0;
 	struct String       feedback = String_new();

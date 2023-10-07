@@ -84,8 +84,10 @@ prebake_license.h:
 
 + t_hstring: add char* function tests
 
-- strn_lines may have redundant null-byte checks (3rd)
-- str_add_char -> strn_add_char (currently no size check! (mind null-byte))
++ strn_lines may have redundant null-byte checks (3rd)
+  (strn_lines: remove redundant null-byte check)
++ str_add_char -> strn_add_char (currently no size check! (mind null-byte))
+  (add size check to str_add_char)
 
 - cfg_example/config.h: make the "pager LICENSE" entry actually call the pager
   directly

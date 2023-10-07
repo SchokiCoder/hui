@@ -56,9 +56,18 @@ void strn_bleach(char *str, const long unsigned len);
  */
 long unsigned strn_rtrim(char *str, const long unsigned size);
 
-/* append char to string
+/* Append char to string.
+ * str:      string
+ * c:        char to append
+ * str_len:  len of string (excluding null-byte)
+ * str_size: size of string
+ * Returns 0 when ok, 1 if not enough size is given.
  */
-void str_add_char(char *str, const char c);
+int
+strn_add_char(char                *str,
+	      const char           c,
+	      const long unsigned  str_len,
+	      const long unsigned  str_size);
 
 /* Counts the amount of lines needed to display a string.
  * str:       string
