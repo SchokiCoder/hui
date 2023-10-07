@@ -72,10 +72,18 @@ prebake_license.h:
   split `config.h` into `cfg_common.h` and `cfg_hui.h` etc
 + also do release cfgs
 
-- outputs `(null)` instead of file content
++ outputs only first char of content
+  and outputs `(null)` instead of title when no title given
+  (fix uninitialized title string)
++ add missing terminal clear and stdout_y reset
++ overscroll possible
+  (fix giving len of false dimension for counting lines needed for content)
+- title is not gathered from -t TITLE
 - test courier
 
 - t_hstring: add char* function tests
+
+- strn_lines may have redundant null-byte checks (3rd)
 
 - cfg_example/config.h: make the "pager LICENSE" entry actually call the pager
   directly

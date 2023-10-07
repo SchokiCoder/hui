@@ -16,22 +16,23 @@
 #include "cfg_courier.h"
 #include "hstring.h"
 #include "license_str.h"
+#include "sequences.h"
 
 long unsigned term_x_len,
 	      term_y_len;
 
 void
-draw_text(long unsigned       *stdout_y,
-	  const struct String *text,
-	  const long unsigned *scroll);
+draw_content(const struct String *content,
+	     const long unsigned *scroll,
+	     long unsigned       *stdout_y);
 
 void
 handle_cmd(const char          *cmdin,
 	   int                 *active,
+	   const long unsigned  content_lines,
 	   struct String       *feedback,
 	   unsigned long       *feedback_lines,
-	   long unsigned       *scroll,
-	   const long unsigned  text_lines);
+	   long unsigned       *scroll);
 
 int
 handle_cmdline_opts(const int argc, const char **argv, struct String *title);
@@ -40,73 +41,73 @@ void
 handle_key(const char         key,
            int               *active,
            char              *cmdin,
+	   long unsigned     *content_lines,
            struct String     *feedback,
 	   unsigned long     *feedback_lines,
 	   enum InputMode    *imode,
-           long unsigned     *scroll,
-	   long unsigned     *text_lines);
+           long unsigned     *scroll);
 
 void
 handle_key_cmdline(const char           key,
 		   char                *cmdin,
 		   int                 *active,
+		   const long unsigned  content_lines,
 		   struct String       *feedback,
 		   unsigned long       *feedback_lines,
 		   enum InputMode      *imode,
-		   long unsigned       *scroll,
-		   const long unsigned  text_lines);
+		   long unsigned       *scroll);
 
 /* First argument from argv not starting with a dash is used as path,
  * except when a "-t" is given before that.
  */
 FILE* open_target_file(const int argc, const char **argv);
 
-void read_target_file(FILE *file, struct String *text);
+void read_target_file(FILE *file, struct String *content);
 
 void
-draw_text(long unsigned       *stdout_y,
-	  const struct String *text,
-	  const long unsigned *scroll)
+draw_content(const struct String *content,
+	     const long unsigned *scroll,
+	     long unsigned       *stdout_y)
 {
 	long unsigned i,
-	              text_x = 0,
-		      text_y = 0;
+	              content_x = 0,
+		      content_y = 0;
 
-	/* skip the text that is scrolled over */
-	for (i = 0; i < text->len; i += 1) {
-		if (text_x >= term_x_len)
+	/* skip the content that is scrolled over */
+	for (i = 0; i < content->len; i += 1) {
+		if (content_x >= term_x_len)
 			i -= 1;
 
-		if (text_x >= term_x_len || '\n' == text->str[i]) {
-			text_x = 0;
-			text_y += 1;
+		if (content_x >= term_x_len || '\n' == content->str[i]) {
+			content_x = 0;
+			content_y += 1;
 		} else {
-			text_x += 1;
+			content_x += 1;
 		}
 
-		if (text_y >= *scroll)
+		if (content_y >= *scroll)
 			break;
 	}
 
 	if (*scroll > 0)
 		i += 1;
 
-	/* print text */
+	/* print content */
 	set_fg(CONTENT_FG);
 	set_bg(CONTENT_BG);
 	
-	for (i = i; i < text->len; i += 1) {
-		if (text_x >= term_x_len)
+	for (i = i; i < content->len; i += 1) {
+		if (content_x >= term_x_len)
 			i -= 1;
 
-		if (text_x >= term_x_len || '\n' == text->str[i]) {
+		if (content_x >= term_x_len || '\n' == content->str[i]) {
 			fputc('\n', stdout);
-			text_x = 0;
-			text_y += 1;
+			content_x = 0;
+			content_y += 1;
 			*stdout_y += 1;
 		} else {
-			fputc(text->str[i], stdout);
-			text_x += 1;
+			fputc(content->str[i], stdout);
+			content_x += 1;
 		}
 
 		if (*stdout_y >= term_y_len)
@@ -117,10 +118,10 @@ draw_text(long unsigned       *stdout_y,
 void
 handle_cmd(const char          *cmdin,
 	   int                 *active,
+	   const long unsigned  content_lines,
 	   struct String       *feedback,
 	   unsigned long       *feedback_lines,
-	   long unsigned       *scroll,
-	   const long unsigned  text_lines)
+	   long unsigned       *scroll)
 {
 	long long n;
 
@@ -134,8 +135,8 @@ handle_cmd(const char          *cmdin,
 	n = atoll(cmdin);
 
 	if (n > 0) {
-		if ((long unsigned) n >= text_lines) {
-			*scroll = text_lines - 1;
+		if ((long unsigned) n >= content_lines) {
+			*scroll = content_lines - 1;
 		} else {
 			*scroll = n - 1;
 		}
@@ -191,27 +192,27 @@ void
 handle_key(const char         key,
            int               *active,
            char              *cmdin,
+	   long unsigned     *content_lines,
            struct String     *feedback,
 	   unsigned long     *feedback_lines,
 	   enum InputMode    *imode,
-           long unsigned     *scroll,
-	   long unsigned     *text_lines)
+           long unsigned     *scroll)
 {
 	if (IM_CMD == *imode) {		   
 		handle_key_cmdline(key,
 				   cmdin,
 				   active,
+				   *content_lines,
 				   feedback,
 				   feedback_lines,
 				   imode,
-				   scroll,
-				   *text_lines);
+				   scroll);
 		return;
 	}
 	
 	switch (key) {
 	case KEY_DOWN:
-		if (*scroll < (*text_lines - 1))
+		if (*scroll < (*content_lines - 1))
 			*scroll += 1;
 		break;
 
@@ -237,20 +238,20 @@ void
 handle_key_cmdline(const char           key,
 		   char                *cmdin,
 		   int                 *active,
+		   const long unsigned  content_lines,
 		   struct String       *feedback,
 		   unsigned long       *feedback_lines,
 		   enum InputMode      *imode,
-		   long unsigned       *scroll,
-		   const long unsigned  text_lines)
+		   long unsigned       *scroll)
 {
 	switch (key) {
 		case '\n':
 			handle_cmd(cmdin,
 			           active,
+				   content_lines,
 				   feedback,
 				   feedback_lines,
-				   scroll,
-				   text_lines);
+				   scroll);
 			/* fall through */
 		case SIGINT:
 		case SIGTSTP:
@@ -278,7 +279,7 @@ FILE* open_target_file(const int argc, const char **argv)
 	return fopen(argv[i], "r");
 }
 
-void read_target_file(FILE *file, struct String *text)
+void read_target_file(FILE *file, struct String *content)
 {
 	char          buf[STRING_BLOCK_SIZE];
 	long unsigned buf_len;
@@ -289,7 +290,7 @@ void read_target_file(FILE *file, struct String *text)
 		if (buf_len < STRING_BLOCK_SIZE)
 			read = 0;
 
-		String_append(text, buf, buf_len);
+		String_append(content, buf, buf_len);
 	}
 }
 
@@ -298,6 +299,8 @@ int main(const int argc, const char **argv)
 	int                 active = 1;
 	char                c;
 	char                cmdin[CMD_IN_LEN] = "\0";
+	struct String       content = String_new();
+	long unsigned       content_lines = 0;
 	struct String       feedback = String_new();
 	long unsigned       feedback_lines = 0;
 	const long unsigned header_size = strlen(HEADER);
@@ -305,9 +308,7 @@ int main(const int argc, const char **argv)
 	long unsigned       scroll = 0;
 	long unsigned       stdout_y;
 	FILE               *target_file;
-	struct String       text = String_new();
-	long unsigned       text_lines = 0;
-	struct String       title;
+	struct String       title = String_new();
 
 	if (handle_cmdline_opts(argc, argv, &title) != 0)
 		return 0;
@@ -318,39 +319,42 @@ int main(const int argc, const char **argv)
 		return 1;
 	}
 
-	read_target_file(target_file, &text);
+	read_target_file(target_file, &content);
 	fclose(target_file);
 	
 	term_get_size(&term_x_len, &term_y_len);
 	term_set_raw();
 	
-	text_lines = strn_lines(text.str, text.size, term_y_len);
+	content_lines = strn_lines(content.str, content.size, term_x_len);
 	
-	while (active) {		
+	while (active) {
+		printf(SEQ_CLEAR);
+		stdout_y = 0;
+		
 		draw_upper(HEADER,
 			   header_size,
 			   &stdout_y,
 			   title.str,
 			   title.len,
 			   term_y_len);
-		draw_text(&stdout_y, &text, &scroll);
+		draw_content(&content, &scroll, &stdout_y);
 		draw_lower(cmdin, &feedback, feedback_lines, imode, term_y_len);
 	
 		if (read(STDIN_FILENO, &c, 1) > 0) {
 			handle_key(c,
 				   &active,
 				   cmdin,
+				   &content_lines,
 				   &feedback,
 				   &feedback_lines,
 				   &imode,
-				   &scroll,
-				   &text_lines);
+				   &scroll);
 		}
 	}
 
 #ifndef STRING_NOT_ON_HEAP
 	String_free(&feedback);
-	String_free(&text);
+	String_free(&content);
 	String_free(&title);
 #endif
 	
