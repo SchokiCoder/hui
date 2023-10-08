@@ -368,7 +368,7 @@ int main(const int argc, const char **argv)
 		stdout_y = 0;
 
 		if (feedback_lines > 1)
-			system(/*PAGER + " < " + */ feedback.str); // TODO
+			call_pager(&feedback, &feedback_lines, term_y_len);
 
 		draw_upper(HEADER,
 			   header_size,

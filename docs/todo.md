@@ -87,10 +87,17 @@ prebake_license.h:
 + strn_lines may have redundant null-byte checks (3rd)
   (strn_lines: remove redundant null-byte check)
 + str_add_char -> strn_add_char (currently no size check! (mind null-byte))
-  (add size check to str_add_char)
+  (str_add_char: add size check)
 
-- cfg_example/config.h: make the "pager LICENSE" entry actually call the pager
-  directly
++ hui: add pager call for feedback
++ courier: fix string memory leaks if file could not be opened
+- courier: input via pipe not accepted
+- Long_menu/pager SOURCE: File name too long
+- Vi still not working
+
+- courier: add pager call for feedback
+
+- String_append: append strings longer than own raw size value, causes weirdnes?
 
 - when `handle_sh()`, hand over stdout and wait for child...
   don't we do that already?

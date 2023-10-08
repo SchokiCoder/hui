@@ -15,6 +15,9 @@
 
 #warning Config not touched, remove this line and set your stuff up, champ!
 
+/* used applications */
+#define PAGER "courier"
+
 /* array sizes */
 #define CMD_IN_SIZE 64
 

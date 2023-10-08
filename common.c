@@ -15,6 +15,28 @@
 #include "sequences.h"
 
 void
+call_pager(struct String       *feedback,
+	   long unsigned       *feedback_lines,
+	   const long unsigned  term_y_len)
+{
+	struct String sh_pager = String_new();
+	
+	String_copy(&sh_pager, "printf \"", strlen("printf \""));
+	String_append(&sh_pager, feedback->str, feedback->len);
+	String_append(&sh_pager, "\" | ", strlen("\" | "));
+	String_append(&sh_pager, PAGER, strlen(PAGER));
+	term_restore();
+	
+	system(sh_pager.str);
+	
+	term_set_raw();
+	set_feedback(feedback, feedback_lines, "\0", term_y_len);
+#ifndef	STRING_NOT_ON_HEAP
+	String_free(&sh_pager);
+#endif
+}
+
+void
 draw_lower(const char           *cmdin,
 	   const struct String  *feedback,
 	   const long unsigned   feedback_lines,

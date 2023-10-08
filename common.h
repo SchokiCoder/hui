@@ -25,6 +25,11 @@ enum InputMode {
 static struct termios previous_terminal_settings;
 
 void
+call_pager(struct String       *feedback,
+	   long unsigned       *feedback_lines,
+	   const long unsigned  term_y_len);
+
+void
 draw_lower(const char           *cmdin,
 	   const struct String  *feedback,
 	   const long unsigned   feedback_lines,

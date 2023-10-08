@@ -8,6 +8,9 @@
 
 #include "../color.h"
 
+/* used applications */
+#define PAGER "./d_courier"
+
 /* array sizes */
 #define CMD_IN_SIZE 64
 

@@ -316,7 +316,7 @@ int main(const int argc, const char **argv)
 	target_file = open_target_file(argc, argv);
 	if (NULL == target_file) {
 		fprintf(stderr, "File could not be opened.");
-		return 1;
+		goto cleanup;
 	}
 
 	read_target_file(target_file, &content);
@@ -352,6 +352,7 @@ int main(const int argc, const char **argv)
 		}
 	}
 
+cleanup:
 #ifndef STRING_NOT_ON_HEAP
 	String_free(&feedback);
 	String_free(&content);
