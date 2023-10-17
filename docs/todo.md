@@ -95,6 +95,16 @@ prebake_license.h:
 - Long_menu/pager SOURCE: File name too long
 - Vi still not working
 
+- rename hui -> hsh
+  Since the redefinition of the 1.3.0 goals, it is kind of comparable to a shell
+
+- children
+	- how does dash handle child processes
+	  <https://git.kernel.org/pub/scm/utils/dash/dash.git/>
+	  How do we stop and then after the execution
+	  get the stdout, stderr and ret code?
+	- remove pager-call via `system()` function
+
 - courier: add pager call for feedback
 
 - String_append: append strings longer than own raw size value, causes weirdnes?
