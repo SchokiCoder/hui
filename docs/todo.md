@@ -91,6 +91,8 @@ prebake_license.h:
 
 + hui: add pager call for feedback
 + courier: fix string memory leaks if file could not be opened
++ term_restore: fix use of uninitialized term_settings when term_set_raw has not
+  been called before
 - courier: input via pipe not accepted
 - Long_menu/pager SOURCE: File name too long
 - Vi still not working
@@ -122,7 +124,7 @@ prebake_license.h:
 - make sure install works
   (mind what README.md says about courier being optional)
 - compat test
-- set version 
+- set version to "1.3.0" or "9"
 
 
 --------------------------------------------------------------------------------

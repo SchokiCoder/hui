@@ -96,10 +96,14 @@ void term_set_raw()
 	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	printf(SEQ_CRSR_HIDE);
+	is_term_raw = 1;
 }
 
 void term_restore()
 {
+	if (0 == is_term_raw)
+		return;
+
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &previous_terminal_settings);
 	printf(SEQ_CRSR_SHOW);
 	printf(SEQ_FG_DEFAULT);

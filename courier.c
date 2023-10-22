@@ -315,7 +315,7 @@ int main(const int argc, const char **argv)
 	
 	target_file = open_target_file(argc, argv);
 	if (NULL == target_file) {
-		fprintf(stderr, "File could not be opened.");
+		fprintf(stderr, "File could not be opened.\n");
 		goto cleanup;
 	}
 

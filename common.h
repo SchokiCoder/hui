@@ -22,6 +22,7 @@ enum InputMode {
 	IM_CMD =    1
 };
 
+static int            is_term_raw = 0;
 static struct termios previous_terminal_settings;
 
 void
