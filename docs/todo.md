@@ -93,7 +93,14 @@ prebake_license.h:
 + courier: fix string memory leaks if file could not be opened
 + term_restore: fix use of uninitialized term_settings when term_set_raw has not
   been called before
-- courier: input via pipe not accepted
+  (This has been glitching out bash after courier)
++ outsource file reading into struct String from courier and hui to hstring
++ courier: get input from shell pipe (read stdin at start)
+  (glitches courier: rapid redraw, does not react to keys anymore)
+- courier stdin read
+  (not because of stdin's content)
+	- fix rapid redraw
+	- fix keys being broken (SIGs still work)
 - Long_menu/pager SOURCE: File name too long
 - Vi still not working
 

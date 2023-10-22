@@ -54,6 +54,22 @@ String_append(struct String       *string,
 	string->str[string->len] = '\0';
 }
 
+void String_read_file(struct String *string, FILE *f)
+{
+	char          buf[STRING_BLOCK_SIZE];
+	long unsigned buf_len;
+	int           read = 1;
+	
+	while (read) {
+		buf_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, f);
+		if (buf_len < STRING_BLOCK_SIZE) {
+			read = 0;
+		}
+
+		String_append(string, buf, buf_len);
+	}
+}
+
 void String_rtrim(struct String *string)
 {
 	string->len = strn_rtrim(string->str, string->len);

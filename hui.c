@@ -317,9 +317,6 @@ handle_sh(const char    *sh,
 	  unsigned long *feedback_lines)
 {
 	FILE *p;
-	char buf[STRING_BLOCK_SIZE];
-	long unsigned buf_len;
-	int read = 1;
 
 	String_bleach(feedback);
 
@@ -332,13 +329,7 @@ handle_sh(const char    *sh,
 		return;
 	}
 
-	while (read) {
-		buf_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, p);
-		if (buf_len < STRING_BLOCK_SIZE)
-			read = 0;
-
-		String_append(feedback, buf, buf_len);
-	}
+	String_read_file(feedback, p);
 	pclose(p);
 }
 

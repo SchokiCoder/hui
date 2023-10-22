@@ -37,6 +37,8 @@ String_append(struct String       *string,
               const char          *src,
               const long unsigned  src_len);
 
+void String_read_file(struct String *string, FILE *f);
+
 void String_rtrim(struct String *string);
 
 void String_grow(struct String *string);

@@ -268,30 +268,22 @@ handle_key_cmdline(const char           key,
 FILE* open_target_file(const int argc, const char **argv)
 {
 	int i;
+	int explicit = 0;
 	
 	for (i = 1; i < argc; i++) {
-		if (argv[i][0] != '-')
+		if (argv[i][0] != '-') {
+			explicit = 1;
 			break;
-		else if (argv[i][1] == 't')
+		} else if (argv[i][1] == 't') {
 			i++;
+		}
 	}
 	
-	return fopen(argv[i], "r");
-}
-
-void read_target_file(FILE *file, struct String *content)
-{
-	char          buf[STRING_BLOCK_SIZE];
-	long unsigned buf_len;
-	int           read = 1;
-	
-	while (read) {
-		buf_len = fread(buf, sizeof(char), STRING_BLOCK_SIZE, file);
-		if (buf_len < STRING_BLOCK_SIZE)
-			read = 0;
-
-		String_append(content, buf, buf_len);
+	if (explicit) {
+		return fopen(argv[i], "r");
 	}
+	
+	return stdin;
 }
 
 int main(const int argc, const char **argv)
@@ -319,9 +311,9 @@ int main(const int argc, const char **argv)
 		goto cleanup;
 	}
 
-	read_target_file(target_file, &content);
+	String_read_file(&content, target_file);
 	fclose(target_file);
-	
+
 	term_get_size(&term_x_len, &term_y_len);
 	term_set_raw();
 	
@@ -339,7 +331,7 @@ int main(const int argc, const char **argv)
 			   term_y_len);
 		draw_content(&content, &scroll, &stdout_y);
 		draw_lower(cmdin, &feedback, feedback_lines, imode, term_y_len);
-	
+
 		if (read(STDIN_FILENO, &c, 1) > 0) {
 			handle_key(c,
 				   &active,
