@@ -312,7 +312,11 @@ int main(const int argc, const char **argv)
 	}
 
 	String_read_file(&content, target_file);
-	fclose(target_file);
+
+	if (stdin == target_file)
+		freopen("/dev/tty", "rw", stdin);
+	else
+		fclose(target_file);
 
 	term_get_size(&term_x_len, &term_y_len);
 	term_set_raw();

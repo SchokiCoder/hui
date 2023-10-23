@@ -97,10 +97,8 @@ prebake_license.h:
 + outsource file reading into struct String from courier and hui to hstring
 + courier: get input from shell pipe (read stdin at start)
   (glitches courier: rapid redraw, does not react to keys anymore)
-- courier stdin read
-  (not because of stdin's content)
-	- fix rapid redraw
-	- fix keys being broken (SIGs still work)
++ courier stdin read bug: rapid redraw, keys being broken (SIGs still work)
+  (see <https://github.com/SchokiCoder/hui/blob/main/docs/stdin_bug.md>)
 - Long_menu/pager SOURCE: File name too long
 - Vi still not working
 
