@@ -59,6 +59,7 @@ void test_stringfuncs()
 void test_stringstruct()
 {
 	char          block_fill[STRING_BLOCK_SIZE + 1];
+	char          oversize[STRING_BLOCK_SIZE * 2];
 	long unsigned i;
 	struct String s = String_new();
 	
@@ -92,9 +93,9 @@ void test_stringstruct()
 	assert(0 == s.len);
 	assert('\0' == s.str[s.len]);
 
-	for (i = 0; i <= STRING_BLOCK_SIZE; i++) {
+	for (i = 0; i <= STRING_BLOCK_SIZE; i++)
 		block_fill[i] = BLOCK_FILL_LETTER;
-	}
+
 	block_fill[STRING_BLOCK_SIZE] = '\0';
 
 #ifdef STRING_NOT_ON_HEAP
@@ -110,6 +111,22 @@ void test_stringstruct()
 	assert((STRING_BLOCK_SIZE * 2) == s.size);
 	assert(STRING_BLOCK_SIZE == s.len);
 	assert('\0' == s.str[s.len]);
+
+	String_free(&s);
+	assert(0 == s.size);
+	assert(0 == s.len);
+	assert(NULL == s.str);
+
+	for (i = 0; i < sizeof(oversize) - 1; i++)
+		oversize[i] = BLOCK_FILL_LETTER;
+	oversize[sizeof(oversize) - 1] = '\0';
+
+	s = String_new();	
+	String_append(&s, oversize, sizeof(oversize));
+	assert(STRING_BLOCK_SIZE * 3 == s.size);
+	assert(sizeof(oversize) == s.len);
+	assert(BLOCK_FILL_LETTER == s.str[sizeof(oversize) - 2]);
+	assert('\0' == s.str[sizeof(oversize) - 1]);
 
 	String_free(&s);
 	assert(0 == s.size);

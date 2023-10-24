@@ -99,11 +99,15 @@ prebake_license.h:
   (glitches courier: rapid redraw, does not react to keys anymore)
 + courier stdin read bug: rapid redraw, keys being broken (SIGs still work)
   (see <https://github.com/SchokiCoder/hui/blob/main/docs/stdin_bug.md>)
-- Long_menu/pager SOURCE: File name too long
-- Vi still not working
++ Long_menu/pager SOURCE: File name too long
+  (went away on it's own)
 
-- rename hui -> hsh
++ rename hui -> hsh
   Since the redefinition of the 1.3.0 goals, it is kind of comparable to a shell
+  Nah, hui is quicker to type on most keyboards.
+
++ String_append: append strings longer than own raw size value, causes weirdnes?
+  Nope :)
 
 - children
 	- how does dash handle child processes
@@ -112,9 +116,15 @@ prebake_license.h:
 	  get the stdout, stderr and ret code?
 	- remove pager-call via `system()` function
 
-- courier: add pager call for feedback
+- should be fixed by "children" task
+	- Vi still not working
+	  (Output is not a terminal)
+	- Long menu/pager SOURCE: called pager seems to only have a limited
+	  amount of lines available for stdout, after that it loops to beginning
+	  of file
+	  (d_courier, less)
 
-- String_append: append strings longer than own raw size value, causes weirdnes?
+- courier: add pager call for feedback
 
 - when `handle_sh()`, hand over stdout and wait for child...
   don't we do that already?
