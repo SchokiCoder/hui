@@ -13,10 +13,11 @@ struct Menu;
 struct String;
 
 enum EntryType {
-	ET_NONE =    0,
-	ET_SUBMENU = 1,
-	ET_SHELL =   2,
-	ET_C =       3
+	ET_NONE =       0,
+	ET_SUBMENU =    1, /* leads to other menu */
+	ET_SHELL =      2, /* immediate shell command */
+	ET_SHELL_LONG = 3, /* long time shell command with it's own mainloop */
+	ET_C =          4  /* c function pointer */
 };
 
 struct Entry {

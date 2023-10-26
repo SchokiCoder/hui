@@ -109,12 +109,9 @@ prebake_license.h:
 + String_append: append strings longer than own raw size value, causes weirdnes?
   Nope :)
 
-- children
-	- how does dash handle child processes
-	  <https://git.kernel.org/pub/scm/utils/dash/dash.git/>
-	  How do we stop and then after the execution
-	  get the stdout, stderr and ret code?
-	- remove pager-call via `system()` function
++ children (double down on the system() approach :P)
+  add support for shell commands with their own mainloop
+  add config entry type for shell commands that have their own mainloop
 
 - should be fixed by "children" task
 	- Vi still not working

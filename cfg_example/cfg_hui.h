@@ -92,9 +92,9 @@ static const struct Menu MENU_LONG = {
 			.shell = "sdasdasdasdasd"
 		},
 		[4] = {
-			.caption = "Vi (not supported)",
-			.type = ET_SHELL,
-			.shell = "vi"
+			.caption = "Vi",
+			.type = ET_SHELL_LONG,
+			.shell = "vi ~/temp"
 		},
 		[5] = {
 			.caption = "6",

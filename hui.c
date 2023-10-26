@@ -69,7 +69,8 @@ handle_key_cmdline(const char           key,
 void
 handle_sh(const char    *sh,
           struct String *feedback,
-	  unsigned long *feedback_lines);
+	  unsigned long *feedback_lines,
+	  const int      child_has_mainloop);
 
 long unsigned count_menu_entries(const struct Menu *menu)
 {
@@ -231,6 +232,8 @@ handle_key(const char          key,
            struct String      *feedback,
 	   long unsigned      *feedback_lines)
 {
+	int sh_long = 0;
+	
 	if (IM_CMD == *imode) {
 		handle_key_cmdline(key,
 				   cmdin,
@@ -278,15 +281,26 @@ handle_key(const char          key,
 		break;
 
 	case KEY_EXEC:
-		if (ET_SHELL == (*cur_menu)->entries[*cursor].type) {
+		switch ((*cur_menu)->entries[*cursor].type) {
+		case ET_SHELL_LONG:
+			sh_long = 1;
+			/* fallthrough */
+		case ET_SHELL:
 			handle_sh((*cur_menu)->entries[*cursor].shell,
 			          feedback,
-				  feedback_lines);
-		} else if (ET_C == (*cur_menu)->entries[*cursor].type) {
+				  feedback_lines,
+				  sh_long);
+			break;
+		
+		case ET_C:
 			handle_c((*cur_menu)->entries[*cursor].c, feedback);
-		} else {
+			break;
+		
+		default:
 			return;
+			break;
 		}
+		
 		String_rtrim(feedback);
 		*feedback_lines = strn_lines(feedback->str,
 					     feedback->size,
@@ -314,23 +328,31 @@ handle_key(const char          key,
 void
 handle_sh(const char    *sh,
           struct String *feedback,
-	  unsigned long *feedback_lines)
+	  unsigned long *feedback_lines,
+	  const int      child_has_mainloop)
 {
 	FILE *p;
 
-	String_bleach(feedback);
+	if (child_has_mainloop) {
+		printf(SEQ_CLEAR);
+		term_restore();
+		system(sh);
+		term_set_raw();
+	} else {
+		String_bleach(feedback);
 
-	p = popen(sh, "r");
-	if (NULL == p) {
-		set_feedback(feedback,
-		             feedback_lines,
-			     "ERROR shell could not execute",
-			     term_y_len);
-		return;
+		p = popen(sh, "r");
+		if (NULL == p) {
+			set_feedback(feedback,
+				     feedback_lines,
+				     "ERROR shell could not execute",
+				     term_y_len);
+			return;
+		}
+
+		String_read_file(feedback, p);
+		pclose(p);
 	}
-
-	String_read_file(feedback, p);
-	pclose(p);
 }
 
 int main(const int argc, const char **argv)
