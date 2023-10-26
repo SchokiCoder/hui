@@ -123,16 +123,13 @@ prebake_license.h:
 	+ Long menu/pager SOURCE
 	  using the new ET_SHELL_LONG, it works
 
-- hui: exiting courier doesn't clear screen
++ hui: fix clear screen after pager ran
 - courier: header is buggy
   when `./d_courier hui.c`
   but NOT when `./d_courier -t "any title" hui.c`
 
 - courier: add pager call for feedback
 
-- when `handle_sh()`, hand over stdout and wait for child...
-  don't we do that already?
-  test with an editor called from within hui
 + add "-fsanitize=address,undefined" to debug `cc` call
 
 - manpages

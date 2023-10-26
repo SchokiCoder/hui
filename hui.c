@@ -377,11 +377,12 @@ int main(const int argc, const char **argv)
 	term_set_raw();
 
 	while (active) {
-		printf(SEQ_CLEAR);
 		stdout_y = 0;
 
 		if (feedback_lines > 1)
 			call_pager(&feedback, &feedback_lines, term_y_len);
+
+		printf(SEQ_CLEAR);
 
 		draw_upper(HEADER,
 			   header_size,
