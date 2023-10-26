@@ -140,7 +140,11 @@ prebake_license.h:
 - make sure install works
   (mind what README.md says about courier being optional)
 - compat test
-- set version to "1.3.0" or "9"
+- set version to "1.4"
+  The way versioning works has changed, look at
+  [versioning.md](https://github.com/SchokiCoder/hui/blob/main/docs/versioning.md)
+
+
 
 
 --------------------------------------------------------------------------------
