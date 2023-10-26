@@ -82,4 +82,7 @@ static const struct Color CMDLINE_BG = {
 /* texts */
 static const char *CMD_PREPEND =   ":";
 
+/* use this only when the pager is set to courier, otherwise comment out */
+#define PAGER_TITLE "HUI - Feedback"
+
 #endif /* _CFG_COMMON_H */

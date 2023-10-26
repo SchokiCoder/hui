@@ -25,6 +25,13 @@ call_pager(struct String       *feedback,
 	String_append(&sh_pager, feedback->str, feedback->len);
 	String_append(&sh_pager, "\" | ", strlen("\" | "));
 	String_append(&sh_pager, PAGER, strlen(PAGER));
+	
+#ifdef PAGER_TITLE
+	String_append(&sh_pager, " -t \"", strlen(" -t \""));
+	String_append(&sh_pager, PAGER_TITLE, strlen(PAGER_TITLE));
+	String_append(&sh_pager, "\"", strlen("\""));
+#endif
+	
 	term_restore();
 	
 	system(sh_pager.str);

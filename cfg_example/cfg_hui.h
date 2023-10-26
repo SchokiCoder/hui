@@ -73,8 +73,8 @@ static const struct Menu MENU_LONG = {
 	.entries = {
 		[0] = {
 			.caption = "pager SOURCE",
-			.type = ET_SHELL,
-			.shell = PAGER " hui.c"
+			.type = ET_SHELL_LONG,
+			.shell = PAGER " -t \"CALLED FROM HUI CONFIG\" hui.c"
 		},
 		[1] = {
 			.caption = "cat LICENSE",

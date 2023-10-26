@@ -110,16 +110,23 @@ prebake_license.h:
   Nope :)
 
 + children (double down on the system() approach :P)
+  Maybe i can make it right later, so that an explicit config flag is not needed
+  but for now this works.
   add support for shell commands with their own mainloop
   add config entry type for shell commands that have their own mainloop
 
-- should be fixed by "children" task
-	- Vi still not working
++ add config option for pager title
+
++ should be fixed by "children" task
+	+ Vi still not working
 	  (Output is not a terminal)
-	- Long menu/pager SOURCE: called pager seems to only have a limited
-	  amount of lines available for stdout, after that it loops to beginning
-	  of file
-	  (d_courier, less)
+	+ Long menu/pager SOURCE
+	  using the new ET_SHELL_LONG, it works
+
+- hui: exiting courier doesn't clear screen
+- courier: header is buggy
+  when `./d_courier hui.c`
+  but NOT when `./d_courier -t "any title" hui.c`
 
 - courier: add pager call for feedback
 
