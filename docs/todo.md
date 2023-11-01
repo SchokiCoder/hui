@@ -1,11 +1,3 @@
-# missing primary goals
-
-- get stderr
-  <https://stackoverflow.com/questions/30259086/how-to-use-popen>
-  (fork and exec-family didn't help, system() only gives return code)
-- print feedback accordingly
-
-
 # goodies
 
 - change license being compiled into binary
@@ -32,8 +24,30 @@ prebake_license.h:
 
 - add config interface for custom commands ?
 
+# idea for v1.5
 
-# 1.3.0 The big string update
+Add prepend and postpend for all entry categories.  
+Default values:  
+```c
+#define ET_SUBMENU_PREPEND     "["
+#define ET_SUBMENU_POSTPEND    "]"
+#define ET_SHELL_PREPEND       ""
+#define ET_SHELL_POSTPEND      ""
+#define ET_SHELL_LONG_PREPEND  "<"
+#define ET_SHELL_LONG_POSTPEND ">"
+#define ET_C_PREPEND           "!"
+#define ET_C_POSTPEND          ""
+```
+
+Default examples:  
+```c
+> [submenu]
+> shell
+> <shell_long>
+> !c
+```
+
+# 1.4 The big string update
 
 + decouple reader "courier" from main hui (compiles)
 	+ hui
@@ -124,11 +138,21 @@ prebake_license.h:
 	  using the new ET_SHELL_LONG, it works
 
 + hui: fix clear screen after pager ran
-- courier: header is buggy
++ courier: header is buggy
   when `./d_courier hui.c`
   but NOT when `./d_courier -t "any title" hui.c`
+  fix draw_upper not being able to handle empty strings
 
-- courier: add pager call for feedback
++ courier: add pager call for multi-line feedback
+- move config vars `PAGER_TITLE` and `PAGER`,
+  from cfg_common.h to cfg_hui.h and cfg_courier.h.
+  Otherwise getting big feedback while viewing feedback may get confusing.
+  defaults:
+```c
+#define PAGER_TITLE "HUI - Feedback"
+#define PAGER_TITLE "Courier - Feedback"
+```
+- put those two vars in new cfg category `/* pager settings */`
 
 + add "-fsanitize=address,undefined" to debug `cc` call
 
