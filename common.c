@@ -67,11 +67,16 @@ void draw_upper(const char          *header,
 		const long unsigned  term_x_len)
 {
 	set_cursor(1, 1);
-	hprintf(HEADER_FG, HEADER_BG, header);
-	hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
-
-	*stdout_y += strn_lines(header, header_size, term_x_len);
-	*stdout_y += strn_lines(title, title_size, term_x_len);
+	
+	if (strlen(header) != 0) {
+		hprintf(HEADER_FG, HEADER_BG, header);
+		*stdout_y += strn_lines(header, header_size, term_x_len);
+	}
+	
+	if (strlen(title) != 0) {
+		hprintf(TITLE_FG, TITLE_BG, "%s\n", title);
+		*stdout_y += strn_lines(title, title_size, term_x_len);
+	}
 }
 
 void
