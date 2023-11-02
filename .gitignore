@@ -5,3 +5,4 @@ d_courier
 *.o
 t_hstring
 prebake_license.h
+hui.1

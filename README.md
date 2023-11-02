@@ -16,26 +16,28 @@ To install follow these steps:
 - run `git clone https://github.com/SchokiCoder/hui`
 - run `cd hui`
 - edit [cfg/config.h][config.h]
-- optionally: edit [cfg/scripts.h][scripts.h]
-- on OpenBSD: edit [config.mk][config.mk]
-- run `make install` but mind your privileges
+- for experts: edit [cfg/scripts.h][scripts.h] or [config.mk][config.mk]
+- on OpenBSD: edit [config.sh][config.sh]
+- run `chmod +x install.sh config.sh; sudo ./install.sh`,
+  optionally remove `sudo`
 
 # HUI and Courier are bffs by default
 
 The hui comes with it's own pager "courier".  
 It is used by hui for textual feedback by default.  
-Edit the variable "PAGER" in [cfg/config.h][config.h] to use something else instead.  
-To prevent `make install` from compiling and installing courier, remove the
-"courier" dependency from the "install" branch in the [Makefile][Makefile]:  
+Edit the variable "PAGER" in [cfg/config.h][config.h] to use something else
+instead.  
+To prevent `./install.sh` from compiling and installing courier, remove
+"courier" from the BINARIES variable in [install.sh][install.sh].  
 
-```Makefile
-install: hui courier
+```Shell
+BINARIES="hui courier"
 ```
 
 becomes  
 
-```Makefile
-install: hui
+```Shell
+BINARIES="hui"
 ```
 
 # Contributing
@@ -53,7 +55,9 @@ If you found something, make a fork, make your changes and open a pull request.
 
 [config.h]: <https://github.com/SchokiCoder/hui/blob/main/cfg/config.h>
 [config.mk]: <https://github.com/SchokiCoder/hui/blob/main/config.mk>
+[config.sh]: <https://github.com/SchokiCoder/hui/blob/main/config.sh>
 [goals.md]: <https://github.com/SchokiCoder/hui/blob/main/docs/goals.md>
+[install.sh]: <https://github.com/SchokiCoder/hui/blob/main/install.sh>
 [Makefile]: <https://github.com/SchokiCoder/hui/blob/main/Makefile>
 [scripts.h]: <https://github.com/SchokiCoder/hui/blob/main/cfg/scripts.h>
 [todo.md]: <https://github.com/SchokiCoder/hui/blob/main/docs/todo.md>

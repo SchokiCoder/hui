@@ -31,15 +31,5 @@ t_hstring: t_hstring.c hstring.c color.c
 clean:
 	rm -f hui d_hui courier d_courier t_hstring
 
-install: hui courier
-	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	cp -f hui $(DESTDIR)$(PREFIX)/bin
-	chmod 755 $(DESTDIR)$(PREFIX)/bin/hui
-	
-	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
-	sed "s/VERSION/$(VERSION)/g" < docs/hui.1 > $(DESTDIR)$(MANPREFIX)/man1/hui.1
-	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/hui.1
-
-uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/hui\
-		$(DESTDIR)$(MANPREFIX)/man1/hui.1
+hui.1:
+	sed "s/VERSION/$(VERSION)/g" < docs/hui.1 > hui.1

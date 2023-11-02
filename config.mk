@@ -12,10 +12,3 @@ COPTS = -std=c99 -pedantic
 # Dynamic memory allocation for strings is disabled and so they can not change
 # in their size with this option.
 # With this, strings are limited to their initial size.
-
-# paths
-PREFIX = /usr/local
-MANPREFIX = ${PREFIX}/share/man
-
-# OpenBSD (uncomment)
-#MANPREFIX = ${PREFIX}/man

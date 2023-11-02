@@ -47,6 +47,8 @@ Default examples:
 > !c
 ```
 
+With that remove generic entry prepend.  
+
 # 1.4 The big string update
 
 + decouple reader "courier" from main hui (compiles)
@@ -161,9 +163,11 @@ Default examples:
 	- update hui's
 	- "see also" section mention courier/hui
 
-- Makefile: install  
++ Makefile: install  
   Does not install courier at all.  
-  Maybe use a `install.sh` instead of a make target.  
+  rework install to utilize shell more and to fix the new dual binary install
+- config.sh: remove need for manual alteration in case of OpenBSD
+  (also update README.md)
 - make sure install works
   (mind what README.md says about courier being optional)
 - compat test
