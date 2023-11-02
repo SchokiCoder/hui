@@ -161,6 +161,9 @@ Default examples:
 	- update hui's
 	- "see also" section mention courier/hui
 
+- Makefile: install  
+  Does not install courier at all.  
+  Maybe use a `install.sh` instead of a make target.  
 - make sure install works
   (mind what README.md says about courier being optional)
 - compat test
