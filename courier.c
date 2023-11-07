@@ -175,6 +175,11 @@ handle_cmdline_opts(const int argc, const char **argv, struct String *title)
 			break;
 		
 		case 't':
+			if (argc <= 2) {
+				fprintf(stderr, "Argument missing\n");
+				return 1;
+			}
+			
 			String_copy(title, argv[2], strlen(argv[2]));
 			return 0;
 			break;
@@ -302,7 +307,7 @@ int main(const int argc, const char **argv)
 	struct String       title = String_new();
 
 	if (handle_cmdline_opts(argc, argv, &title) != 0)
-		return 0;
+		goto cleanup;
 	
 	target_file = open_target_file(argc, argv);
 	if (NULL == target_file) {

@@ -163,7 +163,8 @@ With that remove generic entry prepend.
 	+ update hui's
 	+ "see also" section mention courier/hui
 
-- segfault when `courier -t`
++ courier: fix segfault when argument for -t is missing
++ courier: fix memory leaks when abort after argv parse
 
 + Makefile: install  
   Does not install courier at all.  
