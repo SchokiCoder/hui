@@ -12,8 +12,7 @@
 #include <string.h>
 
 #include "common.h"
-#include "cfg_common.h"
-#include "cfg_courier.h"
+#include "config.h"
 #include "hstring.h"
 #include "license_str.h"
 #include "sequences.h"

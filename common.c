@@ -10,7 +10,7 @@
 #include <sys/ioctl.h>
 
 #include "common.h"
-#include "cfg_common.h"
+#include "config.h"
 #include "hstring.h"
 #include "sequences.h"
 

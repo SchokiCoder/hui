@@ -146,7 +146,7 @@ With that remove generic entry prepend.
   fix draw_upper not being able to handle empty strings
 
 + courier: add pager call for multi-line feedback
-- move config vars `PAGER_TITLE` and `PAGER`,
++ move config vars `PAGER_TITLE` and `PAGER`,
   from cfg_common.h to cfg_hui.h and cfg_courier.h.
   Otherwise getting big feedback while viewing feedback may get confusing.
   defaults:
@@ -154,7 +154,7 @@ With that remove generic entry prepend.
 #define PAGER_TITLE "HUI - Feedback"
 #define PAGER_TITLE "Courier - Feedback"
 ```
-- put those two vars in new cfg category `/* pager settings */`
+  put those two vars in new cfg category `/* pager settings */`
 
 + add "-fsanitize=address,undefined" to debug `cc` call
 
