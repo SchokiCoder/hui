@@ -8,4 +8,5 @@
 
 rm "$DESTDIR$PREFIX/bin/hui" \
 	"$DESTDIR$PREFIX/bin/courier" \
-	"$DESTDIR$MANPREFIX/man1/hui.1"
+	"$DESTDIR$MANPREFIX/man1/hui.1" \
+	"$DESTDIR$MANPREFIX/man1/courier.1"

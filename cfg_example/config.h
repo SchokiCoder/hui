@@ -17,7 +17,6 @@
 #define KEY_UP    'k'
 #define KEY_DOWN  'j'
 #define KEY_LEFT  'h'
-#define KEY_RIGHT 'l'
 #define KEY_QUIT  'q'
 #define KEY_CMD   ':'
 
@@ -123,6 +122,7 @@ static const struct Color CONTENT_BG = {
 
 /* key binds */
 #define KEY_EXEC  'L'
+#define KEY_RIGHT 'l'
 
 /* colors */
 static const struct Color ENTRY_FG = {

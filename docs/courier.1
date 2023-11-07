@@ -1,25 +1,23 @@
-.TH "HUI" "1" "04 November 2023" "hui VERSION" ""
+.TH "Courier" "1" "07 November 2023" "Courier VERSION" ""
 .hy
 
 .SH NAME
 .PP
-hui \- House User Interface
+courier
 
 .SH SYNOPSIS
 .PP
-\f[B]hui\f[R] [options]
+\f[B]courier\f[R] [options] [file]
 
 .SH DESCRIPTION
 .PP
-Customizable terminal based user-interface for common tasks and personal tastes,
-inspired in software-design by suckless software.
-The user can create and customize menus with submenus and commands in the file
-cfg/config.h.
+Customizable pager inspired in software-design by suckless software and written
+for hui.
+Customizations are done in cfg/config.h before compilation.
 The cfg_example directory shows elaborate examples, which are also used in the
 debug builds.
 The debug builds are created by calling 'make d_' and then the program name.
-This way you can quickly get a feeling for what is possible with the config and
-scripting system.
+This way you can quickly get a feeling for what is possible with the config.
 
 .SH OPTIONS
 
@@ -31,25 +29,20 @@ prints version information then exits
 .B \-a
 prints program name, version, license and repository information then exits
 
+.TP
+.B \-t
+takes an argument and prints given string as title below the header
+
 .SH USAGE PER DEFAULT
 
-.B q
+.B q, h
 quit the program
-
-.B h
-go back
 
 .B j
 go down
 
 .B k
 go up
-
-.B l
-go into submenu
-
-.B L
-execute command
 
 .B :
 enter the internal command line
@@ -60,10 +53,10 @@ enter the internal command line
 quit the program
 
 .B NUMBER
-when given a positive number, it is used as a cursor indicator
+when given a positive number, it is used as a line number to scroll to
 
 .SH SEE ALSO
-courier(1)
+hui(1)
 
 .SH COPYRIGHT
 .PP

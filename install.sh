@@ -12,9 +12,9 @@ for BINARY in $BINARIES; do
 	make "$BINARY"
 	cp "$BINARY" "$DESTDIR$PREFIX/bin"
 	chmod 755 "$DESTDIR$PREFIX/bin/$BINARY"
-done
 
-make hui.1
-mkdir -p "$DESTDIR$MANPREFIX/man1"
-cp hui.1 "$DESTDIR$MANPREFIX/man1/hui.1"
-chmod 644 "$DESTDIR$MANPREFIX/man1/hui.1"
+	make "$BINARY.1"
+	mkdir -p "$DESTDIR$MANPREFIX/man1"
+	cp "$BINARY.1" "$DESTDIR$MANPREFIX/man1/$BINARY.1"
+	chmod 644 "$DESTDIR$MANPREFIX/man1/$BINARY.1"
+done

@@ -158,10 +158,12 @@ With that remove generic entry prepend.
 
 + add "-fsanitize=address,undefined" to debug `cc` call
 
-- manpages
-	- new for courier
-	- update hui's
-	- "see also" section mention courier/hui
++ manpages
+	+ new for courier
+	+ update hui's
+	+ "see also" section mention courier/hui
+
+- segfault when `courier -t`
 
 + Makefile: install  
   Does not install courier at all.  

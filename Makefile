@@ -33,7 +33,10 @@ t_hstring: t_hstring.c hstring.c color.c
 	$(CC) $(COPTS) -g -o $@ $^ $(TEST_COPTS)
 
 clean:
-	rm -f hui d_hui courier d_courier t_hstring
+	rm -f hui d_hui courier d_courier t_hstring hui.1 courier.1
 
 hui.1:
 	sed "s/VERSION/$(VERSION)/g" < docs/hui.1 > hui.1
+
+courier.1:
+	sed "s/VERSION/$(VERSION)/g" < docs/courier.1 > courier.1
