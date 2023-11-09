@@ -17,7 +17,6 @@ To install follow these steps:
 - run `cd hui`
 - edit [cfg/config.h][config.h]
 - for experts: edit [cfg/scripts.h][scripts.h] or [config.mk][config.mk]
-- on OpenBSD: edit [config.sh][config.sh]
 - run `chmod +x install.sh config.sh; sudo ./install.sh`,
   optionally remove `sudo`
 

@@ -8,5 +8,6 @@
 export PREFIX="/usr/local"
 export MANPREFIX="$PREFIX/share/man"
 
-# OpenBSD (uncomment)
-#export MANPREFIX="$PREFIX/man"
+if [ "$(uname -s)" = "OpenBSD" ]; then
+	export MANPREFIX="$PREFIX/man"
+fi

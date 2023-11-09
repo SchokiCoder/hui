@@ -169,7 +169,7 @@ With that remove generic entry prepend.
 + Makefile: install  
   Does not install courier at all.  
   rework install to utilize shell more and to fix the new dual binary install
-- config.sh: remove need for manual alteration in case of OpenBSD
++ config.sh: remove need for manual alteration in case of OpenBSD
   (also update README.md)
 - make sure install works
   (mind what README.md says about courier being optional)
