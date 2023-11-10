@@ -171,8 +171,20 @@ With that remove generic entry prepend.
   rework install to utilize shell more and to fix the new dual binary install
 + config.sh: remove need for manual alteration in case of OpenBSD
   (also update README.md)
+
++ rewrite Makefiles as Shell scripts and update README's install instructions
+  OpenBSD's make complains about suffixes.
+  "Using $< in a non-suffix rule context is a GNU make idiom"
+  So i explicitly defined suffix rules aaand it still said that -_-
+  That made me thinking, i wasn't using make to it's fullest extent anyways sooo
+  let's just ditch it :)
+
 - make sure install works
   (mind what README.md says about courier being optional)
+
+- with all these new files... maybe move .c and .h files into a src dir?
+- README.md: add a link to the hui/hui.png to, so it displays logo
+
 - compat test
 - set version to "1.4"
   The way versioning works has changed, look at

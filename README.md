@@ -17,8 +17,7 @@ To install follow these steps:
 - run `cd hui`
 - edit [cfg/config.h][config.h]
 - for experts: edit [cfg/scripts.h][scripts.h] or [config.mk][config.mk]
-- run `chmod +x install.sh config.sh; sudo ./install.sh`,
-  optionally remove `sudo`
+- run `chmod u+x *.sh; sudo ./install.sh`, optionally remove `sudo`
 
 # HUI and Courier are bffs by default
 

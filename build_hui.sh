@@ -4,9 +4,10 @@
 # Use of this source code is governed by the BSD-3-Clause
 # license, that can be found in the LICENSE file.
 
-. "./cfg_install.sh"
+. "./cfg_build.sh"
 
-rm "$DESTDIR$PREFIX/bin/hui" \
-	"$DESTDIR$PREFIX/bin/courier" \
-	"$DESTDIR$MANPREFIX/man1/hui.1" \
-	"$DESTDIR$MANPREFIX/man1/courier.1"
+"$CC" $COPTS -Os -o hui hui.c common.c color.c hstring.c sequences.c \
+	-I cfg \
+	"$DEFINES" \
+	-D VERSION=\""$VERSION"\" \
+	-D CONFIG_HUI
