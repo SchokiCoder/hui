@@ -1,4 +1,4 @@
-<img src="./hui.png" alt="hui logo" width="200" style="image-rendering: pixelated;">
+<img src="./hui.png" alt="hui logo" width="200" style="image-rendering: pixelated; filter: blur(0);">
 
 # What is this
 
