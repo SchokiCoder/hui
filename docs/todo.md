@@ -179,6 +179,9 @@ With that remove generic entry prepend.
   That made me thinking, i wasn't using make to it's fullest extent anyways sooo
   let's just ditch it :)
 
++ courier: fix self assign
+  courier.c:98:9 self assign... @me please install clang again
+
 - make sure install works
   (mind what README.md says about courier being optional)
 

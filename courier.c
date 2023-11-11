@@ -95,7 +95,7 @@ draw_content(const struct String *content,
 	set_fg(CONTENT_FG);
 	set_bg(CONTENT_BG);
 	
-	for (i = i; i < content->len; i += 1) {
+	for (; i < content->len; i += 1) {
 		if (content_x >= term_x_len)
 			i -= 1;
 
