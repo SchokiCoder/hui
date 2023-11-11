@@ -1,4 +1,15 @@
-<img src="./hui.png" alt="hui logo" width="200" style="image-rendering: pixelated; filter: blur(0);">
+```
+j6      j6
+QQ      4P
+QQ        
+QQ        
+QQQQQ6  jg
+QQQQQQ  QQ
+QQ  QQ  QQ
+QQ  QQ  QQ
+QQ  QQQQQQ
+4P  4QQQQP
+```
 
 # What is this
 
