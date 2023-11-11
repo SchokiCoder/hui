@@ -26,7 +26,8 @@ prebake_license.h:
 
 # idea for v1.5
 
-Add prepend and postpend for all entry categories.  
+## add prepend and postpend for all entry categories
+
 Default values:  
 ```c
 #define ET_SUBMENU_PREPEND     "["
@@ -48,6 +49,14 @@ Default examples:
 ```
 
 With that remove generic entry prepend.  
+
+## else
+
+- maybe move .c and .h files into a src dir?
+
+
+--------------------------------------------------------------------------------
+
 
 # 1.4 The big string update
 
@@ -186,128 +195,120 @@ With that remove generic entry prepend.
   (mind what README.md says about courier being optional)
 
 + README.md: add a link to the hui/hui.png to, so it displays logo
-- with all these new files... maybe move .c and .h files into a src dir?
++ compat test
 
-- compat test
-  (works: Linux, OpenBSD)
-- set version to "1.4"
++ set version to "1.4"
   The way versioning works has changed, look at
   [versioning.md](https://github.com/SchokiCoder/hui/blob/main/docs/versioning.md)
 
-
-
-
---------------------------------------------------------------------------------
-
-
 # goodies
 
-- Makefile uses -Wvla, add comment why i
++ Makefile uses -Wvla, add comment why i
   use that or remove -Wvla
 
 
 # 1.2.0
 
-- fix manpage typo
-- function pointer as entry cmd (as an addition to the shell string)
-- runtime menu creation
++ fix manpage typo
++ function pointer as entry cmd (as an addition to the shell string)
++ runtime menu creation
   this had literally NO implementation cost :)
-- add dirs for cfg targets to build sys
++ add dirs for cfg targets to build sys
 
 ## Makefile changes
 
-- add option "-Wvla" to debug
-- remove "-Wimplicit-fallthrough=0" from debug
-- add fall-through-comment to switch cases that fall through
++ add option "-Wvla" to debug
++ remove "-Wimplicit-fallthrough=0" from debug
++ add fall-through-comment to switch cases that fall through
 
 ## round-up
 
-- add scripting info to manpage
-- fix c feedback clear
-- fix c feedback only single line
-- set version
++ add scripting info to manpage
++ fix c feedback clear
++ fix c feedback only single line
++ set version
 
 
 # 1.1.1
 
-- menu.h remove unnecessary config include
-- fix handle command: int size difference
-- remove feedback on cmd line enter
++ menu.h remove unnecessary config include
++ fix handle command: int size difference
++ remove feedback on cmd line enter
   
-- remove overall bg color
++ remove overall bg color
   this was a weird hack anyways,
   a real implementation would be much harder
   and it is not worth it
   
-- make remove implicit fallthrough warnings
++ make remove implicit fallthrough warnings
   
-- set version
++ set version
 
 
 # 1.1.0
-- configurable key binds
-- configurable menu entry prepend
++ configurable key binds
++ configurable menu entry prepend
   
-- rename license.h -> license_str.h
++ rename license.h -> license_str.h
   cus github is weird about it
   
-- set version to 1.1.0
++ set version to 1.1.0
 
 
 # 1.0.0
 
-- add arg -a (print version, license, repo)
++ add arg -a (print version, license, repo)
   
-- enforce yoda notation
++ enforce yoda notation
   
-- reader sigint and sigtstp just end reader
++ reader sigint and sigtstp just end reader
   
-- split struct "runtime" into structs of data that relate to each other
++ split struct "runtime" into structs of data that relate to each other
   "data flow rework"
   
 ## string rework
 
-- add struct
++ add struct
   
-- realloc invalid old size on reader very long text
++ realloc invalid old size on reader very long text
   and 1st char missing
   and double free
   (caused by String_append to wrong pos)
 
-- feedback has weird characters and continues beyond actual text
++ feedback has weird characters and continues beyond actual text
   (String_append had invalid src_len)
 
 ## other
 
-- remove draw_upper and draw_lower from draw_reader and draw_menu
++ remove draw_upper and draw_lower from draw_reader and draw_menu
   
-- rename "app_menu" and "app_reader" into "amnu" + "ardr" in hui.c
++ rename "app_menu" and "app_reader" into "amnu" + "ardr" in hui.c
   
-- check for code fmt / line length
++ check for code fmt / line length
   
-- return values... there are none :p
++ return values... there are none :p
   
-- print message consistency (format, stdout vs stderr)
++ print message consistency (format, stdout vs stderr)
   fix feedback on wrong cmdin
   
-- std config (with compiler warning when untouched)
++ std config (with compiler warning when untouched)
   
-- line-break causes 1 character to disappear
++ line-break causes 1 character to disappear
   
-- scrolling over a broken line pushes 1 character into the next visible line
++ scrolling over a broken line pushes 1 character into the next visible line
   
-- scrolling over the first visible line of a broken line pushes 1 character
++ scrolling over the first visible line of a broken line pushes 1 character
   into the second visible line
 
-- reader feedback use background color (cfg: reader_bg, reader_fg)
++ reader feedback use background color (cfg: reader_bg, reader_fg)
   
 ## manpage
 	
-- make: proper install
-- fix missing color.h include
++ make: proper install
++ fix missing color.h include
   in hstring.h for gcc and clang
-- remove unused parameters and variables
-- fix implicit popen and pclose declaration
++ remove unused parameters and variables
++ fix implicit popen and pclose declaration
 
 ## compat checks
 
@@ -317,12 +318,12 @@ fine.
 
 ### openbsd
 
-- remove openbsd incompatible characters from config.h
-- add different manprefix for openbsd
++ remove openbsd incompatible characters from config.h
++ add different manprefix for openbsd
 
 ### freebsd
 
-- tcc compile err:
++ tcc compile err:
   `/usr/include/sys/_types.h:107": error: ',' expected (got "__aligned")`
  
 ### windows
@@ -332,75 +333,75 @@ lololol
 
 ## other
 	
-- set version 1.0.0
++ set version 1.0.0
 
 
 # 0.3.0
 
 ## multiline feedback
 
-- do
-- also add vertical scrolling
-- fix scroll limit
-- fix 1st line being just empty when scrolled (newline prepended at top)
-- fix str_lines not handling empty strings
++ do
++ also add vertical scrolling
++ fix scroll limit
++ fix 1st line being just empty when scrolled (newline prepended at top)
++ fix str_lines not handling empty strings
 
 ## execute
 
-- keybind
-- get stdout
-- get stderr
-- print according to goal
-- remove manually set feedback (in init_rt)
++ keybind
++ get stdout
++ get stderr
++ print according to goal
++ remove manually set feedback (in init_rt)
 
 ## other
 
-- handle_key returns int for continue flagging, is it obsolete?
++ handle_key returns int for continue flagging, is it obsolete?
   yes, was at end of mainloop anyway lol.
-- stdout fgets stops at newline use fread
++ stdout fgets stops at newline use fread
 
 ## long feedback reader
 
-- missing x counter reset (causes scroll-up just hiding top line and unnecessary
++ missing x counter reset (causes scroll-up just hiding top line and unnecessary
   line breaks)
-- prints beyond string len until scroll (just replace current with mem alloc)
-- new feedback doesnt replace old one
-- once reader is used, it will always be used for feedback	
-- reader height awareness
-- reader is one line short at end
-- reader after scroll 1st line is always empty
-- reader can overscroll past the last line
++ prints beyond string len until scroll (just replace current with mem alloc)
++ new feedback doesnt replace old one
++ once reader is used, it will always be used for feedback	
++ reader height awareness
++ reader is one line short at end
++ reader after scroll 1st line is always empty
++ reader can overscroll past the last line
   `rt->feedback_lines` is too high
   `str_lines()` missing x reset
 
-- 1st character missing
-- `reader_scroll` reset on exit
++ 1st character missing
++ `reader_scroll` reset on exit
 
 ## other
-- menu draw height awareness
++ menu draw height awareness
 	
-- vertical menu scrolling
++ vertical menu scrolling
   cursor follow
 	
-- handle any todos or `//` comments
++ handle any todos or `//` comments
 		
-- set version 0.3.0
++ set version 0.3.0
 
 
 # 0.2.0
 
-- fix menu open using cursor=0
-- fix cursor down using main menu bounds
-- code restructuring
++ fix menu open using cursor=0
++ fix cursor down using main menu bounds
++ code restructuring
   
 ## commands
 
-- "quit", "q", "exit"
-- number (move entry cursor to num)
++ "quit", "q", "exit"
++ number (move entry cursor to num)
 
 ## other
 
-- set version 0.2.0
++ set version 0.2.0
 
 
 # 0.1.0
@@ -411,52 +412,52 @@ works on openbsd and freebsd via tcc.
 
 ## other
  
-- feedback line
-- feedback color cfg
-- cmd line color cfg
-- draw simplicifcation
-- bg color
-- handle in src todos (and `//` comments)
-- cmdline prepend string cfg
-- cmdline enter (':')
-- cmdline leave (ctl + 'c'; enter)
-- set version 0.1.0
++ feedback line
++ feedback color cfg
++ cmd line color cfg
++ draw simplicifcation
++ bg color
++ handle in src todos (and `//` comments)
++ cmdline prepend string cfg
++ cmdline enter (':')
++ cmdline leave (ctl + 'c'; enter)
++ set version 0.1.0
 
 
 # 0.0.1
 
-- config struct
-- draw
-- get term size and print amount of empty lines accordingly
-- mainloop
++ config struct
++ draw
++ get term size and print amount of empty lines accordingly
++ mainloop
 
 ## keyboard ctl
 
-- j, k (down, up)
-- also cursor reaction
++ j, k (down, up)
++ also cursor reaction
 
-- l, h (right, left)
-- also menu switch
++ l, h (right, left)
++ also menu switch
 
 ## fixes
 
-- disable stdout buf
-- reset term x, y
-- clear then redraw
++ disable stdout buf
++ reset term x, y
++ clear then redraw
 
 ## termbox (changes reverted)
-- impl
-- multichar fixes (middle score '—'), FAILED
-- rollback and ditch termbox
++ impl
++ multichar fixes (middle score '—'), FAILED
++ rollback and ditch termbox
   (a8a4e09c4bd6dac4c7df99c131bcf9ca7d57d990)
 
 ## other
 
-- backport menu switch sys
-- clear screen
-- colors
-- hide terminal text cursor
-- draw menu cursor
-- colors in config
-- add version option -v
-- set version 0.0.1
++ backport menu switch sys
++ clear screen
++ colors
++ hide terminal text cursor
++ draw menu cursor
++ colors in config
++ add version option -v
++ set version 0.0.1
