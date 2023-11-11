@@ -1,3 +1,5 @@
+<img src="./hui.png" width="200" />
+
 # What is this
 
 The "House User Interface" is a customizable terminal user-interface for common

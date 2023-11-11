@@ -182,13 +182,14 @@ With that remove generic entry prepend.
 + courier: fix self assign
   courier.c:98:9 self assign... @me please install clang again
 
-- make sure install works
++ make sure install works
   (mind what README.md says about courier being optional)
 
++ README.md: add a link to the hui/hui.png to, so it displays logo
 - with all these new files... maybe move .c and .h files into a src dir?
-- README.md: add a link to the hui/hui.png to, so it displays logo
 
 - compat test
+  (works: Linux, OpenBSD)
 - set version to "1.4"
   The way versioning works has changed, look at
   [versioning.md](https://github.com/SchokiCoder/hui/blob/main/docs/versioning.md)
