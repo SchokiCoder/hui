@@ -15,7 +15,7 @@ QQ  QQQQQQ
 
 The "House User Interface" is a customizable terminal user-interface for common
 tasks and personal tastes, inspired in software-design by
-[suckless software](http://suckless.org).  
+[suckless software](http://suckless.org/coding_style).  
 You can statically create TUI menus in config source code and then deploy it to
 your user.  
 Set it as their default shell, to chain them into specific tasks :D  

@@ -113,9 +113,7 @@ Each entry can have a function pointer to a function defined in the scripts.h.
 A user function has output string pointer for feedback and int return.  
 At first experimental but proven to be fun and working.  
 
-# Roadmap (planned)
-
-## v1.3.0 Child application execution
+## v1.4 Child application execution
 
 Originally intended to run parallel with parent, see
 [goal_omissions.md](https://github.com/SchokiCoder/hui/blob/main/docs/goal_omissions.md).  
@@ -124,6 +122,8 @@ Once it's done, resume as normal.
 This also aims to decouple the previous implemented "reader" system that is
 basically a hard-wired self-made pager for child stdout feedback that spans over
 mutliple lines.  
+
+# Roadmap (planned)
 
 ## configurable aligns (Patch)
 
