@@ -22,38 +22,14 @@ prebake_license.h:
 	echo "#endif /* _PREBAKE_LICENSE_H */" >> $@
 ```
 
-- add config interface for custom commands ?
+# 1.5
 
-# idea for v1.5
-
-## add prepend and postpend for all entry categories
-
-Default values:  
-```c
-#define ET_SUBMENU_PREPEND     "["
-#define ET_SUBMENU_POSTPEND    "]"
-#define ET_SHELL_PREPEND       ""
-#define ET_SHELL_POSTPEND      ""
-#define ET_SHELL_LONG_PREPEND  "<"
-#define ET_SHELL_LONG_POSTPEND ">"
-#define ET_C_PREPEND           "!"
-#define ET_C_POSTPEND          ""
-```
-
-Default examples:  
-```c
-> [submenu]
-> shell
-> <shell_long>
-> !c
-```
-
-With that remove generic entry prepend.  
-
-## else
-
-- maybe move .c and .h files into a src dir?
-
++ replace generic prepend with prefix and postfix for each entry category
+- move .c and .h files into a src
+- Long menu->no stdout: heap-buffer-overflow
+- add config interface for custom commands
+- do the goody listed above
+- set version to "1.5"
 
 --------------------------------------------------------------------------------
 

@@ -154,8 +154,15 @@ static const struct Color ENTRY_HOVER_BG = {
 };
 
 /* texts and menus */
-static const char *HEADER =        "Example hui\n" "\n";
-static const char *ENTRY_PREPEND = "> ";
+static const char *HEADER =                "Example hui\n" "\n";
+static const char *ET_C_PREFIX =           "> !";
+static const char *ET_C_POSTFIX =          "";
+static const char *ET_SHELL_PREFIX =       "> ";
+static const char *ET_SHELL_POSTFIX =      "";
+static const char *ET_SHELL_LONG_PREFIX =  "> <";
+static const char *ET_SHELL_LONG_POSTFIX = ">";
+static const char *ET_SUBMENU_PREFIX =     "> [";
+static const char *ET_SUBMENU_POSTFIX =    "]";
 
 static const struct Menu MENU_FILES = {
 	.title = "Files menu\n"
@@ -292,19 +299,19 @@ static const struct Menu MENU_MAIN = {
 	         "—————————",
 	.entries = {
 		[0] = {
-			.caption = "[Chaos menu]",
+			.caption = "Chaos menu",
 			.type = ET_SUBMENU,
 			.submenu = &menu_chaos
 		},
 		
 		[1] = {
-			.caption = "[Files menu]",
+			.caption = "Files menu",
 			.type = ET_SUBMENU,
 			.submenu = &MENU_FILES
 		},
 		
 		[2] = {
-			.caption = "[Long menu]",
+			.caption = "Long menu",
 			.type = ET_SUBMENU,
 			.submenu = &MENU_LONG
 		},

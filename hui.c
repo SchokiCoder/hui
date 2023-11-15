@@ -87,6 +87,8 @@ draw_menu(long unsigned       *stdout_y,
 {
 	long unsigned i = 0,
 	              available_rows;
+	const char *entry_prefix,
+	           *entry_postfix;
 
 	/* calc first entry to be drawn */
 	available_rows = term_y_len - *stdout_y - 1;
@@ -94,18 +96,46 @@ draw_menu(long unsigned       *stdout_y,
 		i = cursor - available_rows;
 
 	/* draw */
-	for (; cur_menu->entries[i].type != ET_NONE; i++) {
+	for (;; i++) {
 		if (*stdout_y >= term_y_len)
 			break;
 
+		switch (cur_menu->entries[i].type) {
+		case ET_NONE:
+			return;
+			break;
+
+		case ET_C:
+			entry_prefix = ET_C_PREFIX;
+			entry_postfix = ET_C_POSTFIX;
+			break;
+
+		case ET_SHELL:
+			entry_prefix = ET_SHELL_PREFIX;
+			entry_postfix = ET_SHELL_POSTFIX;
+			break;
+
+		case ET_SHELL_LONG:
+			entry_prefix = ET_SHELL_LONG_PREFIX;
+			entry_postfix = ET_SHELL_LONG_POSTFIX;
+			break;
+
+		case ET_SUBMENU:
+			entry_prefix = ET_SUBMENU_PREFIX;
+			entry_postfix = ET_SUBMENU_POSTFIX;
+			break;
+		}
+
 		if (cursor == i) {
 			hprintf(ENTRY_HOVER_FG, ENTRY_HOVER_BG,
-				"%s%s\n", ENTRY_PREPEND,
-				cur_menu->entries[i].caption);
+				"%s%s%s\n", entry_prefix,
+				cur_menu->entries[i].caption,
+				entry_postfix);
 		} else {
 			hprintf(ENTRY_FG, ENTRY_BG,
-				"%s%s\n", ENTRY_PREPEND,
-				cur_menu->entries[i].caption);
+				"%s%s%s\n", entry_prefix,
+				cur_menu->entries[i].caption,
+				entry_postfix);
 		}
 
 		*stdout_y += 1;

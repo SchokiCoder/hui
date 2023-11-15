@@ -161,8 +161,15 @@ static const struct Color ENTRY_HOVER_BG = {
 };
 
 /* texts and menus */
-static const char *HEADER =        "- House User Interface -\n\n";
-static const char *ENTRY_PREPEND = "> ";
+static const char *HEADER =                "- House User Interface -\n\n";
+static const char *ET_C_PREFIX =           "> !";
+static const char *ET_C_POSTFIX =          "";
+static const char *ET_SHELL_PREFIX =       "> ";
+static const char *ET_SHELL_POSTFIX =      "";
+static const char *ET_SHELL_LONG_PREFIX =  "> <";
+static const char *ET_SHELL_LONG_POSTFIX = ">";
+static const char *ET_SUBMENU_PREFIX =     "> [";
+static const char *ET_SUBMENU_POSTFIX =    "]";
 
 static const struct Menu MENU_INFO = {
 	.title = "Info\n"
