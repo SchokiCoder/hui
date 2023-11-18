@@ -75,6 +75,29 @@ void strn_rtrim_on_filled()
 	assert(strn_lines(s, sizeof(s), LINE_SIZE) == 1);
 }
 
+void strn_rtrim_on_empty()
+{
+	char s[16];
+
+	strn_bleach(s, sizeof(s));
+	strn_rtrim(s, sizeof(s));
+	assert('\0' == s[0]);
+	assert(strn_lines(s, sizeof(s), LINE_SIZE) == 0);
+}
+
+void strn_rtrim_on_visually_empty()
+{
+	char s[16];
+
+	strn_bleach(s, sizeof(s));
+	assert(strn_add_char(s, ' ', strlen(s), sizeof(s)) == 0);
+	assert(strn_add_char(s, '\t', strlen(s), sizeof(s)) == 0);
+	assert(strn_add_char(s, '\n', strlen(s), sizeof(s)) == 0);
+	strn_rtrim(s, sizeof(s));
+	assert('\0' == s[0]);
+	assert(strn_lines(s, sizeof(s), LINE_SIZE) == 0);
+}
+
 void strn_add_char_on_maxed()
 {
 	long unsigned i;
@@ -141,6 +164,37 @@ void String_rtrim_on_filled()
 	String_rtrim(&s);
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(6 == s.len);
+	assert('\0' == s.str[s.len]);
+
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&s);
+#endif
+}
+
+void String_rtrim_on_initialized()
+{
+	struct String s;
+
+	s = String_new();
+	String_rtrim(&s);
+	assert(STRING_BLOCK_SIZE == s.size);
+	assert(0 == s.len);
+	assert('\0' == s.str[s.len]);
+
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&s);
+#endif
+}
+
+void String_rtrim_on_visually_empty()
+{
+	struct String s;
+
+	s = String_new();
+	String_copy(&s, " \t\n", strlen(" \t\n"));
+	String_rtrim(&s);
+	assert(STRING_BLOCK_SIZE == s.size);
+	assert(0 == s.len);
 	assert('\0' == s.str[s.len]);
 
 #ifndef STRING_NOT_ON_HEAP
@@ -263,12 +317,16 @@ int main()
 	strn_add_char_on_bleached();
 	strn_add_char_multiple_on_initialized();
 	strn_rtrim_on_filled();
+	strn_rtrim_on_empty();
+	strn_rtrim_on_visually_empty();
 	strn_add_char_on_maxed();
 	
 	String_new_nothing_else();
 	String_copy_on_initialized();
 	String_append_on_filled();
 	String_rtrim_on_filled();
+	String_rtrim_on_initialized();
+	String_rtrim_on_visually_empty();
 	String_append_array_on_initialized();
 	String_bleach_on_filled();
 

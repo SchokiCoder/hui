@@ -27,8 +27,9 @@ prebake_license.h:
 + replace generic prepend with prefix and postfix for each entry category
 + move .c and .h files into src directory
 + rework t_hstring to be more readable and modular
-- strn_rtrim: fix heap-buffer-overflow on strings that only consist of content
-  to be cut
+- Long_menu->no stdout heap-buffer-overflow
+  hstriing: heap-buffer-overflow on strings that only consist of content
+  to be cut... falsely assumed to be the problem
 
 - add config interface for custom commands
 - add script function pointer that runs on start of hui and on quit
