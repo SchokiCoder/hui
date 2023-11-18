@@ -11,134 +11,275 @@
 #include <stdio.h>
 #include <string.h>
 
-#define TEST_CHARARR_SIZE 64
-#define LINE_SIZE 32
-#define BLOCK_FILL_LETTER 'a'
+#define LINE_SIZE 24
 
-void test_stringfuncs()
+void strn_lines_on_filled()
 {
-	long unsigned i;
-	char          s[TEST_CHARARR_SIZE];
-	
-	strn_bleach(s, TEST_CHARARR_SIZE);
+	char s[64];
+
+	strncpy(s, "I am veeeeeeeeeeeery loooooooooooooong", sizeof(s));
+	assert(strn_lines(s, sizeof(s), LINE_SIZE) == 2);
+}
+
+void strn_bleach_on_uninitialized()
+{
+	char s[16];
+
+	strn_bleach(s, sizeof(s));
 	assert('\0' == s[0]);
-	assert('\0' == s[TEST_CHARARR_SIZE / 2]);
-	assert('\0' == s[TEST_CHARARR_SIZE - 1]);
-	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 0);
-	
-	assert(strn_add_char(s, 'E', strlen(s), TEST_CHARARR_SIZE) == 0);
+	assert('\0' == s[sizeof(s) / 2]);
+	assert('\0' == s[sizeof(s) - 1]);
+	assert(strn_lines(s, sizeof(s), LINE_SIZE) == 0);
+}
+
+void strn_add_char_on_bleached()
+{
+	char s[16];
+
+	strn_bleach(s, sizeof(s));
+	assert(strn_add_char(s, 'E', strlen(s), sizeof(s)) == 0);
 	assert('E' == s[0]);
 	assert('\0' == s[1]);
-	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 1);
-	
-	assert(strn_add_char(s, ' ', strlen(s), TEST_CHARARR_SIZE) == 0);
-	assert(strn_add_char(s, '\t', strlen(s), TEST_CHARARR_SIZE) == 0);
-	assert(strn_add_char(s, '\n', strlen(s), TEST_CHARARR_SIZE) == 0);
+	assert(strn_lines(s, sizeof(s), LINE_SIZE) == 1);
+}
+
+void strn_add_char_multiple_on_initialized()
+{
+	char s[16];
+
+	strn_bleach(s, sizeof(s));
+	assert(strn_add_char(s, 'E', strlen(s), sizeof(s)) == 0);
+	assert(strn_add_char(s, ' ', strlen(s), sizeof(s)) == 0);
+	assert(strn_add_char(s, '\t', strlen(s), sizeof(s)) == 0);
+	assert(strn_add_char(s, '\n', strlen(s), sizeof(s)) == 0);
 	assert('E' == s[0]);
 	assert(' ' == s[1]);
 	assert('\t' == s[2]);
 	assert('\n' == s[3]);
 	assert('\0' == s[4]);
-	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 2);
-
-	strn_rtrim(s, TEST_CHARARR_SIZE);
-	assert('E' == s[0]);
-	assert('\0' == s[1]);
-	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 1);
-	
-	strncpy(s, "I am veeeeeeeeeeeery loooooooooooooong", TEST_CHARARR_SIZE);
-	assert(strn_lines(s, TEST_CHARARR_SIZE, LINE_SIZE) == 2);
-	
-	for (i = 0; i < (TEST_CHARARR_SIZE - 1); i++) {
-		s[i] = 'A';
-	}
-	s[TEST_CHARARR_SIZE - 1] = '\0';
-	assert(strn_add_char(s, 'N', strlen(s), TEST_CHARARR_SIZE) == 1);
+	assert(strn_lines(s, sizeof(s), LINE_SIZE) == 2);
 }
 
-void test_stringstruct()
+void strn_rtrim_on_filled()
 {
-	char          block_fill[STRING_BLOCK_SIZE + 1];
-	char          oversize[STRING_BLOCK_SIZE * 2];
+	char s[16];
+
+	strn_bleach(s, sizeof(s));
+	assert(strn_add_char(s, 'E', strlen(s), sizeof(s)) == 0);
+	assert(strn_add_char(s, ' ', strlen(s), sizeof(s)) == 0);
+	assert(strn_add_char(s, '\t', strlen(s), sizeof(s)) == 0);
+	assert(strn_add_char(s, '\n', strlen(s), sizeof(s)) == 0);
+	strn_rtrim(s, sizeof(s));
+	assert('E' == s[0]);
+	assert('\0' == s[1]);
+	assert(strn_lines(s, sizeof(s), LINE_SIZE) == 1);
+}
+
+void strn_add_char_on_maxed()
+{
 	long unsigned i;
-	struct String s = String_new();
+	char s[16];
 	
+	for (i = 0; i < (sizeof(s) - 1); i++) {
+		s[i] = 'A';
+	}
+	s[sizeof(s) - 1] = '\0';
+	assert(strn_add_char(s, 'N', strlen(s), sizeof(s)) == 1);
+}
+
+void String_new_nothing_else()
+{
+	struct String s;
+
+	s = String_new();
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(0 == s.len);
 	assert('\0' == s.str[s.len - 1]);
-	
+
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&s);
+#endif
+}
+
+void String_copy_on_initialized()
+{
+	struct String s;
+
+	s = String_new();
 	String_copy(&s, "Foo", strlen("Foo"));
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(3 == s.len);
 	assert('\0' == s.str[s.len]);
-	
+
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&s);
+#endif
+}
+
+void String_append_on_filled()
+{
+	struct String s;
+
+	s = String_new();
+	String_copy(&s, "Foo", strlen("Foo"));
 	String_append(&s, "Bar \t\n", strlen("Bar \t\n"));
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(9 == s.len);
 	assert('\0' == s.str[s.len]);
-	
+
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&s);
+#endif
+}
+
+void String_rtrim_on_filled()
+{
+	struct String s;
+
+	s = String_new();
+	String_copy(&s, "FooBar \t\n", strlen("FooBar \t\n"));
 	String_rtrim(&s);
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(6 == s.len);
 	assert('\0' == s.str[s.len]);
-	
-	sprintf(block_fill, "Times strings screwed me over: %i", 666);
-	String_append(&s, block_fill, strlen(block_fill));
+
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&s);
+#endif
+}
+
+void String_append_array_on_initialized()
+{
+	char          pain[64];
+	struct String s;
+
+	sprintf(pain, "Times strings screwed me over: %i", 666);
+
+	s = String_new();
+	String_append(&s, pain, strlen(pain));
 	assert(STRING_BLOCK_SIZE == s.size);
-	assert(40 == s.len);
+	assert(34 == s.len);
 	assert('\0' == s.str[s.len]);
-	
+
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&s);
+#endif
+}
+
+void String_bleach_on_filled()
+{
+	struct String s;
+
+	s = String_new();
+	String_copy(&s, "FooBar", strlen("FooBar"));
 	String_bleach(&s);
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(0 == s.len);
 	assert('\0' == s.str[s.len]);
 
-	for (i = 0; i <= STRING_BLOCK_SIZE; i++)
-		block_fill[i] = BLOCK_FILL_LETTER;
+#ifndef STRING_NOT_ON_HEAP
+	String_free(&s);
+#endif
+}
 
+void String_copy_block_fill_on_initialized()
+{
+	char          block_fill[STRING_BLOCK_SIZE + 1];
+	const char    block_fill_char = 'a';
+	long unsigned i;
+	struct String s;
+
+	for (i = 0; i <= STRING_BLOCK_SIZE; i++)
+		block_fill[i] = block_fill_char;
 	block_fill[STRING_BLOCK_SIZE] = '\0';
 
+	s = String_new();
+	String_copy(&s, block_fill, strlen(block_fill));
 #ifdef STRING_NOT_ON_HEAP
-	printf("note: Non-default option given, "
-	       "strings are stored on stack and tests differ.\n");
-
-	String_copy(&s, block_fill);
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(STRING_BLOCK_SIZE == s.len);
-	assert(BLOCK_FILL_LETTER == s.str[s.len]);
+	assert(block_fill_char == s.str[s.len - 1]);
 #else
-	String_copy(&s, block_fill, STRING_BLOCK_SIZE);
 	assert((STRING_BLOCK_SIZE * 2) == s.size);
 	assert(STRING_BLOCK_SIZE == s.len);
+	assert(block_fill_char == s.str[s.len - 1]);
 	assert('\0' == s.str[s.len]);
 
 	String_free(&s);
-	assert(0 == s.size);
-	assert(0 == s.len);
-	assert(NULL == s.str);
+#endif
+}
 
-	for (i = 0; i < sizeof(oversize) - 1; i++)
-		oversize[i] = BLOCK_FILL_LETTER;
-	oversize[sizeof(oversize) - 1] = '\0';
+void String_free_on_filled()
+{
+	const char    *a = "*chuckles* I'm in danger\n";
+	struct String  s;
+
+	s = String_new();
+	String_copy(&s, a, strlen(a));
+	String_free(&s);
+
+#ifdef STRING_NOT_ON_HEAP
+	assert(STRING_BLOCK_SIZE == s.size);
+	assert(NULL != s.str);
+#else
+	assert(0 == s.size);
+	assert(NULL == s.str);
+#endif
+	assert(0 == s.len);
+}
+
+void String_append_overfill_on_initialized()
+{
+	long unsigned i;
+	char          overfill[STRING_BLOCK_SIZE * 2];
+	const char    overfill_char = 'a';
+	struct String s;
+
+	for (i = 0; i < sizeof(overfill) - 1; i++)
+		overfill[i] = overfill_char;
+	overfill[sizeof(overfill) - 1] = '\0';
 
 	s = String_new();	
-	String_append(&s, oversize, sizeof(oversize));
+	String_append(&s, overfill, sizeof(overfill));
+
+#ifdef STRING_NOT_ON_HEAP
+	assert(STRING_BLOCK_SIZE == s.size);
+	assert(sizeof(overfill) == s.len);
+	assert(overfill_char == s.str[s.size - 1]);
+#else
 	assert(STRING_BLOCK_SIZE * 3 == s.size);
-	assert(sizeof(oversize) == s.len);
-	assert(BLOCK_FILL_LETTER == s.str[sizeof(oversize) - 2]);
-	assert('\0' == s.str[sizeof(oversize) - 1]);
+	assert(sizeof(overfill) == s.len);
+	assert(overfill_char == s.str[sizeof(overfill) - 2]);
+	assert('\0' == s.str[sizeof(overfill) - 1]);
 
 	String_free(&s);
-	assert(0 == s.size);
-	assert(0 == s.len);
-	assert(NULL == s.str);
 #endif
 }
 
 int main()
 {
-	test_stringfuncs();
-	test_stringstruct();
+	strn_lines_on_filled();
+	strn_bleach_on_uninitialized();
+	strn_add_char_on_bleached();
+	strn_add_char_multiple_on_initialized();
+	strn_rtrim_on_filled();
+	strn_add_char_on_maxed();
+	
+	String_new_nothing_else();
+	String_copy_on_initialized();
+	String_append_on_filled();
+	String_rtrim_on_filled();
+	String_append_array_on_initialized();
+	String_bleach_on_filled();
+
+#ifdef STRING_NOT_ON_HEAP
+	printf("note: Non-default option given, "
+	       "strings are stored on stack and tests differ.\n");
+#endif
+
+	String_free_on_filled();
+	String_copy_block_fill_on_initialized();
+	String_append_overfill_on_initialized();
 	
 	return 0;
 }

@@ -26,8 +26,13 @@ prebake_license.h:
 
 + replace generic prepend with prefix and postfix for each entry category
 + move .c and .h files into src directory
-- Long menu->no stdout: heap-buffer-overflow
++ rework t_hstring to be more readable and modular
+- strn_rtrim: fix heap-buffer-overflow on strings that only consist of content
+  to be cut
+
 - add config interface for custom commands
+- add script function pointer that runs on start of hui and on quit
+  (cfg_example: add 100 empty menu entries to Long menu)
 - do the goody listed above
 - set version to "1.5"
 
