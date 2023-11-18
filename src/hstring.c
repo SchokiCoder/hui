@@ -119,14 +119,27 @@ long unsigned strn_rtrim(char *str, const long unsigned size)
 	if (0 == pos)
 		return pos;
 
-	do
-		pos -= 1;
-	while (' ' == str[pos] || '\t' == str[pos] || '\n' == str[pos]);
-	
-	pos += 1;
-	
+	pos--;
+	while (1) {
+		switch (str[pos]) {
+		case '\t': /* FALLTHROUGH */
+		case '\n':
+		case ' ':
+			if (pos <= 0)
+				goto cut;
+			else
+				pos--;
+			break;
+
+		default:
+			pos++;
+			goto cut;
+		}
+	}
+
+cut:
 	str[pos] = '\0';
-	
+
 	return pos;
 }
 

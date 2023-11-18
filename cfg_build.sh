@@ -30,4 +30,4 @@ export SRC_DIR="src"
 
 # no vla's (bigger binary and unnecessary)
 export D_COPTS="-Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined"
-export TEST_COPTS="-Wall -Wextra -Wvla -I ."
+export TEST_COPTS="-Wall -Wextra -Wvla -fsanitize=address,undefined"

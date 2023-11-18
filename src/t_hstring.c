@@ -117,7 +117,7 @@ void String_new_nothing_else()
 	s = String_new();
 	assert(STRING_BLOCK_SIZE == s.size);
 	assert(0 == s.len);
-	assert('\0' == s.str[s.len - 1]);
+	assert('\0' == s.str[s.len]);
 
 #ifndef STRING_NOT_ON_HEAP
 	String_free(&s);
