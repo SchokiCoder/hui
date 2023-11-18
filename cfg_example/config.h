@@ -6,7 +6,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#include "../color.h"
+#include "color.h"
 
 /** common configuration **/
 
@@ -110,7 +110,7 @@ static const struct Color CONTENT_BG = {
 /** hui configuration (may overwrite common config options) **/
 #ifdef CONFIG_HUI
 
-#include "../menu.h"
+#include "menu.h"
 #include "scripts.h"
 
 /* pager */
@@ -189,7 +189,7 @@ static const struct Menu MENU_LONG = {
 		[0] = {
 			.caption = "pager SOURCE",
 			.type = ET_SHELL_LONG,
-			.shell = PAGER " -t \"CALLED FROM HUI CONFIG\" hui.c"
+			.shell = PAGER " -t \"CALLED FROM HUI CONFIG\" README.md"
 		},
 		[1] = {
 			.caption = "cat LICENSE",

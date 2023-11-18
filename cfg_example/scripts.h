@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-#include "../hstring.h"
+#include "hstring.h"
 
 void c_test(struct String *feedback);
 void c_lucky(struct String *feedback);

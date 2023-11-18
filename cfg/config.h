@@ -13,7 +13,7 @@
  * The fun part is in "scripts.h". 
  */
 
-#include "../color.h"
+#include "color.h"
 
 #warning Config not touched, remove this line and set your stuff up, champ!
 
@@ -118,7 +118,7 @@ static const char *HEADER = "- House User Interface (Courier) -\n\n";
 #ifdef CONFIG_HUI
 
 #include "scripts.h"
-#include "../menu.h"
+#include "menu.h"
 
 /* pager */
 #define PAGER "courier"
@@ -194,7 +194,7 @@ static const struct Menu MENU_MAIN = {
 	         "---------",
 	.entries = {
 		[0] = {
-			.caption = "[Info menu]",
+			.caption = "Info menu",
 			.type = ET_SUBMENU,
 			.submenu = &MENU_INFO
 		},

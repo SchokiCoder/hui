@@ -26,6 +26,7 @@ export COPTS="-std=c99 -pedantic"
 
 export VERSION="1.4"
 export DEFINES="-D _DEFAULT_SOURCE -D _BSD_SOURCE -D _POSIX_C_SOURCE=200809L"
+export SRC_DIR="src"
 
 # no vla's (bigger binary and unnecessary)
 export D_COPTS="-Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined"

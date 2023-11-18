@@ -6,8 +6,10 @@
 
 . "./cfg_build.sh"
 
-"$CC" $COPTS -Os -o courier courier.c common.c color.c hstring.c sequences.c \
-	-I cfg \
+"$CC" $COPTS -Os -o courier \
+	"$SRC_DIR/courier.c" "$SRC_DIR/common.c" "$SRC_DIR/color.c" \
+	"$SRC_DIR/hstring.c" "$SRC_DIR/sequences.c" \
+	-I cfg -I "$SRC_DIR" \
 	$DEFINES \
 	-D VERSION=\""$VERSION"\" \
 	-D CONFIG_COURIER

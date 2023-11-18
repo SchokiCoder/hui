@@ -25,7 +25,7 @@ prebake_license.h:
 # 1.5
 
 + replace generic prepend with prefix and postfix for each entry category
-- move .c and .h files into a src
++ move .c and .h files into src directory
 - Long menu->no stdout: heap-buffer-overflow
 - add config interface for custom commands
 - do the goody listed above

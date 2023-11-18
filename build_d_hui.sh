@@ -6,9 +6,11 @@
 
 . "./cfg_build.sh"
 
-"$D_CC" $COPTS -g -o d_hui hui.c common.c color.c hstring.c sequences.c \
+"$D_CC" $COPTS -g -o d_hui \
+	"$SRC_DIR/hui.c" "$SRC_DIR/common.c" "$SRC_DIR/color.c" \
+	"$SRC_DIR/hstring.c" "$SRC_DIR/sequences.c" \
 	$D_COPTS \
-	-I cfg_example \
+	-I cfg_example -I "$SRC_DIR" \
 	$DEFINES \
 	-D VERSION=\""$VERSION"-DEBUG\" \
 	-D CONFIG_HUI

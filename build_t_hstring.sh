@@ -6,5 +6,7 @@
 
 . "./cfg_build.sh"
 
-"$CC" $COPTS -g -o t_hstring t_hstring.c color.c hstring.c \
+"$CC" $COPTS -g -o t_hstring \
+	"$SRC_DIR/t_hstring.c" "$SRC_DIR/color.c" "$SRC_DIR/hstring.c" \
+	-I "$SRC_DIR" \
 	$TEST_COPTS
