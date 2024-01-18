@@ -1,27 +1,3 @@
-# goodies
-
-- change license being compiled into binary
-```Makefile
-# awk
-prebake_license.h:
-	echo "#ifndef _PREBAKE_LICENSE_H" > $@
-	echo "#define _PREBAKE_LICENSE_H" >> $@
-	echo "\n/* This file is generated from the Makefile */\n" >> $@
-	awk "{print \"$0\"}" LICENSE >> $@
-	echo ";" >> $@
-	echo "#endif /* _PREBAKE_LICENSE_H */" >> $@
-
-# sed
-prebake_license.h:
-	echo "#ifndef _PREBAKE_LICENSE_H" > $@
-	echo "#define _PREBAKE_LICENSE_H" >> $@
-	echo "\n/* This file is generated from the Makefile */\n" >> $@
-	echo "const char *MSG_LICENSE = " >> $@
-	sed "s/*/\"$0\"" < LICENSE >> $@
-	echo ";" >> $@
-	echo "#endif /* _PREBAKE_LICENSE_H */" >> $@
-```
-
 # 1.5
 
 + replace generic prepend with prefix and postfix for each entry category
@@ -30,10 +6,11 @@ prebake_license.h:
 + strn_rtrim: fix heap-buffer-overflow on strings that only consist of content
   to be cut
 
-- add config interface for custom commands
++ add compile time license include
+- hui: fix memory leak when running with -a or -v
 - add script function pointer that runs on start of hui and on quit
   (cfg_example: add 100 empty menu entries to Long menu)
-- do the goody listed above
+- add config interface for custom commands
 - set version to "1.5"
 
 --------------------------------------------------------------------------------

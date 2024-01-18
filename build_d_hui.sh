@@ -5,6 +5,7 @@
 # license, that can be found in the LICENSE file.
 
 . "./cfg_build.sh"
+. "./build_license_header.sh"
 
 "$D_CC" $COPTS -g -o d_hui \
 	"$SRC_DIR/hui.c" "$SRC_DIR/common.c" "$SRC_DIR/color.c" \

@@ -7,4 +7,5 @@ t_hstring
 prebake_license.h
 hui.1
 courier.1
-
+tmp
+src/license_header.h

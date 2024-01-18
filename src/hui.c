@@ -17,7 +17,7 @@
 #include "common.h"
 #include "config.h"
 #include "hstring.h"
-#include "license_str.h"
+#include "license_header.h"
 #include "menu.h"
 #include "sequences.h"
 
@@ -195,18 +195,14 @@ int handle_cmdline_opts(const int argc, const char **argv)
 			break;
 
 		case 'a':
-			printf("\"%s\" aka %s %s is "
-			       "licensed under the BSD-3-Clause license.\n"
-			       "You should have received a copy of the license "
-			       "along with this program.\n\n"
-			       "The source code of this program is available "
-			       "at:"
+			printf("The source code of \"%s\" aka %s %s is available"
+			       " at:"
 			       "\nhttps://github.com/SchokiCoder/hui\n\n"
 			       "If you did not receive a copy of the license, "
 			       "see below:\n\n"
-			       "%s\n\n%s\n\n%s\n",
+			       "%s\n",
 			       "House User Interface", "hui", VERSION,
-			       MSG_COPYRIGHT, MSG_CLAUSES, MSG_WARRANTY);
+			       MSG_LICENSE);
 			return 1;
 			break;
 		

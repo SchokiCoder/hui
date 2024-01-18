@@ -5,6 +5,7 @@
 # license, that can be found in the LICENSE file.
 
 . "./cfg_build.sh"
+. "./build_license_header.sh"
 
 "$CC" $COPTS -Os -o courier \
 	"$SRC_DIR/courier.c" "$SRC_DIR/common.c" "$SRC_DIR/color.c" \
