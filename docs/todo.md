@@ -7,7 +7,9 @@
   to be cut
 
 + add compile time license include
-- hui: fix memory leak when running with -a or -v
++ hui: fix memory leak when running with -a or -v
++ update copyright
+
 - add script function pointer that runs on start of hui and on quit
   (cfg_example: add 100 empty menu entries to Long menu)
 - add config interface for custom commands
