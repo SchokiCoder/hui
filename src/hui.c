@@ -1,4 +1,4 @@
-/* Copyright (C) 2022 - 2023 Andy Frank Schoknecht
+/* Copyright (C) 2022 - 2024 Andy Frank Schoknecht
  * Use of this source code is governed by the BSD-3-Clause
  * license, that can be found in the LICENSE file.
  */
@@ -396,7 +396,7 @@ int main(const int argc, const char **argv)
 	long unsigned        stdout_y;
 
 	if (handle_cmdline_opts(argc, argv) != 0)
-		return 0;
+		goto cleanup;
 	
 	term_get_size(&term_x_len, &term_y_len);
 	term_set_raw();
@@ -437,6 +437,7 @@ int main(const int argc, const char **argv)
 		}
 	}
 
+cleanup:
 	term_restore();
 
 #ifndef STRING_NOT_ON_HEAP
