@@ -24,7 +24,7 @@ export COPTS="-std=c99 -pedantic"
 
 # Dear user, DON'T TOUCH anything beyond this point, devs only zone
 
-export VERSION="1.4"
+export VERSION="1.5"
 export DEFINES="-D _DEFAULT_SOURCE -D _BSD_SOURCE -D _POSIX_C_SOURCE=200809L"
 export SRC_DIR="src"
 

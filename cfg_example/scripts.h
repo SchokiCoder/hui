@@ -12,6 +12,7 @@
 
 void c_test(struct String *feedback);
 void c_lucky(struct String *feedback);
+void cmd_say_apple(void *_data, struct String *feedback);
 
 static struct Menu menu_chaos = {
 	.title = "Chaos menu\n"
@@ -31,6 +32,10 @@ static int lucky = 0;
 
 #define HUI_ON_START_DATA &menu_chaos
 //#define HUI_ON_QUIT_DATA  &menu_chaos
+
+#define HUI_CUSTOM_COMMANDS { \
+	{"say_apple", cmd_say_apple, &menu_chaos}\
+}
 
 /* DEAR USER: DON'T TOUCH THE NEXT LINE... please */
 #ifdef _SCRIPTS_H_IMPL
@@ -84,11 +89,23 @@ void c_lucky(struct String *feedback)
 	String_append(feedback, str, str_len);
 }
 
+void cmd_say_apple(void *_data, struct String *feedback)
+{
+	struct Menu *data = _data;
+	const char *text = "Apples, mate";
+
+	data->entries[1].caption = "apples";
+	data->entries[1].type = ET_SHELL;
+	data->entries[1].shell = "echo \"BUY SOME APPLES\"";
+	
+	String_copy(feedback, text, strlen(text));
+}
+
 # ifdef HUI_ON_START_DATA
 void hui_on_start (void *_data)
 {
 	struct Menu *data = _data; 
-	
+
 	if (strcmp(getenv("USER"), "andy") == 0) {
 		data->entries[1].caption = "secrit";
 		data->entries[1].type = ET_SHELL;

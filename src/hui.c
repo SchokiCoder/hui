@@ -21,6 +21,14 @@
 #include "menu.h"
 #include "sequences.h"
 
+#ifdef HUI_CUSTOM_COMMANDS
+struct CustomCommand {
+	char *cmd;
+	void (*c) (void *_data, struct String *feedback);
+	void *_data;
+};
+#endif /* HUI_CUSTOM_COMMANDS */
+
 long unsigned term_x_len,
 	      term_y_len;
 
@@ -159,6 +167,11 @@ handle_cmd(const char          *cmdin,
 	   struct String       *feedback,
 	   unsigned long       *feedback_lines)
 {
+#ifdef HUI_CUSTOM_COMMANDS
+	struct CustomCommand cmds[] = HUI_CUSTOM_COMMANDS;
+	int custom_cmd_ran = 0;
+	long unsigned i;
+#endif /* HUI_CUSTOM_COMMANDS */
 	long long n;
 	long unsigned menu_len;
 
@@ -167,6 +180,19 @@ handle_cmd(const char          *cmdin,
 	    || strcmp(cmdin, "exit") == 0) {
 		*active = 0;
 	} else {
+#ifdef HUI_CUSTOM_COMMANDS	
+		for (i = 0; (i * sizeof(struct CustomCommand)) < sizeof(cmds); i++) {
+			if (strcmp(cmdin, cmds[i].cmd) == 0) {
+				cmds[i].c(cmds[i]._data, feedback);
+				custom_cmd_ran = 1;
+				break;
+			}
+		}
+		
+		if (custom_cmd_ran)
+			return;
+#endif /* HUI_CUSTOM_COMMANDS */
+
 		n = atoll(cmdin);
 
 		if (n > 0) {

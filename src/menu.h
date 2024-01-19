@@ -25,7 +25,7 @@ struct Entry {
 	enum EntryType     type;
 	const struct Menu *submenu;
 	char              *shell;
-	void              (*c) (struct String *);
+	void              (*c) (struct String *feedback);
 };
 
 struct Menu {

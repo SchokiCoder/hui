@@ -1,4 +1,6 @@
-# 1.5
+--------------------------------------------------------------------------------
+
+# 1.5 The black magic update
 
 + replace generic prepend with prefix and postfix for each entry category
 + move .c and .h files into src directory
@@ -13,13 +15,8 @@
 + add script function pointer that runs on start of hui and on quit
   (cfg_example: add specific shell entry for user "andy")
   
-- add config interface for custom commands
-  via a map<string, function_pointer>?
-
-- set version to "1.5"
-
---------------------------------------------------------------------------------
-
++ add config interface for custom commands
++ set version to "1.5"
 
 # 1.4 The big string update
 
