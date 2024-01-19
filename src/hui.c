@@ -397,9 +397,13 @@ int main(const int argc, const char **argv)
 
 	if (handle_cmdline_opts(argc, argv) != 0)
 		goto cleanup;
-	
+
 	term_get_size(&term_x_len, &term_y_len);
 	term_set_raw();
+
+#ifdef HUI_ON_START_DATA
+	hui_on_start(HUI_ON_START_DATA);
+#endif
 
 	while (active) {
 		stdout_y = 0;
@@ -444,5 +448,8 @@ cleanup:
 	String_free(&feedback);
 #endif
 
+#ifdef HUI_ON_QUIT_DATA
+	hui_on_quit(HUI_ON_QUIT_DATA);
+#endif
 	return 0;
 }

@@ -29,8 +29,13 @@ static struct Menu menu_chaos = {
 static long unsigned counter = 0;
 static int lucky = 0;
 
+#define HUI_ON_START_DATA &menu_chaos
+//#define HUI_ON_QUIT_DATA  &menu_chaos
+
 /* DEAR USER: DON'T TOUCH THE NEXT LINE... please */
 #ifdef _SCRIPTS_H_IMPL
+
+#include <stdlib.h>
 
 void c_test(struct String *feedback)
 {
@@ -78,6 +83,26 @@ void c_lucky(struct String *feedback)
 	lucky = 1;
 	String_append(feedback, str, str_len);
 }
+
+# ifdef HUI_ON_START_DATA
+void hui_on_start (void *_data)
+{
+	struct Menu *data = _data; 
+	
+	if (strcmp(getenv("USER"), "andy") == 0) {
+		data->entries[1].caption = "secrit";
+		data->entries[1].type = ET_SHELL;
+		data->entries[1].shell = "echo deeznuts";
+	}
+}
+#endif /* HUI_ON_START_DATA */
+
+#ifdef HUI_ON_QUIT_DATA
+void hui_on_quit (void *_data)
+{
+
+}
+#endif /* HUI_ON_QUIT_DATA */
 
 #endif /* _SCRIPTS_H_IMPL */
 
