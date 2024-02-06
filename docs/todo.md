@@ -1,3 +1,6 @@
+- feedback needed_lines detection probably doesn't account for the cmdline
+  prefix
+
 --------------------------------------------------------------------------------
 
 # 1.5 The black magic update
