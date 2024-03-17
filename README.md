@@ -11,7 +11,10 @@ QQ  QQQQQQ
 4P  4QQQQP
 ```
 
-# What is this
+# What is this?
+
+**Obsolete and rewritten in Go.**  
+Please take a look at [gohui][gohui].  
 
 The "House User Interface" is a customizable terminal user-interface for common
 tasks and personal tastes, inspired in software-design by
@@ -53,12 +56,11 @@ BINARIES="hui"
 
 # Contributing
 
-Why thank you for even considering helping me create the most serious
-application ever.  
-  
-Have a look at [docs/todo.md][todo.md] for what is planned short-term.  
+Thank you for even considering helping me but this is obsolete.  
+Please consider looking at [gohui][gohui] instead.  
+
+Otherwise, have a look at [docs/todo.md][todo.md] for what is planned short-term.  
 Known bugs are also listed in there.  
-Otherwise [docs/goals.md][goals.md] shows the planned long-term future.  
   
 If you found something, make a fork, make your changes and open a pull request.  
 
@@ -68,6 +70,7 @@ If you found something, make a fork, make your changes and open a pull request.
 [config.mk]: <https://github.com/SchokiCoder/hui/blob/main/config.mk>
 [config.sh]: <https://github.com/SchokiCoder/hui/blob/main/config.sh>
 [goals.md]: <https://github.com/SchokiCoder/hui/blob/main/docs/goals.md>
+[gohui]: <https://github.com/SchokiCoder/gohui>
 [install.sh]: <https://github.com/SchokiCoder/hui/blob/main/install.sh>
 [Makefile]: <https://github.com/SchokiCoder/hui/blob/main/Makefile>
 [scripts.h]: <https://github.com/SchokiCoder/hui/blob/main/cfg/scripts.h>
